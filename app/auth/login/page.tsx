@@ -1,7 +1,7 @@
 "use client"
 import React from 'react';
 import { motion } from 'framer-motion';
-import AuthCard from '@/app/components/AuthCard';
+import AuthCard from '@/components/form/AuthCard';
 
 
 export default function SignInPage() {

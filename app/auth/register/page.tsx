@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 import { Book, Users, Briefcase, Globe } from 'lucide-react';
-import AuthCard from '@/app/components/AuthCard';
+import AuthCard from '@/components/form/AuthCard';
 
 const WebsiteInfo = () => (
 <motion.div

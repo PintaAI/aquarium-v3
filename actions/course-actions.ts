@@ -117,7 +117,7 @@ export async function deleteCourse(courseId: number) {
 
 export async function getCourse(courseId: number) {
   try {
-    console.log(`Attempting to fetch course with id: ${courseId}`)
+    console.log('Fetching course data...')
     const course = await db.course.findUnique({
       where: { id: courseId },
       include: {
@@ -128,14 +128,14 @@ export async function getCourse(courseId: number) {
     })
 
     if (!course) {
-      console.log(`No course found with id: ${courseId}`)
-    } else {
-      console.log(`Successfully fetched course: ${JSON.stringify(course, null, 2)}`)
+      console.log('Course not found')
+      return null
     }
 
+    console.log('Course data retrieved successfully')
     return course
   } catch (error) {
-    console.error(`Failed to fetch course with id ${courseId}:`, error)
+    console.error('Error fetching course data')
     throw error
   }
 }
@@ -162,6 +162,7 @@ export async function getCourses(): Promise<Course[]> {
 
 export async function getCourseWithModules(courseId: number) {
   try {
+    console.log('Fetching course modules...')
     const courseData = await db.course.findUnique({
       where: { id: courseId },
       include: {
@@ -179,14 +180,14 @@ export async function getCourseWithModules(courseId: number) {
     })
 
     if (!courseData) {
-      console.log(`No course found with id: ${courseId}`)
-    } else {
-      console.log(`Successfully fetched course: ${JSON.stringify(courseData, null, 2)}`)
+      console.log('Course not found')
+      return null
     }
 
+    console.log('Course modules retrieved successfully')
     return courseData
   } catch (error) {
-    console.error(`Failed to fetch course with id ${courseId}:`, error)
+    console.error('Error fetching course modules')
     throw error
   }
 }

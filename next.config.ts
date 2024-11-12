@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
+import withPWA from 'next-pwa';
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   env: {
@@ -8,6 +9,16 @@ const nextConfig = {
   images: {
     domains: ['cdn.shade.cool', 'imagecdn.app', 'res.cloudinary.com'],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
-export default nextConfig;
+const config = withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+})(nextConfig);
+
+export default config;

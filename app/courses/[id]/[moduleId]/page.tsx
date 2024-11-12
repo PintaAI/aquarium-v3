@@ -14,14 +14,14 @@ export default async function ModulePage({ params }: ModulePageProps) {
   const courseId = parseInt(params.id);
   const moduleId = parseInt(params.moduleId);
 
-  const module = await getModule(courseId, moduleId);
+  const moduleData = await getModule(courseId, moduleId);
 
-  if (!module) {
+  if (!moduleData) {
     notFound();
   }
 
   // Format modules for the ModuleList component
-  const formattedModules = module.course.modules.map(mod => ({
+  const formattedModules = moduleData.course.modules.map(mod => ({
     id: mod.id.toString(),
     courseId: courseId.toString(),
     title: mod.title,
@@ -39,13 +39,13 @@ export default async function ModulePage({ params }: ModulePageProps) {
           <ModuleHeader 
             courseId={courseId}
             moduleId={moduleId}
-            title={module.title}
-            courseAuthor={module.course.author}
+            title={moduleData.title}
+            courseAuthor={moduleData.course.author}
           />
           
           {/* Module Content - Using htmlDescription for fast rendering */}
           <div className="prose max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: module.htmlDescription }} />
+            <div dangerouslySetInnerHTML={{ __html: moduleData.htmlDescription }} />
           </div>
         </div>
 
@@ -55,7 +55,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
             <ModuleList 
               modules={formattedModules} 
               courseId={courseId.toString()}
-              courseAuthorId={module.course.author.id}
+              courseAuthorId={moduleData.course.author.id}
             />
           </div>
         </div>

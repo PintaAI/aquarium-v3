@@ -5,12 +5,13 @@ import { CourseLevel } from '@prisma/client'
 import { currentUser } from '@/lib/auth'
 
 interface EditCoursePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default async function EditCoursePage({ params }: EditCoursePageProps) {
+export default async function EditCoursePage(props: EditCoursePageProps) {
+  const params = await props.params;
   const user = await currentUser()
 
   if (!user || user.role !== 'GURU') {

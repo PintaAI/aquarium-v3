@@ -1,6 +1,7 @@
+import { uploadImage } from "@/actions/upload-image";
 import { createImageUpload } from "novel/plugins";
 import { toast } from "sonner";
-import { uploadImage } from "@/app/actions/upload-image";
+
 
 const onUpload = (file: File) => {
   const formData = new FormData();

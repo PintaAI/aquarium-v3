@@ -4,12 +4,13 @@ import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 
 interface CreateModulePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default async function CreateModulePage({ params }: CreateModulePageProps) {
+export default async function CreateModulePage(props: CreateModulePageProps) {
+  const params = await props.params;
   const user = await currentUser()
   const courseId = parseInt(params.id)
 

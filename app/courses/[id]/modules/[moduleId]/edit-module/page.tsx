@@ -5,13 +5,14 @@ import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db';
 
 interface EditModulePageProps {
-  params: {
+  params: Promise<{
     id: string;
     moduleId: string;
-  };
+  }>;
 }
 
-export default async function EditModulePage({ params }: EditModulePageProps) {
+export default async function EditModulePage(props: EditModulePageProps) {
+  const params = await props.params;
   const user = await currentUser();
   const courseId = parseInt(params.id);
   const moduleId = parseInt(params.moduleId);

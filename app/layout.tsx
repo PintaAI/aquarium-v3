@@ -37,8 +37,8 @@ export const metadata: Metadata = {
     title: "Pejuangkorea Academy",
   },
   icons: {
-    icon: "/images/circle-logo.png",
-    apple: "/images/circle-logo.png",
+    icon: "/favicon.ico",
+    apple: "/images/circle-logo.png"
   },
 };
 
@@ -57,7 +57,6 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Pejuangkorea Academy" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="apple-touch-icon" href="/images/circle-logo.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

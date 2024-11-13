@@ -1,6 +1,8 @@
 import CourseList from "@/components/courses/course-list";
 import { getCourses, Course } from "@/actions/course-actions";
 import { auth } from "@/auth";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default async function CoursesPage() {
   const session = await auth();
@@ -13,13 +15,18 @@ export default async function CoursesPage() {
     error = "Failed to fetch courses";
     console.error(e);
   }
-//di sini isinya tu list course dan tempat untuk bre
+
   return (
-    <CourseList
-      initialCourses={courses}
-      userRole={session?.user?.role}
-      userId={session?.user?.id}
-      error={error}
-    />
+    <SidebarProvider>
+      <AppSidebar />
+      <main>
+        <CourseList
+          initialCourses={courses}
+          userRole={session?.user?.role}
+          userId={session?.user?.id}
+          error={error}
+        />
+      </main>
+    </SidebarProvider>
   );
 }

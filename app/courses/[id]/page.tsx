@@ -5,12 +5,13 @@ import { CourseHeader } from "@/components/courses/course-header";
 import { CourseBody } from "@/components/courses/course-body";
 
 interface CourseIdPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default async function CourseIdPage({ params }: CourseIdPageProps) {
+export default async function CourseIdPage(props: CourseIdPageProps) {
+  const params = await props.params;
   const courseId = parseInt(params.id);
   const course = await getCourse(courseId);
 

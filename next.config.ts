@@ -1,16 +1,35 @@
 import withPWA from 'next-pwa';
+import type { NextConfig } from 'next';
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   },
   images: {
-    domains: ['cdn.shade.cool', 'imagecdn.app', 'res.cloudinary.com'],
+    remotePatterns: [
+      {
+        protocol: 'https' as const,
+        hostname: 'cdn.shade.cool',
+      },
+      {
+        protocol: 'https' as const,
+        hostname: 'imagecdn.app',
+      },
+      {
+        protocol: 'https' as const,
+        hostname: 'res.cloudinary.com',
+      },
+    ],
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  experimental: {
+    turbo: {
+      resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+      moduleIdStrategy: (process.env.NODE_ENV === 'development' ? 'named' : 'deterministic') as 'named' | 'deterministic',
+    },
   },
 };
 

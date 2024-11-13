@@ -4,13 +4,14 @@ import { getModule } from "@/actions/module-actions";
 import { ModuleHeader } from "@/components/courses/module-header";
 
 interface ModulePageProps {
-  params: {
+  params: Promise<{
     id: string;     // courseId
     moduleId: string;
-  };
+  }>;
 }
 
-export default async function ModulePage({ params }: ModulePageProps) {
+export default async function ModulePage(props: ModulePageProps) {
+  const params = await props.params;
   const courseId = parseInt(params.id);
   const moduleId = parseInt(params.moduleId);
 

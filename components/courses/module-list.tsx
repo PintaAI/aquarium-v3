@@ -22,7 +22,7 @@ interface ModuleCardProps {
   isAuthor: boolean
 }
 
-function ModuleCard({ module, isAuthor }: ModuleCardProps) {
+export function ModuleCard({ module, isAuthor }: ModuleCardProps) {
   const router = useRouter()
   const {
     id,

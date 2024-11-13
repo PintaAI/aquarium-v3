@@ -4,12 +4,13 @@ import { ArticleView } from "@/components/articles/article-view"
 import { notFound } from "next/navigation"
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage(props: ArticlePageProps) {
+  const params = await props.params;
   const article = await getArticle(parseInt(params.id))
 
   if (!article) {

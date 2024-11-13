@@ -1,15 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { BookOpen, ListOrdered, Clock } from "lucide-react"
+import { JSONContent } from 'novel'
+
+import Editor, { defaultEditorContent } from '../editor/editor'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent } from '@/components/ui/card'
 import { createModule, updateModule } from '@/actions/module-actions'
-import { useRouter } from 'next/navigation'
 
 interface ModuleFormProps {
   courseId: number;
+  username: string;
   initialData?: {
     id?: number;
     title: string;
@@ -20,99 +26,127 @@ interface ModuleFormProps {
   }
 }
 
-export function ModuleForm({ courseId, initialData }: ModuleFormProps) {
-  const router = useRouter()
-  const [formData, setFormData] = useState({
-    title: initialData?.title || '',
-    description: initialData?.description || '',
-    jsonDescription: initialData?.jsonDescription || '',
-    htmlDescription: initialData?.htmlDescription || '',
-    order: initialData?.order || 0,
-    courseId: courseId
-  })
+interface ModuleData {
+  title: string;
+  description: string;
+  jsonDescription: string;
+  htmlDescription: string;
+  order: number;
+  courseId: number;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+export function ModuleForm({ courseId, username, initialData }: ModuleFormProps) {
+  const [title, setTitle] = useState(initialData?.title || '')
+  const [description, setDescription] = useState(initialData?.description || '')
+  const [order, setOrder] = useState(initialData?.order || 0)
+  const [jsonDescription, setJsonDescription] = useState<JSONContent>(
+    initialData?.jsonDescription ? JSON.parse(initialData.jsonDescription) : defaultEditorContent
+  )
+  const [htmlDescription, setHtmlDescription] = useState(initialData?.htmlDescription || '')
+  const [pending, setPending] = useState(false)
+  const router = useRouter()
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     
+    if (!title || !description || !jsonDescription || !htmlDescription) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    setPending(true)
+
     try {
-      if (initialData?.id) {
-        // Update existing module
-        const result = await updateModule(initialData.id, formData)
-        if (result.success) {
-          router.push(`/courses/${courseId}/modules/${result.moduleId}`)
-        }
-      } else {
-        // Create new module
-        const result = await createModule(formData)
-        if (result.success) {
-          router.push(`/courses/${courseId}/modules/${result.moduleId}`)
-        }
+      const moduleData: ModuleData = {
+        title,
+        description,
+        jsonDescription: JSON.stringify(jsonDescription),
+        htmlDescription,
+        order,
+        courseId
       }
+
+      let result
+      if (initialData?.id) {
+        result = await updateModule(initialData.id, moduleData)
+      } else {
+        result = await createModule(moduleData)
+      }
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save module')
+      }
+
+      toast.success(initialData ? 'Module updated successfully' : 'Module created successfully')
+      router.push(`/courses/${courseId}/modules/${result.moduleId}`)
     } catch (error) {
-      console.error('Failed to save module:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to save module')
+    } finally {
+      setPending(false)
     }
   }
 
   return (
-    <Card className="p-6 max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            required
-          />
-        </div>
+    <div className='max-w-4xl mx-auto space-y-6'>
+      <Card className="border-none shadow-md">
+        <CardContent className='p-4 md:p-6'>
+          <form onSubmit={handleSubmit} className='flex flex-col gap-4 md:gap-6'>
+            <Input
+              type='text'
+              placeholder='Write module title here...'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-2xl md:text-3xl font-bold border-none p-0"
+              required
+            />
+            
+            <Textarea
+              placeholder='Add a brief description here...'
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="text-base md:text-lg text-muted-foreground border-none resize-none min-h-[100px]"
+              required
+            />
+            
+            <div className="flex flex-col md:flex-row justify-between text-sm text-muted-foreground gap-4 md:gap-0">
+              <div className="flex items-center">
+                <BookOpen className="mr-2" size={16} />
+                <span>{username}</span>
+              </div>
+              <div className="flex items-center">
+                <ListOrdered className="mr-2" size={16} />
+                <Input
+                  type="number"
+                  value={order}
+                  onChange={(e) => setOrder(parseInt(e.target.value))}
+                  className="w-20 h-8 text-center"
+                  min={0}
+                  required
+                />
+              </div>
+              <div className="flex items-center">
+                <Clock className="mr-2" size={16} />
+                <span>Draft</span>
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Input
-            id="description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            required
-          />
-        </div>
+            <Button type="submit" disabled={pending} className="w-full">
+              {pending ? 'Saving...' : initialData ? 'Update Module' : 'Create Module'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-        <div className="space-y-2">
-          <Label htmlFor="order">Order</Label>
-          <Input
-            id="order"
-            type="number"
-            value={formData.order}
-            onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="jsonDescription">JSON Description</Label>
-          <textarea
-            id="jsonDescription"
-            value={formData.jsonDescription}
-            onChange={(e) => setFormData({ ...formData, jsonDescription: e.target.value })}
-            className="w-full p-2 border rounded min-h-[100px]"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="htmlDescription">HTML Description</Label>
-          <textarea
-            id="htmlDescription"
-            value={formData.htmlDescription}
-            onChange={(e) => setFormData({ ...formData, htmlDescription: e.target.value })}
-            className="w-full p-2 border rounded min-h-[100px]"
-            required
-          />
-        </div>
-
-        <Button type="submit" className="w-full">
-          {initialData ? 'Update Module' : 'Create Module'}
-        </Button>
-      </form>
-    </Card>
+      <div className="space-y-4">
+        <h2 className="text-xl md:text-2xl font-bold">Module Content</h2>
+        <Editor
+          initialValue={jsonDescription}
+          onChange={(content) => {
+            setJsonDescription(content.json)
+            setHtmlDescription(content.html)
+          }}
+        />
+      </div>
+    </div>
   )
 }

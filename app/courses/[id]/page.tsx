@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { ModuleList } from "@/components/courses/module-list";
 import { CourseHeader } from "@/components/courses/course-header";
 import { CourseBody } from "@/components/courses/course-body";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 interface CourseIdPageProps {
   params: Promise<{
@@ -31,21 +34,39 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
   }));
 
   return (
-    <div className="container mx-auto p-6">
-      <CourseHeader
-        id={course.id}
-        title={course.title}
-        thumbnail={course.thumbnail}
-        author={course.author}
-        level={course.level}
-      />
-      <CourseBody htmlDescription={course.htmlDescription} />
-      <div className="mt-8">
-        <ModuleList 
-          modules={formattedModules} 
-          courseId={courseId.toString()}
-          courseAuthorId={course.author.id}
-        />
+    <div className="container mx-auto px-4 py-12 max-w-7xl">
+      <Button asChild variant="ghost" className="mb-6 text-primary hover:text-primary/90">
+        <Link href="/courses" className="flex items-center">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Courses
+        </Link>
+      </Button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <CourseHeader
+            id={course.id}
+            title={course.title}
+            thumbnail={course.thumbnail}
+            author={course.author}
+            level={course.level}
+            moduleCount={course.modules.length}
+          />
+          
+          <div className="mt-6">
+            <CourseBody htmlDescription={course.htmlDescription} />
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <ModuleList 
+              modules={formattedModules} 
+              courseId={courseId.toString()}
+              courseAuthorId={course.author.id}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

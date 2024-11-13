@@ -1,136 +1,205 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { User, BarChart, Clock, Upload } from "lucide-react"
+import { CourseLevel } from '@prisma/client'
+import { JSONContent } from 'novel'
+
+import Editor, { defaultEditorContent } from '../editor/editor'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { addCourse, updateCourse } from '@/actions/course-actions'
-import { useRouter } from 'next/navigation'
-import { CourseLevel } from '@prisma/client'
+import { uploadImage } from '@/actions/upload-image'
 
 interface CourseFormProps {
+  username: string;
   initialData?: {
-    id?: number
-    title: string
-    description: string
-    level: CourseLevel
-    thumbnail?: string | null
-    jsonDescription: string
-    htmlDescription: string
+    id?: number;
+    title: string;
+    description: string;
+    level: CourseLevel;
+    thumbnail: string | null;
+    jsonDescription: string;
+    htmlDescription: string;
   }
 }
 
-export function CourseForm({ initialData }: CourseFormProps) {
-  const router = useRouter()
-  const [formData, setFormData] = useState({
-    title: initialData?.title || '',
-    description: initialData?.description || '',
-    level: initialData?.level || CourseLevel.BEGINNER,
-    thumbnail: initialData?.thumbnail || '',
-    jsonDescription: initialData?.jsonDescription || '',
-    htmlDescription: initialData?.htmlDescription || ''
-  })
+interface CourseData {
+  title: string;
+  description: string;
+  level: CourseLevel;
+  jsonDescription: string;
+  htmlDescription: string;
+  thumbnail: string | null;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+export function CourseForm({ username, initialData }: CourseFormProps) {
+  const [title, setTitle] = useState(initialData?.title || '')
+  const [description, setDescription] = useState(initialData?.description || '')
+  const [level, setLevel] = useState<CourseLevel>(initialData?.level || CourseLevel.BEGINNER)
+  const [jsonDescription, setJsonDescription] = useState<JSONContent>(
+    initialData?.jsonDescription ? JSON.parse(initialData.jsonDescription) : defaultEditorContent
+  )
+  const [htmlDescription, setHtmlDescription] = useState(initialData?.htmlDescription || '')
+  const [thumbnail, setThumbnail] = useState<string | null>(initialData?.thumbnail || null)
+  const [pending, setPending] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+
+  async function handleThumbnailUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
     try {
-      if (initialData?.id) {
-        // Update existing course
-        const result = await updateCourse(initialData.id, formData)
-        if (result.success) {
-          router.push(`/courses/${result.courseId}`)
-        }
-      } else {
-        // Create new course
-        const result = await addCourse(formData)
-        if (result.success) {
-          router.push(`/courses/${result.courseId}`)
-        }
-      }
+      const imageUrl = await uploadImage(formData)
+      setThumbnail(imageUrl)
+      toast.success('Thumbnail uploaded successfully')
     } catch (error) {
-      console.error('Failed to save course:', error)
+      toast.error('Failed to upload thumbnail')
+      console.error('Error uploading thumbnail:', error)
+    }
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    
+    if (!title || !description || !level || !jsonDescription || !htmlDescription) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    setPending(true)
+
+    try {
+      const courseData: CourseData = {
+        title,
+        description,
+        level,
+        jsonDescription: JSON.stringify(jsonDescription),
+        htmlDescription,
+        thumbnail,
+      }
+
+      let result
+      if (initialData?.id) {
+        result = await updateCourse(initialData.id, courseData)
+      } else {
+        result = await addCourse(courseData)
+      }
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save course')
+      }
+
+      toast.success(initialData ? 'Course updated successfully' : 'Course created successfully')
+      router.push(`/courses/${result.courseId}`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to save course')
+    } finally {
+      setPending(false)
     }
   }
 
   return (
-    <Card className="p-6 max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            required
-          />
-        </div>
+    <div className='max-w-4xl mx-auto space-y-6'>
+      <Card className="border-none shadow-md">
+        <CardContent className='p-4 md:p-6'>
+          <form onSubmit={handleSubmit} className='flex flex-col gap-4 md:gap-6'>
+            <Input
+              type='text'
+              placeholder='Write title here...'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-2xl md:text-3xl font-bold border-none p-0"
+              required
+            />
+            
+            <Textarea
+              placeholder='Add a brief description here...'
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="text-base md:text-lg text-muted-foreground border-none resize-none min-h-[100px]"
+              required
+            />
+            
+            <div className="flex flex-col md:flex-row justify-between text-sm text-muted-foreground gap-4 md:gap-0">
+              <div className="flex items-center">
+                <User className="mr-2" size={16} />
+                <span>{username}</span>
+              </div>
+              <div className="flex items-center">
+                <BarChart className="mr-2" size={16} />
+                <Select value={level} onValueChange={(value: CourseLevel) => setLevel(value)}>
+                  <SelectTrigger className="w-full md:w-[140px] border-none">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={CourseLevel.BEGINNER}>Beginner</SelectItem>
+                    <SelectItem value={CourseLevel.INTERMEDIATE}>Intermediate</SelectItem>
+                    <SelectItem value={CourseLevel.ADVANCED}>Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center">
+                <Clock className="mr-2" size={16} />
+                <span>0 modules</span>
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Input
-            id="description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            required
-          />
-        </div>
+            <div className="flex items-center gap-4">
+              <Button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+              >
+                <Upload className="mr-2" size={16} />
+                Upload Thumbnail
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleThumbnailUpload}
+                accept="image/*"
+                className="hidden"
+              />
+              {thumbnail && (
+                <div className="relative w-20 h-20">
+                  <Image
+                    src={thumbnail}
+                    alt="Course thumbnail"
+                    fill
+                    className="object-cover rounded-md"
+                  />
+                </div>
+              )}
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="level">Level</Label>
-          <Select
-            value={formData.level}
-            onValueChange={(value: CourseLevel) => setFormData({ ...formData, level: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={CourseLevel.BEGINNER}>Beginner</SelectItem>
-              <SelectItem value={CourseLevel.INTERMEDIATE}>Intermediate</SelectItem>
-              <SelectItem value={CourseLevel.ADVANCED}>Advanced</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <Button type="submit" disabled={pending} className="w-full">
+              {pending ? 'Saving...' : initialData ? 'Update Course' : 'Create Course'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-        <div className="space-y-2">
-          <Label htmlFor="thumbnail">Thumbnail URL</Label>
-          <Input
-            id="thumbnail"
-            value={formData.thumbnail || ''}
-            onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-            placeholder="Optional"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="jsonDescription">JSON Description</Label>
-          <textarea
-            id="jsonDescription"
-            value={formData.jsonDescription}
-            onChange={(e) => setFormData({ ...formData, jsonDescription: e.target.value })}
-            className="w-full p-2 border rounded min-h-[100px]"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="htmlDescription">HTML Description</Label>
-          <textarea
-            id="htmlDescription"
-            value={formData.htmlDescription}
-            onChange={(e) => setFormData({ ...formData, htmlDescription: e.target.value })}
-            className="w-full p-2 border rounded min-h-[100px]"
-            required
-          />
-        </div>
-
-        <Button type="submit" className="w-full">
-          {initialData ? 'Update Course' : 'Create Course'}
-        </Button>
-      </form>
-    </Card>
+      <div className="space-y-4">
+        <h2 className="text-xl md:text-2xl font-bold">Detailed Description</h2>
+        <Editor
+          initialValue={jsonDescription}
+          onChange={(content) => {
+            setJsonDescription(content.json)
+            setHtmlDescription(content.html)
+          }}
+        />
+      </div>
+    </div>
   )
 }

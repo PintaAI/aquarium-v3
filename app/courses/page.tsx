@@ -1,9 +1,6 @@
 import CourseList from "@/components/courses/course-list";
 import { getCourses, Course } from "@/actions/course-actions";
 import { auth } from "@/auth";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-
 export default async function CoursesPage() {
   const session = await auth();
   let courses: Course[] = [];
@@ -17,8 +14,8 @@ export default async function CoursesPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
+    
+     
       <main>
         <CourseList
           initialCourses={courses}
@@ -27,6 +24,6 @@ export default async function CoursesPage() {
           error={error}
         />
       </main>
-    </SidebarProvider>
+    
   );
 }

@@ -33,7 +33,7 @@ export function CourseHeader({
   return (
     <div className="bg-card rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-border">
       {thumbnail && (
-        <div className="relative aspect-video w-full">
+        <div className="relative aspect-video w-full max-h-[130px]">
           <Image
             src={thumbnail}
             alt={title}

@@ -2,7 +2,7 @@ import { getCourse } from "@/actions/course-actions";
 import { notFound } from "next/navigation";
 import { ModuleList } from "@/components/courses/module-list";
 import { CourseHeader } from "@/components/courses/course-header";
-import { CourseBody } from "@/components/courses/course-body";
+import { ContentBody } from "@/components/courses/content-body";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -23,14 +23,15 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
   }
 
   // Transform modules to match the ModuleList component's expected format
-  const formattedModules = course.modules.map(module => ({
+  const formattedModules = course.modules.map((module, index) => ({
     id: module.id.toString(),
     courseId: courseId.toString(),
     title: module.title,
     description: module.description,
     duration: "Duration placeholder",
     isCompleted: false,
-    isLocked: false
+    isLocked: false,
+    order: module.order ?? index // Use existing order or fallback to index
   }));
 
   return (
@@ -54,7 +55,7 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
           />
           
           <div className="mt-6">
-            <CourseBody htmlDescription={course.htmlDescription} />
+            <ContentBody htmlDescription={course.htmlDescription} />
           </div>
         </div>
 

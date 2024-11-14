@@ -2,16 +2,16 @@ import { notFound } from "next/navigation";
 import { ModuleList } from "@/components/courses/module-list";
 import { getModule } from "@/actions/module-actions";
 import { ModuleHeader } from "@/components/courses/module-header";
+import { ContentBody } from "@/components/courses/content-body";
 
 interface ModulePageProps {
-  params: Promise<{
+  params: {
     id: string;     // courseId
     moduleId: string;
-  }>;
+  };
 }
 
-export default async function ModulePage(props: ModulePageProps) {
-  const params = await props.params;
+export default async function ModulePage({ params }: ModulePageProps) {
   const courseId = parseInt(params.id);
   const moduleId = parseInt(params.moduleId);
 
@@ -22,14 +22,15 @@ export default async function ModulePage(props: ModulePageProps) {
   }
 
   // Format modules for the ModuleList component
-  const formattedModules = moduleData.course.modules.map(mod => ({
+  const formattedModules = moduleData.course.modules.map((mod, index) => ({
     id: mod.id.toString(),
     courseId: courseId.toString(),
     title: mod.title,
     description: mod.description,
     duration: "Duration placeholder",
     isCompleted: false,
-    isLocked: false
+    isLocked: false,
+    order: mod.order ?? index // menggunakan order dari data atau index sebagai fallback
   }));
 
   return (
@@ -44,10 +45,8 @@ export default async function ModulePage(props: ModulePageProps) {
             courseAuthor={moduleData.course.author}
           />
           
-          {/* Module Content - Using htmlDescription for fast rendering */}
-          <div className="prose max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: moduleData.htmlDescription }} />
-          </div>
+          {/* Module Content */}
+          <ContentBody htmlDescription={moduleData.htmlDescription} />
         </div>
 
         {/* Sidebar with Module List */}

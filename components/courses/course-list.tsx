@@ -55,7 +55,7 @@ export default function CourseList({ initialCourses, userRole, userId, error }: 
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-8">
+      <div className="bg-card rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-2 border border-border mb-8">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="relative w-full lg:w-96">
             <Input

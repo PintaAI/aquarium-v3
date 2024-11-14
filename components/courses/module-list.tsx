@@ -6,8 +6,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useOptimistic, useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { deleteModule } from "@/actions/module-actions";
-import { reorderModules } from "@/actions/reorder-modules";
+import { deleteModule, reorderModules } from "@/actions/module-actions";
 import { useRouter } from "next/navigation";
 import { CheckCircle, Lock, PlayCircle, Plus, Pencil, Trash, GripVertical } from "lucide-react";
 

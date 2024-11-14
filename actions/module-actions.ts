@@ -131,6 +131,48 @@ export async function deleteModule(moduleId: number, courseId: number) {
   }
 }
 
+export async function reorderModules(courseId: number, moduleIds: number[]) {
+  try {
+    const user = await currentUser()
+    if (!user || user.role !== 'GURU') {
+      throw new Error('Unauthorized')
+    }
+
+    // Verify user owns the course
+    const course = await db.course.findUnique({
+      where: {
+        id: courseId,
+        authorId: user.id
+      }
+    })
+
+    if (!course) {
+      throw new Error('Unauthorized')
+    }
+
+    // Update each module's order based on its position in the moduleIds array
+    await Promise.all(
+      moduleIds.map(async (moduleId, index) => {
+        await db.module.update({
+          where: {
+            id: moduleId,
+            courseId: courseId,
+          },
+          data: {
+            order: index,
+          },
+        });
+      })
+    );
+
+    revalidatePath(`/courses/${courseId}`)
+    return { success: true }
+  } catch (error) {
+    console.error("Error reordering modules:", error)
+    return { success: false }
+  }
+}
+
 export async function getModule(courseId: number, moduleId: number) {
   try {
     // Only select htmlDescription for rendering, not jsonDescription

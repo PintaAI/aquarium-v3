@@ -4,8 +4,6 @@
  */
 export const publicRoutes = [
   "/",
-  "/api/uploadthing",
-  "/api/testimonials",
   "/community",
   "/artikel",
   "/artikel/[id]"
@@ -26,7 +24,7 @@ export const authRoutes = [
 * Awalan untuk rute yang ada di API.
 * @type {string}
 */
-export const apiAuthPrefix = "/api/auth";
+export const apiAuthPrefix = "/api"; // Izinkan semua rute API
 
 /**
 * URL pengalihan default ketika pengguna berhasil masuk log.

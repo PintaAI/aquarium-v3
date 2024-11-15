@@ -15,7 +15,6 @@ import { createModule, updateModule } from '@/actions/module-actions'
 
 interface ModuleFormProps {
   courseId: number;
-  username: string;
   initialData?: {
     id?: number;
     title: string;
@@ -35,7 +34,7 @@ interface ModuleData {
   courseId: number;
 }
 
-export function ModuleForm({ courseId, username, initialData }: ModuleFormProps) {
+export function ModuleForm({ courseId, initialData }: ModuleFormProps) {
   const [title, setTitle] = useState(initialData?.title || '')
   const [description, setDescription] = useState(initialData?.description || '')
   const [order, setOrder] = useState(initialData?.order || 0)
@@ -111,7 +110,7 @@ export function ModuleForm({ courseId, username, initialData }: ModuleFormProps)
             <div className="flex flex-col md:flex-row justify-between text-sm text-muted-foreground gap-4 md:gap-0">
               <div className="flex items-center">
                 <BookOpen className="mr-2" size={16} />
-                <span>{username}</span>
+                <span>Author</span>
               </div>
               <div className="flex items-center">
                 <ListOrdered className="mr-2" size={16} />

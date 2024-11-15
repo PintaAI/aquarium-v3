@@ -5,15 +5,16 @@ import { ModuleHeader } from "@/components/courses/module-header";
 import { ContentBody } from "@/components/courses/content-body";
 
 interface ModulePageProps {
-  params: {
+  params: Promise<{
     id: string;     // courseId
     moduleId: string;
-  };
+  }>;
 }
 
 export default async function ModulePage({ params }: ModulePageProps) {
-  const courseId = parseInt(params.id);
-  const moduleId = parseInt(params.moduleId);
+  const resolvedParams = await params;
+  const courseId = parseInt(resolvedParams.id);
+  const moduleId = parseInt(resolvedParams.moduleId);
 
   const moduleData = await getModule(courseId, moduleId);
 

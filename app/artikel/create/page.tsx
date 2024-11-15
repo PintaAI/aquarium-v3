@@ -3,10 +3,10 @@ import { currentUser } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
 export default async function CreateArticlePage() {
-  const user = await currentUser()
+  const user = await currentUser();
   
   if (!user || user.role !== 'GURU') {
-    redirect('/')
+    redirect('/');
   }
 
   return (
@@ -14,5 +14,5 @@ export default async function CreateArticlePage() {
       <h1 className="text-2xl font-bold mb-6">Create New Article</h1>
       <ArticleForm />
     </div>
-  )
+  );
 }

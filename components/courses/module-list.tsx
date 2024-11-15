@@ -29,7 +29,7 @@ interface ModuleCardProps {
   snapshot: DraggableStateSnapshot;
 }
 
-function ModuleCard({ module, index, isAuthor, provided, snapshot }: ModuleCardProps) {
+export function ModuleCard({ module, index, isAuthor, provided, snapshot }: ModuleCardProps) {
   const router = useRouter();
   const { toast } = useToast();
   const {

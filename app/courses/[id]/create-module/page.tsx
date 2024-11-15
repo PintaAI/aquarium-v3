@@ -11,11 +11,11 @@ interface CreateModulePageProps {
 
 export default async function CreateModulePage(props: CreateModulePageProps) {
   const params = await props.params;
-  const user = await currentUser()
-  const courseId = parseInt(params.id)
+  const user = await currentUser();
+  const courseId = parseInt(params.id);
 
   if (!user || user.role !== 'GURU') {
-    redirect('/auth/login')
+    redirect('/auth/login');
   }
 
   // Verify user owns the course
@@ -24,10 +24,10 @@ export default async function CreateModulePage(props: CreateModulePageProps) {
       id: courseId,
       authorId: user.id
     }
-  })
+  });
 
   if (!course) {
-    redirect('/courses')
+    redirect('/courses');
   }
 
   return (
@@ -35,5 +35,5 @@ export default async function CreateModulePage(props: CreateModulePageProps) {
       <h1 className="text-2xl font-bold mb-6">Create New Module</h1>
       <ModuleForm courseId={courseId} />
     </div>
-  )
+  );
 }

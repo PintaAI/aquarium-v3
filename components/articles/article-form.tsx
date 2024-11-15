@@ -14,7 +14,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { addArticle, updateArticle } from '@/actions/article-actions'
 
 interface ArticleFormProps {
-  username: string;
   initialData?: {
     id?: number;
     title: string;
@@ -31,7 +30,7 @@ interface ArticleData {
   htmlDescription: string;
 }
 
-export function ArticleForm({ username, initialData }: ArticleFormProps) {
+export function ArticleForm({ initialData }: ArticleFormProps) {
   const [title, setTitle] = useState(initialData?.title || '')
   const [description, setDescription] = useState(initialData?.description || '')
   const [jsonDescription, setJsonDescription] = useState<JSONContent>(
@@ -103,7 +102,7 @@ export function ArticleForm({ username, initialData }: ArticleFormProps) {
             <div className="flex flex-col md:flex-row justify-between text-sm text-muted-foreground gap-4 md:gap-0">
               <div className="flex items-center">
                 <Pencil className="mr-2" size={16} />
-                <span>{username}</span>
+                <span>Author</span>
               </div>
               <div className="flex items-center">
                 <Clock className="mr-2" size={16} />

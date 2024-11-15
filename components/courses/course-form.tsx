@@ -18,7 +18,6 @@ import { addCourse, updateCourse } from '@/actions/course-actions'
 import { uploadImage } from '@/actions/upload-image'
 
 interface CourseFormProps {
-  username: string;
   initialData?: {
     id?: number;
     title: string;
@@ -39,7 +38,7 @@ interface CourseData {
   thumbnail: string | null;
 }
 
-export function CourseForm({ username, initialData }: CourseFormProps) {
+export function CourseForm({ initialData }: CourseFormProps) {
   const [title, setTitle] = useState(initialData?.title || '')
   const [description, setDescription] = useState(initialData?.description || '')
   const [level, setLevel] = useState<CourseLevel>(initialData?.level || CourseLevel.BEGINNER)
@@ -134,7 +133,7 @@ export function CourseForm({ username, initialData }: CourseFormProps) {
             <div className="flex flex-col md:flex-row justify-between text-sm text-muted-foreground gap-4 md:gap-0">
               <div className="flex items-center">
                 <User className="mr-2" size={16} />
-                <span>{username}</span>
+                <span>Author</span>
               </div>
               <div className="flex items-center">
                 <BarChart className="mr-2" size={16} />

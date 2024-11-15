@@ -1,15 +1,9 @@
-import Hero from "./landing/hero"
-import Fitur from "./landing/fitur"
-import Testimoni from "./landing/testimoni"
-import CTA from "./landing/cta"
+import Slideshow from "../components/landing/slideshow"
 
 export default function HomePage() {
   return (
     <main>
-      <Hero />
-      <Fitur />
-      <Testimoni />
-      <CTA />
+      <Slideshow />
     </main>
   )
 }

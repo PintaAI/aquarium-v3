@@ -86,3 +86,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .dark .group:hover .bg-card {
+    @apply shadow-white;
+  }
+}

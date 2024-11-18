@@ -69,7 +69,6 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <RegisterSW />
-            <Navbar />
             {children}
             <InstallPrompt />
           </ThemeProvider>

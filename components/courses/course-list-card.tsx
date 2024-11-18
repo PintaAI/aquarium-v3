@@ -28,7 +28,7 @@ const truncateText = (text: string, maxLength: number = 100) => {
 export function CourseListCard({ course, isAuthor, onDelete }: CourseListCardProps) {
   return (
     <Link href={`/courses/${course.id}`}>
-      <Card className="group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <Card className="group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:-translate-y-1">
         <div className="relative h-32 w-full overflow-hidden">
           <Image
             src={course.thumbnail || '/images/course.jpg'}
@@ -38,7 +38,7 @@ export function CourseListCard({ course, isAuthor, onDelete }: CourseListCardPro
             priority
           />
           {isAuthor && (
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <Button
                 variant="destructive"
                 size="sm"
@@ -52,7 +52,7 @@ export function CourseListCard({ course, isAuthor, onDelete }: CourseListCardPro
               </Button>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="absolute top-2 left-2">
             {course.author.image ? (
               <Image

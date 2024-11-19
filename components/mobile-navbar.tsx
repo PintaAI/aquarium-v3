@@ -47,6 +47,7 @@ export function MobileNavbar() {
           </Popover>
         )}
       </div>
+      <div className="pb-7"></div>
     </nav>
   );
 }

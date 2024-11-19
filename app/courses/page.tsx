@@ -23,6 +23,7 @@ export default async function CoursesPage() {
           userId={session?.user?.id}
           error={error}
         />
+        <div className="pb-16"></div>
       </main>
     
   );

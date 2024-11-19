@@ -363,3 +363,50 @@ export async function getPreviousModule(courseId: number, currentModuleId: numbe
     throw error;
   }
 }
+
+export async function completeModule(courseId: number, moduleId: number) {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      throw new Error('Unauthorized')
+    }
+
+    // Check if the completion record already exists
+    const existingCompletion = await db.userModuleCompletion.findUnique({
+      where: {
+        userId_moduleId: {
+          userId: user.id,
+          moduleId: moduleId
+        }
+      }
+    });
+
+    if (existingCompletion) {
+      // Update the existing record
+      await db.userModuleCompletion.update({
+        where: {
+          id: existingCompletion.id
+        },
+        data: {
+          isCompleted: true
+        }
+      });
+    } else {
+      // Create a new completion record
+      await db.userModuleCompletion.create({
+        data: {
+          userId: user.id,
+          moduleId: moduleId,
+          isCompleted: true
+        }
+      });
+    }
+
+    revalidatePath(`/courses/${courseId}`)
+    revalidatePath(`/courses/${courseId}/modules/${moduleId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to complete module:', error)
+    return { success: false, error: 'Failed to complete module' }
+  }
+}

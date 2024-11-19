@@ -20,7 +20,7 @@ export default function Navbar() {
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="fixed top-0 z-50 w-full h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <nav className="hidden md:block fixed top-0 z-50 w-full h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="max-w-screen-xl mx-auto px-4 flex h-full items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">

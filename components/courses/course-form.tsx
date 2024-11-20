@@ -36,6 +36,8 @@ interface CourseData {
   jsonDescription: string;
   htmlDescription: string;
   thumbnail: string | null;
+  isCompleted: boolean;
+  isLocked: boolean;
 }
 
 export function CourseForm({ initialData }: CourseFormProps) {
@@ -86,6 +88,8 @@ export function CourseForm({ initialData }: CourseFormProps) {
         jsonDescription: JSON.stringify(jsonDescription),
         htmlDescription,
         thumbnail,
+        isCompleted: false,
+        isLocked: false,
       }
 
       let result

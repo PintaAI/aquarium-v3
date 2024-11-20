@@ -2,6 +2,8 @@
 
 import { ReactNode } from "react";
 import { MobileNavbar } from "../../components/mobile-navbar";
+import { SidebarProvider, SidebarTrigger } from "../../components/ui/sidebar";
+import { AppSidebar } from "../../components/app-sidebar";
 
 interface CoursesLayoutProps {
   children: ReactNode;
@@ -9,9 +11,12 @@ interface CoursesLayoutProps {
 
 export default function CoursesLayout({ children }: CoursesLayoutProps) {
   return (
-    <div>
-      <MobileNavbar />
-      <main>{children}</main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <main>
+        <SidebarTrigger />
+        {children}
+      </main>
+    </SidebarProvider>
   );
 }

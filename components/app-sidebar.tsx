@@ -9,17 +9,17 @@ import {
   NewspaperIcon,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "./nav-main"
+import { TeamSwitcher } from "./team-switcher"
+import { ThemeToggle } from "./theme-toggle"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { UseCurrentUser } from "@/hooks/use-current-user"
+} from "./ui/sidebar"
+import { UseCurrentUser } from "../hooks/use-current-user"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const userData = UseCurrentUser()
@@ -62,20 +62,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/artikel",
         icon: NewspaperIcon,
       },
- 
     ],
   }
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
+      <SidebarFooter className="flex justify-center p-2">
+        <ThemeToggle />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

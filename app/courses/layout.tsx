@@ -13,9 +13,10 @@ export default function CoursesLayout({ children }: CoursesLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
-        <SidebarTrigger />
-        {children}
+
+      <main className="max-w-7xl mx-auto">
+                {children}
+                <MobileNavbar />
       </main>
     </SidebarProvider>
   );

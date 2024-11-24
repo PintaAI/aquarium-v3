@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Separator } from "./ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import AuthCard from "./form/AuthCard";
-import { MobileNavbar } from "./mobile-navbar";
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -101,7 +100,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Navigation */}
-      <MobileNavbar />
+    
     </>
   );
 }

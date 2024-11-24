@@ -1,19 +1,44 @@
-import EpsTopikLayout from "./components/layout";
+
 
 export default function EpsTopikGame() {
   return (
-    <EpsTopikLayout>
-      <div className="p-6">
-        <p className="text-gray-600 mb-4">
-          Latihan EPS-TOPIK akan segera hadir! Fitur yang akan tersedia:
-        </p>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Bank soal lengkap</li>
-          <li>Simulasi ujian</li>
-          <li>Pembahasan detail</li>
-          <li>Tracking progress</li>
-        </ul>
+    
+      <div className="flex items-center justify-center min-h-[80vh] p-6">
+        <div className="bg-card rounded-xl shadow-lg p-8 max-w-md w-full border">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-primary">
+              Segera Hadir!
+            </h1>
+            <div className="mt-2 h-1 w-20 bg-primary mx-auto rounded-full"></div>
+          </div>
+          
+          <p className="text-muted-foreground mb-6 text-center text-lg">
+            Latihan EPS-TOPIK akan segera hadir dengan fitur-fitur menarik!
+          </p>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+              <div className="text-primary">📚</div>
+              <p className="text-secondary-foreground">Bank soal lengkap</p>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+              <div className="text-primary">⏱️</div>
+              <p className="text-secondary-foreground">Simulasi ujian</p>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+              <div className="text-primary">📝</div>
+              <p className="text-secondary-foreground">Pembahasan detail</p>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+              <div className="text-primary">📈</div>
+              <p className="text-secondary-foreground">Tracking progress</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </EpsTopikLayout>
+    
   );
 }

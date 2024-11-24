@@ -34,7 +34,7 @@ export default function PronounceLayout({ children }: LayoutProps) {
           </a>
         </nav>
 
-        <main className="bg-white rounded-lg shadow">
+        <main className=" rounded-lg shadow">
           {children}
         </main>
       </div>

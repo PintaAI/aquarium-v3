@@ -36,6 +36,7 @@ model User {
   authoredArticles Article[] @relation("ArticleAuthor")
   accounts        Account[]
   moduleCompletions UserModuleCompletion[]
+  vocabularyCollections VocabularyCollection[] // Relasi baru ke kumpulan kosakata
 }
 
 enum UserRoles {
@@ -134,4 +135,29 @@ model UserModuleCompletion {
   updatedAt   DateTime @updatedAt
 
   @@unique([userId, moduleId])
+}
+
+// Model untuk kumpulan kosakata user
+model VocabularyCollection {
+  id          Int      @id @default(autoincrement())
+  title       String   // Judul kumpulan (misal: "Kosakata Makanan")
+  description String?  // Deskripsi kumpulan (opsional)
+  isPublic    Boolean  @default(false) // Menandai apakah koleksi ini publik
+  user        User?    @relation(fields: [userId], references: [id]) // User menjadi optional
+  userId      String?  // userId menjadi optional untuk koleksi publik
+  items       VocabularyItem[] // Relasi ke item-item kosakata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Model untuk item kosakata dalam kumpulan
+model VocabularyItem {
+  id          Int                  @id @default(autoincrement())
+  korean      String               // Kata dalam bahasa Korea
+  indonesian  String               // Arti dalam bahasa Indonesia
+  category    String               // Kategori kata (bisa diinput bebas)
+  collection  VocabularyCollection @relation(fields: [collectionId], references: [id])
+  collectionId Int
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 }

@@ -49,7 +49,7 @@ export function InstallPrompt() {
     <div className="fixed bottom-4 left-4 right-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg z-50 md:left-auto md:right-4 md:w-96">
       <h3 className="text-lg font-semibold mb-2">Install Pejuangkorea App</h3>
       <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-        Install our app for a better experience and quick access to your courses!
+        Install aplikasi Pejuangkorea pada device-mu Biar semakin mudah dalam Belajar bahasa korea
       </p>
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={() => setShowPrompt(false)}>

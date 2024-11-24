@@ -1,19 +1,40 @@
-import AdvancedTranslateLayout from "./components/layout";
-
 export default function AdvancedTranslateGame() {
   return (
-    <AdvancedTranslateLayout>
-      <div className="p-6">
-        <p className="text-gray-600 mb-4">
-          Game terjemahan tingkat lanjut akan segera hadir! Fitur yang akan tersedia:
+    <div className="flex items-center justify-center min-h-[80vh] p-6">
+      <div className="bg-card rounded-xl shadow-lg p-8 max-w-md w-full border">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-primary">
+            Segera Hadir!
+          </h1>
+          <div className="mt-2 h-1 w-20 bg-primary mx-auto rounded-full"></div>
+        </div>
+        
+        <p className="text-muted-foreground mb-6 text-center text-lg">
+          Game terjemahan tingkat lanjut akan segera hadir dengan fitur-fitur menarik!
         </p>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Terjemahan kalimat kompleks</li>
-          <li>Penjelasan grammar</li>
-          <li>Konteks budaya</li>
-          <li>Latihan bertingkat</li>
-        </ul>
+
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+            <div className="text-primary">📝</div>
+            <p className="text-secondary-foreground">Terjemahan kalimat kompleks</p>
+          </div>
+          
+          <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+            <div className="text-primary">📚</div>
+            <p className="text-secondary-foreground">Penjelasan grammar</p>
+          </div>
+          
+          <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+            <div className="text-primary">🎎</div>
+            <p className="text-secondary-foreground">Konteks budaya</p>
+          </div>
+          
+          <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+            <div className="text-primary">📈</div>
+            <p className="text-secondary-foreground">Latihan bertingkat</p>
+          </div>
+        </div>
       </div>
-    </AdvancedTranslateLayout>
+    </div>
   );
 }

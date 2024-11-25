@@ -22,6 +22,48 @@ export interface Course {
   }
 }
 
+// Fungsi baru untuk mendapatkan kursus yang diikuti user
+export async function getJoinedCourses() {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return [];
+    }
+
+    const courses = await db.course.findMany({
+      where: {
+        members: {
+          some: {
+            id: user.id
+          }
+        }
+      },
+      select: {
+        id: true,
+        title: true,
+        modules: {
+          select: {
+            id: true,
+            title: true,
+            order: true
+          },
+          orderBy: {
+            order: 'asc'
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+
+    return courses;
+  } catch (error) {
+    console.error("Failed to fetch joined courses:", error);
+    return [];
+  }
+}
+
 export async function addCourse(data: z.infer<typeof addCourseSchema>) {
   try {
     // Validate input data

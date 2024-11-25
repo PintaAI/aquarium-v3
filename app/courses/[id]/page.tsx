@@ -6,6 +6,7 @@ import { ContentBody } from "@/components/courses/content-body";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { currentUser } from "@/lib/auth";
 
 interface CourseIdPageProps {
   params: Promise<{
@@ -17,10 +18,14 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
   const params = await props.params;
   const courseId = parseInt(params.id);
   const course = await getCourse(courseId);
+  const user = await currentUser();
 
   if (!course) {
     notFound();
   }
+
+  // Cek apakah user sudah bergabung dengan kursus
+  const isJoined = user ? course.members.some(member => member.id === user.id) : false;
 
   // Transform modules to match the ModuleList component's expected format
   const formattedModules = course.modules.map((module, index) => ({
@@ -52,6 +57,7 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
             author={course.author}
             level={course.level}
             moduleCount={course.modules.length}
+            isJoined={isJoined}
           />
           
           <div className="mt-6">

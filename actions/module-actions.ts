@@ -27,6 +27,80 @@ const moduleSchema = z.object({
   courseId: z.number()
 })
 
+// Fungsi baru untuk mendapatkan modul pertama
+export async function getFirstModule(courseId: number) {
+  try {
+    const firstModule = await db.module.findFirst({
+      where: {
+        courseId: courseId
+      },
+      orderBy: {
+        order: 'asc'
+      },
+      select: {
+        id: true
+      }
+    });
+
+    return firstModule;
+  } catch (error) {
+    console.error('Failed to get first module:', error)
+    return null;
+  }
+}
+
+// Fungsi untuk join course
+export async function joinCourse(courseId: number) {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      throw new Error('Unauthorized')
+    }
+
+    // Cek apakah user sudah join course
+    const course = await db.course.findUnique({
+      where: {
+        id: courseId,
+      },
+      include: {
+        members: {
+          where: {
+            id: user.id
+          }
+        }
+      }
+    })
+
+    if (!course) {
+      throw new Error('Course not found')
+    }
+
+    if (course.members.length > 0) {
+      throw new Error('Already joined this course')
+    }
+
+    // Join course
+    await db.course.update({
+      where: {
+        id: courseId
+      },
+      data: {
+        members: {
+          connect: {
+            id: user.id
+          }
+        }
+      }
+    })
+
+    revalidatePath(`/courses/${courseId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to join course:', error)
+    return { success: false, error: 'Failed to join course' }
+  }
+}
+
 export async function createModule(data: z.infer<typeof moduleSchema>) {
   try {
     const user = await currentUser()

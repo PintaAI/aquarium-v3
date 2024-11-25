@@ -8,6 +8,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { RegisterSW } from "@/components/pwa/register-sw-component";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -68,6 +69,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <Toaster position="top-center" />
             <RegisterSW />
             {children}
             <InstallPrompt />

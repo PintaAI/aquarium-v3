@@ -7,6 +7,7 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
+  Shield,
 } from "lucide-react"
 
 import { UseCurrentUser } from "@/hooks/use-current-user"
@@ -31,6 +32,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { signOut } from "next-auth/react"
+import Link from "next/link"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -102,6 +104,19 @@ export function NavUser() {
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            {user.role === "ADMIN" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/control-panel-x8472">
+                      <Shield className="mr-2" />
+                      Panel Admin
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()}>
               <LogOut />

@@ -43,6 +43,7 @@ enum UserRoles {
   USER
   GURU
   MURID
+  ADMIN
 }
 
 enum UserPlan {

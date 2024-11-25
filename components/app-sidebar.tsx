@@ -29,15 +29,15 @@ const data = {
       isActive: false,
     },
     {
-      title: "Artikel",
-      url: "/artikel",
-      icon: Newspaper,
-      isActive: false,
-    },
-    {
       title: "Game",
       url: "/game",
       icon: GamepadIcon,
+      isActive: false,
+    },
+    {
+      title: "Artikel",
+      url: "/artikel",
+      icon: Newspaper,
       isActive: false,
     },
     {
@@ -76,10 +76,20 @@ const data = {
   ]
 }
 
+interface Course {
+  id: number;
+  title: string;
+  modules: {
+    id: number;
+    order: number;
+    title: string;
+  }[];
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { setOpen } = useSidebar()
-  const [joinedCourses, setJoinedCourses] = React.useState<any[]>([])
+  const [joinedCourses, setJoinedCourses] = React.useState<Course[]>([])
 
   // Fetch joined courses when component mounts
   React.useEffect(() => {

@@ -14,7 +14,7 @@ export function AudioController({ audioPath, autoPlay = true, loop = true }: Aud
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.9; // Set default volume to 12%
+      audioRef.current.volume = 0.12; // Set default volume to 12%
     }
   }, []);
 

@@ -5,12 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
+import { VirtualKeyboard } from "@/components/ui/virtual-keyboard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Difficulty } from '../hooks/use-falling-word-game';
 import { PresetListType, PRESET_LISTS } from '../data/word-lists';
 import SpaceBackground from './space-background';
-import { VirtualKeyboard } from '@/components/ui/virtual-keyboard';
 
 interface Word {
   id: number;

@@ -3,22 +3,28 @@ import { currentUser } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import VocabularyForm from "@/app/vocabulary/[id]/vocabulary-form"
-import VocabularyActions from "@/app/vocabulary/[id]/vocabulary-actions"
+import VocabularyForm from "./vocabulary-form"
+import VocabularyActions from "./vocabulary-actions"
 
-export default async function VocabularyDetailPage({
-  params
-}: {
-  params: { id: string }
-}) {
+export async function generateStaticParams() {
+  // Ini akan di-generate saat build time
+  return []
+}
+
+export default async function VocabularyDetailPage(
+  props: {
+    params: Promise<{ id: string }>
+  }
+) {
+  const params = await props.params;
   const user = await currentUser()
-  
+
   if (!user) {
     redirect("/auth/login")
   }
 
   const collectionId = parseInt(params.id)
-  
+
   // Ambil detail collection
   const collection = await db.vocabularyCollection.findUnique({
     where: { id: collectionId }

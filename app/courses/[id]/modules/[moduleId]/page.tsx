@@ -5,7 +5,7 @@ import { ModuleList } from "@/components/courses/module-list";
 import { getModule, completeModule } from "@/actions/module-actions";
 import { ModuleHeader } from "@/components/courses/module-header";
 import { ContentBody } from "@/components/courses/content-body";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 
 interface ModulePageProps {
   params: Promise<{
@@ -37,7 +37,8 @@ interface ModuleData {
   };
 }
 
-export default function ModulePage({ params }: ModulePageProps) {
+export default function ModulePage(props: ModulePageProps) {
+  const params = use(props.params);
   const [resolvedParams, setResolvedParams] = useState<{ id: string; moduleId: string } | null>(null);
   const [moduleData, setModuleData] = useState<ModuleData | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);

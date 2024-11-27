@@ -123,8 +123,8 @@ export function FallingWordDisplay({
   }, [onSetGameAreaHeight]);
 
   return (
-    <div className="h-[calc(100vh-3rem)] flex max-w-4xl mx-auto flex-col">
-      <Card className="flex-1 p-2 sm:p-4 relative overflow-hidden">
+    <div className="h-[calc(100vh-3rem)] flex w-full">
+      <Card className="flex-1 p-2 sm:p-4 relative overflow-hidden m-0">
         <div className="flex-shrink-0 p-1 relative z-10">
           <div className="flex justify-between items-center">
             <h2 className="text-sm md:text-2xl font-bold">Tangkap Kosa Kata</h2>
@@ -141,6 +141,7 @@ export function FallingWordDisplay({
             className="game-area relative flex-1 border-2 rounded-lg overflow-hidden"
             style={{ 
               borderColor: 'var(--border)',
+              width: '100%'
             }}
           >
             <SpaceBackground />

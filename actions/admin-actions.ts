@@ -51,6 +51,21 @@ export async function setUserRole(userId: string, role: "USER" | "GURU" | "MURID
   return user
 }
 
+export async function setUserPlan(userId: string, plan: "FREE" | "PREMIUM") {
+  const session = await auth()
+  
+  if (!session || session.user.role !== "ADMIN") {
+    throw new Error("Unauthorized")
+  }
+
+  const user = await db.user.update({
+    where: { id: userId },
+    data: { plan }
+  })
+
+  return user
+}
+
 export async function getUserList() {
   const session = await auth()
   
@@ -65,6 +80,7 @@ export async function getUserList() {
       email: true,
       role: true,
       plan: true,
+      image: true, // Menambahkan image ke select
       createdAt: true
     },
     orderBy: {

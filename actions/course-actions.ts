@@ -22,7 +22,7 @@ export interface Course {
   }
 }
 
-// Fungsi baru untuk mendapatkan kursus yang diikuti user
+// Fungsi untuk mendapatkan kursus yang diikuti user
 export async function getJoinedCourses() {
   try {
     const user = await currentUser();
@@ -41,6 +41,8 @@ export async function getJoinedCourses() {
       select: {
         id: true,
         title: true,
+        description: true,
+        thumbnail: true,
         modules: {
           select: {
             id: true,

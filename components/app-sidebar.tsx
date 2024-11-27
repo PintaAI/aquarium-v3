@@ -4,9 +4,13 @@ import * as React from "react"
 import { Book, GamepadIcon, Newspaper, User, BookOpen, Command } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { getJoinedCourses } from "@/actions/course-actions"
+import Image from "next/image"
 
 import { NavUser } from "./nav-user"
+import { ThemeToggle } from "./theme-toggle"
+import { CourseSidebarContent } from "./sidebar/course-sidebar-content"
+import { GameSidebarContent } from "./sidebar/game-sidebar-content"
+import { ArticleSidebarContent } from "./sidebar/article-sidebar-content"
 import {
   Sidebar,
   SidebarContent,
@@ -47,106 +51,52 @@ const data = {
       isActive: false,
     },
   ],
-  gameList: [
-    {
-      name: "Advanced Translate",
-      description: "Latihan menerjemahkan kalimat bahasa Korea",
-      path: "/game/advanced-translate"
-    },
-    {
-      name: "EPS-TOPIK", 
-      description: "Latihan soal EPS-TOPIK",
-      path: "/game/eps-topik"
-    },
-    {
-      name: "Hangeul",
-      description: "Belajar menulis huruf Korea",
-      path: "/game/hangeul"
-    },
-    {
-      name: "Pronounce",
-      description: "Latihan pengucapan bahasa Korea",
-      path: "/game/pronounce"
-    },
-    {
-      name: "Toro-toro",
-      description: "Game tebak kata bahasa Korea",
-      path: "/game/toro-toro"
-    }
-  ]
-}
-
-interface Course {
-  id: number;
-  title: string;
-  modules: {
-    id: number;
-    order: number;
-    title: string;
-  }[];
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const { setOpen } = useSidebar()
-  const [joinedCourses, setJoinedCourses] = React.useState<Course[]>([])
+  const { setOpen, open } = useSidebar()
+  const [initialPathLoaded, setInitialPathLoaded] = React.useState(false)
 
-  // Fetch joined courses when component mounts
+  // Set sidebar closed by default for game and artikel routes only on initial load
   React.useEffect(() => {
-    const fetchJoinedCourses = async () => {
-      const courses = await getJoinedCourses()
-      setJoinedCourses(courses)
+    if (!initialPathLoaded && (pathname.startsWith('/game') || pathname.startsWith('/artikel'))) {
+      setOpen(false)
+      setInitialPathLoaded(true)
     }
-    fetchJoinedCourses()
-  }, [])
+  }, [pathname, setOpen, initialPathLoaded])
+
+  // Reset initialPathLoaded when route changes to non-game/artikel
+  React.useEffect(() => {
+    if (!pathname.startsWith('/game') && !pathname.startsWith('/artikel')) {
+      setInitialPathLoaded(false)
+    }
+  }, [pathname])
 
   // Menentukan item aktif berdasarkan pathname
   const activeNavItem = React.useMemo(() => {
     return data.navMain.find(item => pathname.startsWith(item.url)) || data.navMain[0]
   }, [pathname])
 
+  const handleIconClick = (url: string) => {
+    // Toggle sidebar jika mengklik icon yang aktif
+    if (pathname.startsWith(url)) {
+      setOpen(!open)
+    }
+  }
+
   // Menentukan konten sidebar berdasarkan pathname
   const renderSidebarContent = () => {
     if (pathname.startsWith('/game')) {
-      return data.gameList.map((game) => (
-        <Link
-          href={game.path}
-          key={game.name}
-          className="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <div className="flex w-full items-center gap-2">
-            <span className="font-medium">{game.name}</span>
-          </div>
-          <span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-            {game.description}
-          </span>
-        </Link>
-      ))
+      return <GameSidebarContent />
     }
 
     if (pathname.startsWith('/courses')) {
-      if (joinedCourses.length === 0) {
-        return (
-          <div className="p-4 text-sm text-muted-foreground">
-            Anda belum bergabung dengan kursus apapun
-          </div>
-        )
-      }
+      return <CourseSidebarContent />
+    }
 
-      return joinedCourses.map((course) => (
-        <Link
-          href={`/courses/${course.id}/modules/${course.modules[0]?.id || 1}`}
-          key={course.id}
-          className="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <div className="flex w-full items-center gap-2">
-            <span className="font-medium">{course.title}</span>
-          </div>
-          <span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-            {course.modules.length} modul
-          </span>
-        </Link>
-      ))
+    if (pathname.startsWith('/artikel')) {
+      return <ArticleSidebarContent />
     }
 
     // Konten default ketika tidak ada konten spesifik
@@ -172,8 +122,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
                 <Link href="/">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Command className="size-4" />
+                  <div className="flex aspect-square size-8 items-center justify-center">
+                    <Image 
+                      src="/images/circle-logo.png"
+                      alt="Aquarium Logo"
+                      width={32}
+                      height={32}
+                      className="size-8"
+                    />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">Aquarium</span>
@@ -196,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         hidden: false,
                       }}
                       onClick={() => {
-                        setOpen(true)
+                        handleIconClick(item.url)
                       }}
                       isActive={pathname.startsWith(item.url)}
                       className="px-2.5 md:px-2"
@@ -219,11 +175,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </Sidebar>
 
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">
-        <SidebarHeader className="gap-3.5 border-b p-4">
-          <div className="flex w-full items-center justify-between">
-            <div className="text-base font-medium text-foreground">
-              {activeNavItem.title}
+        <SidebarHeader className="border-b">
+          <div className="flex items-center justify-between px-2 py-0">
+            <div className="flex items-center gap-3">
+              {activeNavItem && (
+                <>
+                  <activeNavItem.icon className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-lg font-medium">{activeNavItem.title}</span>
+                </>
+              )}
             </div>
+            <ThemeToggle />
           </div>
         </SidebarHeader>
         <SidebarContent>

@@ -8,14 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { 
@@ -33,12 +25,13 @@ import {
   BookOpen, 
   FileText, 
   Server,
-  MoreVertical,
   Download,
   Filter,
-  RefreshCcw
+  RefreshCcw,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { UserActions } from "./components/user-actions"
+import { CourseList } from "./components/course-list"
 
 export default async function SuperAdminPage() {
   const session = await auth()
@@ -179,6 +172,9 @@ export default async function SuperAdminPage() {
                         <TableCell className="font-medium pl-6">
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-8 w-8">
+                              {user.image ? (
+                                <AvatarImage src={user.image} alt={user.name || ""} />
+                              ) : null}
                               <AvatarFallback>{user.name?.[0] ?? "?"}</AvatarFallback>
                             </Avatar>
                             <div>
@@ -205,22 +201,7 @@ export default async function SuperAdminPage() {
                           {new Date(user.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>View profile</DropdownMenuItem>
-                              <DropdownMenuItem>Send email</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
-                                Suspend user
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <UserActions user={user} />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -242,14 +223,9 @@ export default async function SuperAdminPage() {
           </TabsContent>
 
           <TabsContent value="content">
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Management</CardTitle>
-                <CardDescription>
-                  Content management interface coming soon.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="space-y-6">
+              <CourseList />
+            </div>
           </TabsContent>
 
           <TabsContent value="settings">

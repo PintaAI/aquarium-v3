@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import "./prosemirror.css"
-import Navbar from "../components/navbar";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
@@ -72,6 +71,7 @@ export default async function RootLayout({
             <Toaster position="top-center" />
             <RegisterSW />
             {children}
+          
             <InstallPrompt />
           </ThemeProvider>
         </SessionProvider>

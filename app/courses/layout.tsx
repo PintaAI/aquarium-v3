@@ -66,26 +66,11 @@ export default function Layout({ children }: LayoutProps) {
       }
     >
       <AppSidebar />
-      <SidebarInset>
-        <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/courses">Kursus</BreadcrumbLink>
-              </BreadcrumbItem>
-              {segments.length > 0 && (
-                <BreadcrumbSeparator className="hidden md:block" />
-              )}
-              {breadcrumbItems}
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
+
         <div className="flex flex-1 flex-col gap-4 p-4">
           {children}
         </div>
-      </SidebarInset>
+      
     </SidebarProvider>
   );
 }

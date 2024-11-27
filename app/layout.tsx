@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { RegisterSW } from "@/components/pwa/register-sw-component";
 import { Toaster } from "react-hot-toast";
+import { MobileNavbar } from "@/components/mobile-navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -71,7 +72,7 @@ export default async function RootLayout({
             <Toaster position="top-center" />
             <RegisterSW />
             {children}
-          
+            <MobileNavbar />
             <InstallPrompt />
           </ThemeProvider>
         </SessionProvider>

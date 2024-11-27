@@ -6,21 +6,16 @@ import { Home, BookOpen, GamepadIcon, NewspaperIcon, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import AuthCard from "./form/AuthCard";
-import { useSidebar } from "./ui/sidebar";
 
 export function MobileNavbar() {
   const { data: session } = useSession();
-  const { toggleSidebar } = useSidebar();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background z-50">
       <div className="grid grid-cols-5 gap-1 p-2">
-        <button 
-          onClick={toggleSidebar}
-          className="flex flex-col items-center justify-center p-2 text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/" className="flex flex-col items-center justify-center p-2 text-foreground/60 hover:text-foreground">
           <Home className="h-6 w-6" />
-        </button>
+        </Link>
         <Link href="/courses" className="flex flex-col items-center justify-center p-2 text-foreground/60 hover:text-foreground">
           <BookOpen className="h-6 w-6" />
         </Link>

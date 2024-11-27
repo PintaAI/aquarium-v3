@@ -27,7 +27,7 @@ import {
 const data = {
   navMain: [
     {
-      title: "Kursus",
+      title: "Kursus mu",
       url: "/courses",
       icon: Book,
       isActive: false,

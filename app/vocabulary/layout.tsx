@@ -1,20 +1,12 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useSelectedLayoutSegments } from "next/navigation";
 import { AppSidebar } from "../../components/app-sidebar";
-import {
-  SidebarProvider,
-} from "../../components/ui/sidebar";
+import { SidebarProvider } from "../../components/ui/sidebar";
 
 interface LayoutProps {
   children: ReactNode;
 }
-
-export const segmentLabels: Record<string, string> = {
-  'vocabulary': 'Kosakata',
-  'create': 'Buat Kumpulan',
-};
 
 export default function Layout({ children }: LayoutProps) {
   return (

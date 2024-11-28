@@ -15,7 +15,7 @@ import {
 
 export default async function VocabularyDetailPage(
   props: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
   }
 ) {
   const user = await currentUser();

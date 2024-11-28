@@ -1,104 +1,151 @@
-import { getVocabularyItems } from "@/actions/vocabulary-actions"
-import { currentUser } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { redirect } from "next/navigation"
-import Link from "next/link"
-import VocabularyForm from "./vocabulary-form"
-import VocabularyActions from "./vocabulary-actions"
-
-export async function generateStaticParams() {
-  // Ini akan di-generate saat build time
-  return []
-}
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getVocabularyCollection } from "@/actions/vocabulary-actions";
+import { currentUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import {
+  BookOpenIcon,
+  UserIcon,
+  LockIcon,
+  UnlockIcon,
+  PencilIcon,
+} from "lucide-react";
 
 export default async function VocabularyDetailPage(
   props: {
-    params: Promise<{ id: string }>
+    params: { id: string };
   }
 ) {
-  const params = await props.params;
-  const user = await currentUser()
+  const user = await currentUser();
 
   if (!user) {
-    redirect("/auth/login")
+    redirect("/auth/login");
   }
 
-  const collectionId = parseInt(params.id)
+  // Pastikan params.id sudah di-await
+  const params = await props.params;
+  const collectionId = parseInt(params.id);
 
-  // Ambil detail collection
-  const collection = await db.vocabularyCollection.findUnique({
-    where: { id: collectionId }
-  })
+  // Ambil detail collection menggunakan server action
+  const { success: collectionSuccess, data: collection, error: collectionError } =
+    await getVocabularyCollection(collectionId);
 
-  if (!collection) {
-    redirect("/vocabulary")
+  if (!collectionSuccess || !collection) {
+    redirect("/vocabulary");
   }
 
   // Verifikasi kepemilikan
-  if (collection.userId !== user.id) {
-    redirect("/vocabulary")
+  if (collection.userId !== user.id && !collection.isPublic) {
+    redirect("/vocabulary");
   }
 
-  // Ambil semua item dalam collection
-  const { success, data: items, error } = await getVocabularyItems(collectionId)
-
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          href="/vocabulary"
-          className="text-gray-500 hover:text-gray-700"
-        >
-          ← Kembali
-        </Link>
-        <h1 className="text-2xl font-bold">{collection.title}</h1>
-      </div>
-
-      {collection.description && (
-        <p className="text-gray-600 mb-8">{collection.description}</p>
-      )}
-
-      {/* Form untuk menambah kosakata baru */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Tambah Kosakata Baru</h2>
-        <VocabularyForm collectionId={collectionId} />
-      </div>
-
-      {/* Tampilkan error jika ada */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      {/* Daftar kosakata */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="grid grid-cols-4 gap-4 p-4 font-semibold border-b">
-          <div>Korea</div>
-          <div>Indonesia</div>
-          <div>Kategori</div>
-          <div className="text-right">Aksi</div>
-        </div>
-        
-        {success && items?.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            Belum ada kosakata dalam kumpulan ini
+    <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 md:px-8">
+      <Card>
+        <div className="relative h-32 w-full overflow-hidden rounded-t-lg sm:h-40">
+          {/* Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-primary/20 to-emerald-500/20">
+            {/* Decorative Orbs */}
+            <div className="absolute -top-4 -right-4 w-16 h-16 sm:w-24 sm:h-24 bg-primary/20 rounded-full blur-2xl" />
+            <div className="absolute -bottom-4 -left-4 w-14 h-14 sm:w-20 sm:h-20 bg-emerald-500/20 rounded-full blur-2xl" />
           </div>
-        ) : (
-          <div className="divide-y">
-            {success && items?.map((item) => (
-              <div key={item.id} className="grid grid-cols-4 gap-4 p-4 items-center">
-                <div>{item.korean}</div>
-                <div>{item.indonesian}</div>
-                <div>{item.category}</div>
-                <div className="text-right">
-                  <VocabularyActions item={item} />
-                </div>
-              </div>
-            ))}
+
+          {/* Top Row: Word Count and Privacy */}
+          <div className="absolute top-2 inset-x-2 flex flex-wrap justify-between items-center sm:inset-x-4">
+            <div className="px-2.5 py-1 rounded-full bg-primary/20 backdrop-blur-sm">
+              <span className="text-xs sm:text-sm font-medium text-primary-foreground">
+                {collection.items.length} kata
+              </span>
+            </div>
+            <div className="p-1.5 rounded-full bg-background/50 backdrop-blur-sm">
+              {collection.isPublic ? (
+                <UnlockIcon className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
+              ) : (
+                <LockIcon className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Bottom Row: Author */}
+          <div className="absolute bottom-2 left-2 flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/50 backdrop-blur-sm">
+              <UserIcon className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
+              <span className="text-xs sm:text-sm font-medium text-foreground">
+                {collection.user?.name || "Anonymous"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6">
+          <h1 className="text-lg sm:text-2xl font-bold mb-1">{collection.title}</h1>
+          {collection.description && (
+            <p className="text-sm sm:text-base text-muted-foreground">{collection.description}</p>
+          )}
+        </div>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row sm:flex-row sm:items-center justify-between">
+          <CardTitle className="flex items-center text-base sm:text-lg">
+            <BookOpenIcon className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+            Daftar Kosakata
+          </CardTitle>
+          {collection.userId === user.id && (
+            <div className="flex mt-4 sm:mt-0 gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/vocabulary/create?edit=true&id=${collection.id}`}>
+                  <PencilIcon className="h-4 w-4 " />
+                </Link>
+              </Button>
+            </div>
+          )}
+        </CardHeader>
+
+        <CardContent>
+          {collection.items.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpenIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Belum Ada Kosakata</h3>
+              <p className="text-sm text-muted-foreground">
+                Kumpulan ini belum memiliki kosakata
+              </p>
+            </div>
+          ) : (
+            <div className="relative rounded-lg border overflow-x-auto">
+              <Table className="w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-1/2 text-sm sm:text-base">Korea</TableHead>
+                    <TableHead className="w-1/2 text-sm sm:text-base">Indonesia</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {collection.items.map((item, index) => (
+                    <TableRow 
+                      key={item.id} 
+                      className={`${index % 2 === 0 ? 'bg-muted/30' : ''}`}
+                    >
+                      <TableCell 
+                        className="font-medium text-sm sm:text-base text-emerald-600 dark:text-emerald-400"
+                      >
+                        {item.korean}
+                      </TableCell>
+                      <TableCell 
+                        className="text-sm sm:text-base text-blue-600 dark:text-blue-400"
+                      >
+                        {item.indonesian}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }

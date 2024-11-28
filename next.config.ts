@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
+    serverActions: {
+      bodySizeLimit: '3mb',
+      allowedOrigins: ['localhost:3000']
+    },
     turbo: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
       moduleIdStrategy: (process.env.NODE_ENV === 'development' ? 'named' : 'deterministic') as 'named' | 'deterministic',

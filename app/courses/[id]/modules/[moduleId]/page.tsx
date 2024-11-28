@@ -101,10 +101,10 @@ export default function ModulePage(props: ModulePageProps) {
   }));
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr,300px] gap-6">
+    <div className="w-full max-w-[1200px] mx-auto p-2 sm:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,300px] gap-3 sm:gap-6">
         {/* Main Content */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <ModuleHeader 
             courseId={moduleData.courseId}
             moduleId={moduleData.id}
@@ -119,15 +119,17 @@ export default function ModulePage(props: ModulePageProps) {
           <button 
             onClick={handleComplete} 
             disabled={isCompleted}
-            className={`mt-4 px-4 py-2 text-white ${isCompleted ? 'bg-gray-400' : 'bg-blue-500'} rounded`}
+            className={`w-full sm:w-auto mt-2 sm:mt-4 px-4 py-2 text-sm sm:text-base text-white rounded-lg
+              ${isCompleted ? 'bg-gray-400' : 'bg-primary hover:bg-primary/90'} 
+              transition-colors duration-200`}
           >
-            {isCompleted ? "Completed" : "Mark as Completed"}
+            {isCompleted ? "Selesai" : "Tandai Selesai"}
           </button>
         </div>
 
         {/* Sidebar with Module List */}
-        <div className="space-y-4">
-          <div className="border rounded-lg p-4">
+        <div className="mt-4 lg:mt-0">
+          <div className="border rounded-lg p-2 sm:p-4">
             <ModuleList 
               modules={formattedModules} 
               courseId={moduleData.courseId.toString()}

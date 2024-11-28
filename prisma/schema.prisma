@@ -156,7 +156,6 @@ model VocabularyItem {
   id          Int                  @id @default(autoincrement())
   korean      String               // Kata dalam bahasa Korea
   indonesian  String               // Arti dalam bahasa Indonesia
-  category    String               // Kategori kata (bisa diinput bebas)
   collection  VocabularyCollection @relation(fields: [collectionId], references: [id])
   collectionId Int
   createdAt   DateTime             @default(now())

@@ -86,9 +86,9 @@ export function CourseHeader({
   };
 
   return (
-    <div className="bg-card rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-border">
+    <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border-0 border-b sm:border sm:border-border sm:rounded-xl">
       {thumbnail && (
-        <div className="relative aspect-video w-full max-h-[130px]">
+        <div className="relative aspect-video w-full max-h-[130px] sm:max-h-[150px]">
           <Image
             src={thumbnail}
             alt={title}
@@ -99,29 +99,29 @@ export function CourseHeader({
         </div>
       )}
       
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <h1 className="text-3xl font-bold text-primary">{title}</h1>
+      <div className="p-2 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1.5 sm:gap-4 mb-2 sm:mb-4">
+          <h1 className="text-lg sm:text-3xl font-bold text-primary leading-tight">{title}</h1>
           {isAuthor && (
-            <Link href={`/courses/${id}/edit-course`}>
-              <Button variant="outline" size="sm">
+            <Link href={`/courses/${id}/edit-course`} className="mt-1 sm:mt-0">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">
                 Edit Course
               </Button>
             </Link>
           )}
         </div>
 
-        <div className="flex justify-between text-sm text-muted-foreground mb-6">
+        <div className="flex flex-wrap sm:flex-row sm:justify-between text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-6 gap-2 sm:gap-4">
           <div className="flex items-center">
-            <User className="mr-2" size={16} />
-            <span>{author.name}</span>
+            <User className="mr-1.5 sm:mr-2" size={14} />
+            <span className="truncate">{author.name}</span>
           </div>
           <div className="flex items-center">
-            <BarChart className="mr-2" size={16} />
+            <BarChart className="mr-1.5 sm:mr-2" size={14} />
             <span>{level}</span>
           </div>
           <div className="flex items-center">
-            <Clock className="mr-2" size={16} />
+            <Clock className="mr-1.5 sm:mr-2" size={14} />
             <span>{moduleCount} modules</span>
           </div>
         </div>
@@ -131,14 +131,14 @@ export function CourseHeader({
             <Image
               src={author.image}
               alt={author.name || "Author"}
-              width={32}
-              height={32}
-              className="rounded-full"
+              width={28}
+              height={28}
+              className="rounded-full hidden sm:block"
             />
           )}
           {!isAuthor && !isJoined && moduleCount > 0 && (
             <Button 
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
               onClick={handleJoinCourse}
               disabled={joining || loading}
             >
@@ -147,7 +147,7 @@ export function CourseHeader({
           )}
           {(isAuthor || isJoined) && moduleCount > 0 && (
             <Button 
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
               onClick={navigateToFirstModule}
               disabled={loading}
             >
@@ -155,7 +155,7 @@ export function CourseHeader({
             </Button>
           )}
           {moduleCount === 0 && (
-            <Button className="w-full" disabled>
+            <Button className="w-full text-xs sm:text-sm h-8 sm:h-9" disabled>
               Belum Ada Modul
             </Button>
           )}

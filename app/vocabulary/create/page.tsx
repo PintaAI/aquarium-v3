@@ -1,110 +1,237 @@
 "use client"
 
-import { createVocabularyCollection } from "@/actions/vocabulary-actions"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { createVocabularyCollection, updateVocabularyCollection, deleteVocabularyCollection, getVocabularyCollection } from "@/actions/vocabulary-actions"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState, useTransition } from "react"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card } from "@/components/ui/card"
+
+interface VocabularyItem {
+  korean: string
+  indonesian: string
+}
 
 export default function CreateVocabularyPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isEdit = searchParams.get("edit") === "true"
+  const collectionId = searchParams.get("id")
+  const [isPending, startTransition] = useTransition()
+  
+  // State untuk form
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  
+  // State untuk menyimpan items
+  const [items, setItems] = useState<VocabularyItem[]>([])
+  const [newKorean, setNewKorean] = useState("")
+  const [newIndonesian, setNewIndonesian] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isEdit && collectionId) {
+      startTransition(async () => {
+        const result = await getVocabularyCollection(parseInt(collectionId))
+        if (result.success && result.data) {
+          // Set state dengan data yang ada
+          setTitle(result.data.title)
+          setDescription(result.data.description || "")
+          // Load items jika dalam mode edit
+          setItems(result.data.items.map(item => ({
+            korean: item.korean,
+            indonesian: item.indonesian
+          })))
+        }
+      })
+    }
+  }, [isEdit, collectionId])
+
+  async function formAction(e: React.FormEvent) {
     e.preventDefault()
-    setIsLoading(true)
-    setError("")
 
-    try {
-      const result = await createVocabularyCollection(title, description)
+    // Validasi title tidak boleh kosong
+    if (!title.trim()) {
+      alert("Judul tidak boleh kosong")
+      return
+    }
+
+    startTransition(async () => {
+      let result
+      if (isEdit && collectionId) {
+        result = await updateVocabularyCollection(parseInt(collectionId), title, description, items)
+      } else {
+        result = await createVocabularyCollection(title, description, items)
+      }
       
       if (result.success) {
         router.push("/vocabulary")
-      } else {
-        setError(result.error || "Terjadi kesalahan")
       }
-    } catch (err) {
-      setError("Terjadi kesalahan saat membuat kumpulan")
-    } finally {
-      setIsLoading(false)
+    })
+  }
+
+  async function deleteAction() {
+    if (!collectionId || !confirm("Apakah Anda yakin ingin menghapus kumpulan kosakata ini?")) {
+      return
+    }
+
+    startTransition(async () => {
+      const result = await deleteVocabularyCollection(parseInt(collectionId))
+      if (result.success) {
+        router.push("/vocabulary")
+      }
+    })
+  }
+
+  function handleAddItem(e: React.FormEvent) {
+    e.preventDefault()
+    if (newKorean && newIndonesian) {
+      setItems([...items, { korean: newKorean, indonesian: newIndonesian }])
+      setNewKorean("")
+      setNewIndonesian("")
     }
   }
 
+  function handleRemoveItem(index: number) {
+    setItems(items.filter((_, i) => i !== index))
+  }
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Link
-            href="/vocabulary"
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ← Kembali
-          </Link>
-          <h1 className="text-2xl font-bold">Buat Kumpulan Kosakata Baru</h1>
+    <div className="container max-w-5xl mx-auto p-6">
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/vocabulary"
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              ← Kembali
+            </Link>
+            <h1 className="text-2xl font-bold text-primary">
+              {isEdit ? "Edit Kumpulan Kosakata" : "Buat Kumpulan Kosakata Baru"}
+            </h1>
+          </div>
+          {isEdit && (
+            <Button
+              type="button"
+              onClick={deleteAction}
+              disabled={isPending}
+              variant="destructive"
+            >
+              Hapus
+            </Button>
+          )}
         </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+        <form onSubmit={formAction} className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label 
+                htmlFor="title" 
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Judul Kumpulan
+              </label>
+              <Input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Contoh: Kosakata Makanan"
+                required
+                className="w-full"
+              />
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label 
-              htmlFor="title" 
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Judul Kumpulan
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Contoh: Kosakata Makanan"
-              required
-            />
+            <div>
+              <label 
+                htmlFor="description" 
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Deskripsi (Opsional)
+              </label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Deskripsi singkat tentang kumpulan kosakata ini"
+                rows={3}
+                className="w-full"
+              />
+            </div>
           </div>
 
-          <div>
-            <label 
-              htmlFor="description" 
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Deskripsi (Opsional)
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Deskripsi singkat tentang kumpulan kosakata ini"
-              rows={3}
-            />
+          {/* Form untuk menambah kosakata */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Daftar Kosakata</h2>
+            
+            {/* Input kosakata baru */}
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={newKorean}
+                onChange={(e) => setNewKorean(e.target.value)}
+                placeholder="Kata Korea"
+                className="flex-1"
+              />
+              <Input
+                type="text"
+                value={newIndonesian}
+                onChange={(e) => setNewIndonesian(e.target.value)}
+                placeholder="Arti Indonesia"
+                className="flex-1"
+              />
+              <Button 
+                type="button"
+                onClick={handleAddItem}
+                variant="secondary"
+              >
+                Tambah
+              </Button>
+            </div>
+
+            {/* Daftar kosakata yang sudah ditambahkan */}
+            <div className="space-y-2">
+              {items.map((item, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-accent rounded">
+                  <span className="flex-1">{item.korean}</span>
+                  <span className="flex-1">{item.indonesian}</span>
+                  <Button
+                    type="button"
+                    onClick={() => handleRemoveItem(index)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                  >
+                    Hapus
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-4">
-            <button
+            <Button
               type="submit"
-              disabled={isLoading}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+              disabled={isPending}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {isLoading ? "Menyimpan..." : "Simpan"}
-            </button>
+              {isPending ? "Menyimpan..." : isEdit ? "Perbarui" : "Simpan"}
+            </Button>
             
-            <Link
-              href="/vocabulary"
-              className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
-            >
-              Batal
+            <Link href="/vocabulary">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-input hover:bg-accent"
+              >
+                Batal
+              </Button>
             </Link>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   )
 }

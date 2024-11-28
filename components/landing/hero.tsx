@@ -10,6 +10,15 @@ export default function Hero() {
     { icon: "🏆", text: "Sistem Level & Reward" },
   ];
 
+  const decorativeLogos = [
+    { size: 48, top: '10%', left: '15%', blur: 'blur-sm', opacity: 0.15, transform: 'translate3d(0, -10px, 0)' },
+    { size: 64, top: '25%', right: '10%', blur: 'blur-sm', opacity: 0.2, transform: 'translate3d(0, 20px, 0)' },
+    { size: 96, bottom: '30%', left: '5%', blur: 'blursm', opacity: 0.1, transform: 'translate3d(0, -15px, 0)' },
+    { size: 72, top: '40%', right: '25%', blur: 'blur-sm', opacity: 0.25, transform: 'translate3d(0, 12px, 0)' },
+    { size: 56, bottom: '15%', right: '15%', blur: 'blur-sm', opacity: 0.15, transform: 'translate3d(0, -8px, 0)' },
+    { size: 80, top: '15%', left: '30%', blur: 'blur-sm', opacity: 0.2, transform: 'translate3d(0, 15px, 0)' },
+  ];
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Background Pattern */}
@@ -22,11 +31,11 @@ export default function Hero() {
         {/* Left Content */}
         <div className="flex-1 text-center lg:text-left z-10 animate-fadeIn">
           <div className="inline-block mb-4 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium animate-slideDown">
-            🎉 Platform Pembelajaran #1 di Indonesia
+            🎉 Platform kursus Bakor #1 di Indonesia
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-slideUp">
-            <span className="bg-gradient-to-r from-primary via-pink-500 to-secondary bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-emerald-700 to-secondary bg-clip-text text-transparent">
               Belajar Bahasa Korea
             </span>
             <br />
@@ -74,12 +83,47 @@ export default function Hero() {
 
         {/* Right Content - Decorative Elements */}
         <div className="flex-1 relative h-[500px] hidden lg:block">
-          <div className="absolute top-20 right-20 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-float" />
-          <div className="absolute bottom-40 left-20 w-40 h-40 bg-secondary/20 rounded-full blur-xl animate-float-delayed" />
+          {/* Decorative Logos */}
+          {decorativeLogos.map((logo, index) => (
+            <div
+              key={index}
+              className="absolute"
+              style={{
+                top: logo.top,
+                left: logo.left,
+                right: logo.right,
+                bottom: logo.bottom,
+              }}
+            >
+              <div 
+                className="relative animate-parallax"
+                style={{
+                  width: `${logo.size}px`,
+                  height: `${logo.size}px`,
+                  transform: logo.transform,
+                  transition: 'transform 3s ease-in-out',
+                }}
+              >
+                <Image
+                  src="/images/logoo.png"
+                  alt="Decorative Logo"
+                  fill
+                  className={`${logo.blur} transition-all duration-1000`}
+                  style={{ opacity: logo.opacity }}
+                />
+              </div>
+            </div>
+          ))}
           
-          {/* Korean Characters */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-8xl font-bold text-primary/20 animate-pulse">
-            한글
+          {/* Main Logo */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <Image
+              src="/images/circle-logo.png"
+              alt="Aquarium Logo"
+              width={400}
+              height={400}
+              className="opacity-60"
+            />
           </div>
         </div>
       </div>
@@ -119,6 +163,10 @@ export default function Hero() {
           from { transform: translateY(-20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
+        @keyframes parallax {
+          0%, 100% { transform: translate3d(0, 0, 0); }
+          50% { transform: translate3d(0, var(--parallax-offset), 0); }
+        }
         .animate-float {
           animation: float 4s ease-in-out infinite;
         }
@@ -133,6 +181,10 @@ export default function Hero() {
         }
         .animate-slideDown {
           animation: slideDown 0.5s ease-out forwards;
+        }
+        .animate-parallax {
+          animation: parallax 8s ease-in-out infinite;
+          --parallax-offset: -20px;
         }
       `}</style>
     </div>

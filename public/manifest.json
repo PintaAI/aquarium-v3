@@ -26,5 +26,17 @@
       "purpose": "any maskable"
     }
   ],
-  "splash_pages": null
+  "screenshots": [
+    {
+      "src": "/images/circle-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Pejuangkorea Academy Splash Screen"
+    }
+  ],
+  "splash_screen": {
+    "background_color": "#ffffff",
+    "image": "/images/circle-logo.png"
+  }
 }

@@ -62,13 +62,13 @@ export default function Navbar() {
         <div className="max-w-screen-xl mx-auto px-4 flex h-full items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="flex aspect-square size-8 items-center justify-center">
+              <div className="flex aspect-square size-12 items-center justify-center">
                 <Image 
-                  src="/images/circle-logo.png"
+                  src="/images/logoo.png"
                   alt="Pejuangkorea Logo"
-                  width={32}
-                  height={32}
-                  className="size-8"
+                  width={60}
+                  height={60}
+                  className="size-full"
                 />
               </div>
               <div className="grid flex-1 text-left text-m leading-tight">

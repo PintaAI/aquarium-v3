@@ -11,6 +11,7 @@ import { ThemeToggle } from "./theme-toggle"
 import { CourseSidebarContent } from "./sidebar/course-sidebar-content"
 import { GameSidebarContent } from "./sidebar/game-sidebar-content"
 import { ArticleSidebarContent } from "./sidebar/article-sidebar-content"
+import { VocabularySidebarContent } from "./sidebar/vocabulary-sidebar-content"
 import {
   Sidebar,
   SidebarContent,
@@ -97,6 +98,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     if (pathname.startsWith('/artikel')) {
       return <ArticleSidebarContent />
+    }
+
+    if (pathname.startsWith('/vocabulary')) {
+      return <VocabularySidebarContent />
     }
 
     // Konten default ketika tidak ada konten spesifik

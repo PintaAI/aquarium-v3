@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
-import { Home, BookOpen, GamepadIcon, NewspaperIcon, User } from "lucide-react";
+import { Home, BookOpen, GamepadIcon, BookText, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import AuthCard from "./form/AuthCard";
@@ -22,8 +22,8 @@ export function MobileNavbar() {
         <Link href="/game" className="flex flex-col items-center justify-center p-2 text-foreground/60 hover:text-foreground">
           <GamepadIcon className="h-6 w-6" />
         </Link>
-        <Link href="/artikel" className="flex flex-col items-center justify-center p-2 text-foreground/60 hover:text-foreground">
-          <NewspaperIcon className="h-6 w-6" />
+        <Link href="/vocabulary" className="flex flex-col items-center justify-center p-2 text-foreground/60 hover:text-foreground">
+          <BookText className="h-6 w-6" />
         </Link>
         {session ? (
           <Link href="/profil" className="flex flex-col items-center justify-center p-2 text-foreground/60 hover:text-foreground">

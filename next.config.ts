@@ -9,16 +9,20 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https' as const,
+        protocol: 'https',
         hostname: 'cdn.shade.cool',
       },
       {
-        protocol: 'https' as const,
+        protocol: 'https',
         hostname: 'imagecdn.app',
       },
       {
-        protocol: 'https' as const,
+        protocol: 'https',
         hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
       },
     ],
   },

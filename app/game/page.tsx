@@ -1,9 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import Link from "next/link";
 import { games } from "@/data/games";
-import { Card, CardContent } from "@/components/ui/card";
 import { Search } from "lucide-react";
+import { GameCard } from "@/components/game/game-card";
 
 const GamePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,26 +46,8 @@ const GamePage = () => {
       {/* Games Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredGames.length > 0 ? (
-          filteredGames.map(({ id, icon: Icon, title, description, route }) => (
-            <Link key={id} href={route} className="group block">
-              <Card className="h-full transition-transform transform hover:scale-105 hover:shadow-2xl rounded-lg overflow-hidden bg-card dark:bg-card text-card-foreground hover:bg-card-foreground">
-                <CardContent className="p-6">
-                  <div className="mb-6 flex justify-center">
-                    <div className="p-4 bg-secondary rounded-full transition-colors group-hover:bg-primary">
-                      <Icon className="w-8 h-8 text-primary group-hover:text-white" />
-                    </div>
-                  </div>
-                  <div className="space-y-2 text-center">
-                    <h2 className="text-xl font-semibold text-primary group-hover:text-white transition-colors">
-                      {title}
-                    </h2>
-                    <p className="text-primary/80 group-hover:text-white transition-colors">
-                      {description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+          filteredGames.map((game) => (
+            <GameCard key={game.id} game={game} />
           ))
         ) : (
           <div className="text-center py-10">

@@ -2,6 +2,11 @@
   "name": "aquarium-v3",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@10.5.2",
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",

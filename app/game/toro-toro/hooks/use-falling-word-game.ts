@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getPublicVocabularies } from '@/actions/vocabulary-game-actions';
+import { getVocabularyCollections } from '@/actions/vocabulary-actions';
 
 interface Word {
   id: number;
@@ -10,6 +10,11 @@ interface Word {
 interface WordCollection {
   name: string;
   words: Word[];
+  isPublic: boolean;
+  user?: {
+    name: string | null;
+    role: string;
+  } | null;
 }
 
 interface WordWithPosition extends Word {
@@ -69,37 +74,54 @@ interface GameState {
   isLoading: boolean;
 }
 
+const initialState: GameState = {
+  fallingWords: [],
+  userInput: '',
+  timer: 120,
+  gameOver: false,
+  score: 0,
+  gameStarted: false,
+  customWords: [],
+  isUsingCustomWords: false,
+  dialogOpen: false,
+  dictionarySearch: '',
+  searchResults: [],
+  isSearching: false,
+  gameAreaHeight: 0,
+  difficulty: 'normal',
+  selectedWordList: '',
+  wordCollections: [],
+  isLoading: true
+};
+
 export function useFallingWordGame() {
-  const [state, setState] = useState<GameState>({
-    fallingWords: [],
-    userInput: '',
-    timer: 120,
-    gameOver: false,
-    score: 0,
-    gameStarted: false,
-    customWords: [],
-    isUsingCustomWords: false,
-    dialogOpen: false,
-    dictionarySearch: '',
-    searchResults: [],
-    isSearching: false,
-    gameAreaHeight: 0,
-    difficulty: 'normal',
-    selectedWordList: '',
-    wordCollections: [],
-    isLoading: true
-  });
+  const [state, setState] = useState<GameState>(initialState);
 
   // Ambil data koleksi kata dari database saat komponen dimount
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const collections = await getPublicVocabularies();
-        if (collections.length > 0) {
+        const result = await getVocabularyCollections();
+        if (result.success && result.data) {
+          // Transform data ke format yang dibutuhkan game
+          const collections = result.data.map(collection => ({
+            name: collection.title,
+            words: collection.items.map(item => ({
+              id: item.id,
+              term: item.korean,
+              definition: item.indonesian
+            })),
+            isPublic: collection.isPublic,
+            user: collection.user ? {
+              name: collection.user.name,
+              role: collection.user.role
+            } : null
+          }));
+
           setState(prev => ({
             ...prev,
             wordCollections: collections,
-            selectedWordList: collections[0].name,
+            selectedWordList: collections[0]?.name || '',
             isLoading: false
           }));
         } else {

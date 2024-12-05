@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { VirtualKeyboard } from "@/components/ui/virtual-keyboard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Difficulty } from '../hooks/use-falling-word-game';
+import { WordCollectionCard } from './word-collection-card';
 import SpaceBackground from './space-background';
 
 interface Word {
@@ -19,6 +22,11 @@ interface Word {
 interface WordCollection {
   name: string;
   words: Word[];
+  isPublic: boolean;
+  user?: {
+    name: string | null;
+    role: string;
+  } | null;
 }
 
 interface WordWithPosition extends Word {
@@ -97,6 +105,7 @@ export function FallingWordDisplay({
   const [newDefinition, setNewDefinition] = useState('');
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [showCustomWords, setShowCustomWords] = useState(false);
 
   const handleAddCustomWord = () => {
     onAddCustomWord(newTerm, newDefinition);
@@ -229,54 +238,74 @@ export function FallingWordDisplay({
                       <SelectItem value="hard">Hard</SelectItem>
                     </SelectContent>
                   </Select>
-
-                  <Select
-                    value={selectedWordList}
-                    onValueChange={onWordListChange}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select word list" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {wordCollections.map((collection) => (
-                        <SelectItem key={collection.name} value={collection.name}>
-                          {collection.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
 
-                <Dialog open={dialogOpen} onOpenChange={onDialogOpenChange}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="mt-4">
-                      {isUsingCustomWords ? 'Edit Kosa-kata' : 'Pilih Kosa-kata'}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Tambahkan dan Cari kosakata</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-4">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Search Korean Dictionary..."
-                          value={dictionarySearch}
-                          onChange={(e) => onDictionarySearchChange(e.target.value)}
-                        />
-                        <Button 
-                          onClick={() => onDictionarySearch(dictionarySearch)}
-                          disabled={isSearching}
-                        >
-                          {isSearching ? 'Searching...' : 'Search'}
-                        </Button>
-                      </div>
+        <Dialog open={dialogOpen} onOpenChange={onDialogOpenChange}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="mt-4">
+              Pilih Kosakata
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle>Pilih Koleksi Kosakata</DialogTitle>
+            </DialogHeader>
 
-                      {searchResults.length > 0 && (
-                        <div className="space-y-2 border rounded p-2">
-                          <h3 className="font-semibold">Dictionary Results:</h3>
+            <Tabs defaultValue="collections" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="collections">Koleksi Tersedia</TabsTrigger>
+                <TabsTrigger value="custom">Kosakata Custom</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="collections" className="mt-4">
+                <ScrollArea className="h-[60vh]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-4">
+                    {wordCollections.map((collection) => (
+                      <WordCollectionCard
+                        key={collection.name}
+                        title={collection.name}
+                        itemCount={collection.words.length}
+                        previewWord={collection.words[0] ? {
+                          term: collection.words[0].term,
+                          definition: collection.words[0].definition
+                        } : undefined}
+                        isSelected={selectedWordList === collection.name}
+                        isPublic={collection.isPublic}
+                        user={collection.user}
+                        onClick={() => {
+                          onWordListChange(collection.name);
+                          onUseCustomWords(false);
+                          onDialogOpenChange(false);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="custom" className="mt-4">
+                <ScrollArea className="h-[60vh]">
+                  <div className="pr-4 space-y-4">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Search Korean Dictionary..."
+                        value={dictionarySearch}
+                        onChange={(e) => onDictionarySearchChange(e.target.value)}
+                      />
+                      <Button 
+                        onClick={() => onDictionarySearch(dictionarySearch)}
+                        disabled={isSearching}
+                      >
+                        {isSearching ? 'Searching...' : 'Search'}
+                      </Button>
+                    </div>
+
+                    {searchResults.length > 0 && (
+                      <div className="space-y-2 border rounded p-4">
+                        <h3 className="font-semibold">Dictionary Results:</h3>
+                        <div className="grid gap-2">
                           {searchResults.map((result, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 border rounded">
+                            <div key={index} className="flex items-center gap-2 p-2 border rounded bg-card">
                               <span className="flex-1">{result.term}</span>
                               <span className="flex-1">{result.definition}</span>
                               <Button
@@ -288,26 +317,28 @@ export function FallingWordDisplay({
                             </div>
                           ))}
                         </div>
-                      )}
-
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Term (e.g., 안녕하세요)"
-                          value={newTerm}
-                          onChange={(e) => setNewTerm(e.target.value)}
-                        />
-                        <Input
-                          placeholder="Definition (e.g., hello)"
-                          value={newDefinition}
-                          onChange={(e) => setNewDefinition(e.target.value)}
-                        />
-                        <Button onClick={handleAddCustomWord}>Add</Button>
                       </div>
+                    )}
 
-                      <div className="space-y-2">
-                        <h3 className="font-semibold">Your Custom Words:</h3>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Term (e.g., 안녕하세요)"
+                        value={newTerm}
+                        onChange={(e) => setNewTerm(e.target.value)}
+                      />
+                      <Input
+                        placeholder="Definition (e.g., hello)"
+                        value={newDefinition}
+                        onChange={(e) => setNewDefinition(e.target.value)}
+                      />
+                      <Button onClick={handleAddCustomWord}>Add</Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">Your Custom Words:</h3>
+                      <div className="grid gap-2">
                         {customWords.map((word) => (
-                          <div key={word.id} className="flex items-center gap-2 p-2 border rounded">
+                          <div key={word.id} className="flex items-center gap-2 p-2 border rounded bg-card">
                             <span className="flex-1">{word.term}</span>
                             <span className="flex-1">{word.definition}</span>
                             <Button
@@ -320,31 +351,26 @@ export function FallingWordDisplay({
                           </div>
                         ))}
                       </div>
-
-                      <div className="flex justify-between mt-4">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            onUseCustomWords(false);
-                            onDialogOpenChange(false);
-                          }}
-                        >
-                          Use Preset Words
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            onUseCustomWords(true);
-                            onDialogOpenChange(false);
-                          }}
-                          disabled={customWords.length === 0}
-                        >
-                          Done
-                        </Button>
-                      </div>
                     </div>
-                  </DialogContent>
-                </Dialog>
-                
+
+                    {customWords.length > 0 && (
+                      <Button
+                        className="w-full"
+                        onClick={() => {
+                          onUseCustomWords(true);
+                          onDialogOpenChange(false);
+                        }}
+                      >
+                        Gunakan Kosakata Custom ({customWords.length} kata)
+                      </Button>
+                    )}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+
                 <Button 
                   onClick={onStart}
                   size="lg"

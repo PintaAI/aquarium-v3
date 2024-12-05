@@ -12,6 +12,7 @@ import { Difficulty } from '../hooks/use-falling-word-game';
 import { WordCollectionCard } from './word-collection-card';
 import SpaceBackground from './space-background';
 import { AudioController } from './audio-controller';
+import confetti from 'canvas-confetti';
 
 interface Word {
   id: number;
@@ -105,13 +106,52 @@ export function FallingWordDisplay({
   const [newDefinition, setNewDefinition] = useState('');
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [showCustomWords, setShowCustomWords] = useState(false);
+  const previousWordsRef = useRef<WordWithPosition[]>([]);
 
   const handleAddCustomWord = () => {
     onAddCustomWord(newTerm, newDefinition);
     setNewTerm('');
     setNewDefinition('');
   };
+
+  const fireConfetti = (x: number, y: number) => {
+    const gameArea = gameAreaRef.current;
+    if (!gameArea) return;
+
+    const rect = gameArea.getBoundingClientRect();
+    const relativeX = (x / 100) * rect.width;
+    
+    confetti({
+      particleCount: 25,
+      spread: 360,
+      origin: { 
+        x: (rect.left + relativeX) / window.innerWidth,
+        y: (rect.top + y) / window.innerHeight
+      },
+      colors: ['#FF577F', '#FF884B', '#FFB200', '#00A19D'],
+      ticks: 150,
+      gravity: 1,
+      scalar: 0.8,
+      decay: 0.7,
+      shapes: ['circle', 'square'],
+      disableForReducedMotion: true
+    });
+  };
+
+  useEffect(() => {
+    if (previousWordsRef.current.length > fallingWords.length) {
+      // Temukan kata yang hilang dengan membandingkan array sebelumnya dan sekarang
+      const removedWord = previousWordsRef.current.find(prevWord => 
+        !fallingWords.some(currentWord => currentWord.id === prevWord.id)
+      );
+
+      if (removedWord) {
+        fireConfetti(removedWord.positionX, removedWord.positionY);
+      }
+    }
+    
+    previousWordsRef.current = fallingWords;
+  }, [fallingWords]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -155,8 +195,13 @@ export function FallingWordDisplay({
       <Card className="flex-1 p-2 sm:p-4 relative overflow-hidden m-0">
         <div className="flex-shrink-0 p-1 relative z-10">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm md:text-2xl font-bold">Tangkap Kosa Kata</h2>
-            <div className="flex gap-4">
+            <h2 className="text-sm md:text-2xl font-bold">Toro-Toro</h2>
+            <div className="flex items-center gap-4">
+              <AudioController 
+                audioPath="/sound/background-vocabullary.mp3"
+                autoPlay={false}
+                loop={true}
+              />
               <span className="md:font-medium text-sm">Score: {score}</span>
               <span className="md:font-medium text-sm">Time: {timer}s</span>
             </div>
@@ -198,18 +243,18 @@ export function FallingWordDisplay({
                 key={`${word.id}-${word.positionY}`}
                 className={`
                   absolute transform
-                  px-2 py-0.5 md:px-3 md:py-1
+                  px-1 py-0.5 md:px-2 md:py-0.5
                   text-xs md:text-base
                   bg-primary text-primary-foreground 
                   rounded-md shadow-md
                   transition-all duration-200
+                  whitespace-nowrap
                 `}
                 style={{
                   top: `${word.positionY}px`,
                   left: `${word.positionX}%`,
                   transform: 'translateX(-50%)',
                   fontSize: isMobile ? '0.75rem' : '1rem',
-                  minWidth: isMobile ? '60px' : '80px',
                 }}
               >
                 {word.term}
@@ -379,11 +424,7 @@ export function FallingWordDisplay({
                 >
                   {gameOver ? 'Main Lagi?' : 'Start Game'}
                 </Button>
-                <AudioController 
-        audioPath="/sound/background-vocabullary.mp3"
-        autoPlay={false}
-        loop={true}
-      />
+
               </div>
             )}
           </div>

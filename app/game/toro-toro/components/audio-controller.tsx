@@ -40,7 +40,7 @@ export function AudioController({ audioPath, autoPlay = true, loop = true }: Aud
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="z-50">
       <audio
         ref={audioRef}
         src={audioPath}

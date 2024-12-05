@@ -5,13 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { VirtualKeyboard } from "@/components/ui/virtual-keyboard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Difficulty } from '../hooks/use-falling-word-game';
 import { WordCollectionCard } from './word-collection-card';
 import SpaceBackground from './space-background';
+import { AudioController } from './audio-controller';
 
 interface Word {
   id: number;
@@ -229,7 +229,7 @@ export function FallingWordDisplay({
                     value={difficulty}
                     onValueChange={(value) => onDifficultyChange(value as Difficulty)}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[130px]">
                       <SelectValue placeholder="Select difficulty" />
                     </SelectTrigger>
                     <SelectContent>
@@ -243,7 +243,7 @@ export function FallingWordDisplay({
         <Dialog open={dialogOpen} onOpenChange={onDialogOpenChange}>
           <DialogTrigger asChild>
             <Button variant="outline" className="mt-4">
-              Pilih Kosakata
+              Pilih Kosa-Kata
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
@@ -253,8 +253,8 @@ export function FallingWordDisplay({
 
             <Tabs defaultValue="collections" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="collections">Koleksi Tersedia</TabsTrigger>
-                <TabsTrigger value="custom">Kosakata Custom</TabsTrigger>
+                <TabsTrigger value="collections">Koleksi Kosa-Kata</TabsTrigger>
+                <TabsTrigger value="custom">Manual</TabsTrigger>
               </TabsList>
 
               <TabsContent value="collections" className="mt-4">
@@ -288,7 +288,7 @@ export function FallingWordDisplay({
                   <div className="pr-4 space-y-4">
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Search Korean Dictionary..."
+                        placeholder="Cari di kamus - ( Bahasa Korea )"
                         value={dictionarySearch}
                         onChange={(e) => onDictionarySearchChange(e.target.value)}
                       />
@@ -296,7 +296,7 @@ export function FallingWordDisplay({
                         onClick={() => onDictionarySearch(dictionarySearch)}
                         disabled={isSearching}
                       >
-                        {isSearching ? 'Searching...' : 'Search'}
+                        {isSearching ? 'Searching...' : 'Cari'}
                       </Button>
                     </div>
 
@@ -322,20 +322,20 @@ export function FallingWordDisplay({
 
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Term (e.g., 안녕하세요)"
+                        placeholder="안녕하세요"
                         value={newTerm}
                         onChange={(e) => setNewTerm(e.target.value)}
                       />
                       <Input
-                        placeholder="Definition (e.g., hello)"
+                        placeholder="halo"
                         value={newDefinition}
                         onChange={(e) => setNewDefinition(e.target.value)}
                       />
-                      <Button onClick={handleAddCustomWord}>Add</Button>
+                      <Button className='text-lg m-0 p-5' onClick={handleAddCustomWord}>+</Button>
                     </div>
 
                     <div className="space-y-2">
-                      <h3 className="font-semibold">Your Custom Words:</h3>
+                      <h3 className="font-semibold">Kosa-Kata mu:</h3>
                       <div className="grid gap-2">
                         {customWords.map((word) => (
                           <div key={word.id} className="flex items-center gap-2 p-2 border rounded bg-card">
@@ -346,7 +346,7 @@ export function FallingWordDisplay({
                               size="sm"
                               onClick={() => onRemoveCustomWord(word.id)}
                             >
-                              Remove
+                              hapus
                             </Button>
                           </div>
                         ))}
@@ -379,6 +379,11 @@ export function FallingWordDisplay({
                 >
                   {gameOver ? 'Main Lagi?' : 'Start Game'}
                 </Button>
+                <AudioController 
+        audioPath="/sound/background-vocabullary.mp3"
+        autoPlay={false}
+        loop={true}
+      />
               </div>
             )}
           </div>
@@ -388,20 +393,11 @@ export function FallingWordDisplay({
               type="text"
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
-              placeholder="Type the translation here..."
-              className="w-full mb-2"
+              placeholder="Ketik disini..."
+              className="w-full text-center"
               disabled={!gameStarted || gameOver}
               autoFocus
             />
-
-            {isMobile && gameStarted && !gameOver && (
-              <VirtualKeyboard
-                onInputChange={onInputChange}
-                userInput={userInput}
-                gameStarted={gameStarted}
-                gameOver={gameOver}
-              />
-            )}
           </div>
         </div>
       </Card>

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import { Home, BookOpen, GamepadIcon, BookText, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -9,6 +10,11 @@ import AuthCard from "./form/AuthCard";
 
 export function MobileNavbar() {
   const { data: session } = useSession();
+  const pathname = usePathname();
+
+  if (pathname === '/game/toro-toro') {
+    return null;
+  }
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background z-50">

@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { AudioController } from './audio-controller';
-
 const generateStars = (
   count: number,
   sizeClass: string,
@@ -152,11 +150,6 @@ const SpaceBackground = () => {
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden">
       {/* Background Music */}
-      <AudioController 
-        audioPath="/sound/background-vocabullary.mp3"
-        autoPlay={true}
-        loop={true}
-      />
 
       {/* Nebula Background */}
       <div className="absolute inset-0">

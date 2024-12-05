@@ -22,6 +22,8 @@ export default function FallingWordsGame() {
       isSearching={state.isSearching}
       difficulty={state.difficulty}
       selectedWordList={state.selectedWordList}
+      wordCollections={state.wordCollections}
+      isLoading={state.isLoading}
       onInputChange={actions.handleInputChange}
       onStart={actions.startGame}
       onDialogOpenChange={actions.setDialogOpen}

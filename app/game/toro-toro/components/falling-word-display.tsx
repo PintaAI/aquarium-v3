@@ -8,13 +8,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { VirtualKeyboard } from "@/components/ui/virtual-keyboard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Difficulty } from '../hooks/use-falling-word-game';
-import { PresetListType, PRESET_LISTS } from '../data/word-lists';
 import SpaceBackground from './space-background';
 
 interface Word {
   id: number;
   term: string;
   definition: string;
+}
+
+interface WordCollection {
+  name: string;
+  words: Word[];
 }
 
 interface WordWithPosition extends Word {
@@ -42,7 +46,9 @@ interface FallingWordDisplayProps {
   searchResults: DictionaryResult[];
   isSearching: boolean;
   difficulty: Difficulty;
-  selectedWordList: PresetListType;
+  selectedWordList: string;
+  wordCollections: WordCollection[];
+  isLoading: boolean;
   onInputChange: (value: string) => void;
   onStart: () => void;
   onDialogOpenChange: (open: boolean) => void;
@@ -54,7 +60,7 @@ interface FallingWordDisplayProps {
   onUseCustomWords: (use: boolean) => void;
   onSetGameAreaHeight: (height: number) => void;
   onDifficultyChange: (difficulty: Difficulty) => void;
-  onWordListChange: (wordList: PresetListType) => void;
+  onWordListChange: (wordList: string) => void;
 }
 
 export function FallingWordDisplay({
@@ -72,6 +78,8 @@ export function FallingWordDisplay({
   isSearching,
   difficulty,
   selectedWordList,
+  wordCollections,
+  isLoading,
   onInputChange,
   onStart,
   onDialogOpenChange,
@@ -121,6 +129,17 @@ export function FallingWordDisplay({
       resizeObserver.disconnect();
     };
   }, [onSetGameAreaHeight]);
+
+  if (isLoading) {
+    return (
+      <div className="h-[calc(100vh-3rem)] flex w-full items-center justify-center">
+        <Card className="p-8">
+          <h2 className="text-2xl font-bold mb-4">Loading...</h2>
+          <p>Memuat koleksi kosakata...</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-3rem)] flex w-full">
@@ -213,15 +232,15 @@ export function FallingWordDisplay({
 
                   <Select
                     value={selectedWordList}
-                    onValueChange={(value) => onWordListChange(value as PresetListType)}
+                    onValueChange={onWordListChange}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select word list" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(PRESET_LISTS).map(([key, list]) => (
-                        <SelectItem key={key} value={key}>
-                          {list.name}
+                      {wordCollections.map((collection) => (
+                        <SelectItem key={collection.name} value={collection.name}>
+                          {collection.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

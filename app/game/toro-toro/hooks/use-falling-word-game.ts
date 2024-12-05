@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PRESET_LISTS, PresetListType } from '../data/word-lists';
+import { getPublicVocabularies } from '@/actions/vocabulary-game-actions';
 
 interface Word {
   id: number;
   term: string;
   definition: string;
+}
+
+interface WordCollection {
+  name: string;
+  words: Word[];
 }
 
 interface WordWithPosition extends Word {
@@ -59,7 +64,9 @@ interface GameState {
   isSearching: boolean;
   gameAreaHeight: number;
   difficulty: Difficulty;
-  selectedWordList: PresetListType;
+  selectedWordList: string;
+  wordCollections: WordCollection[];
+  isLoading: boolean;
 }
 
 export function useFallingWordGame() {
@@ -78,10 +85,49 @@ export function useFallingWordGame() {
     isSearching: false,
     gameAreaHeight: 0,
     difficulty: 'normal',
-    selectedWordList: 'basic'
+    selectedWordList: '',
+    wordCollections: [],
+    isLoading: true
   });
 
-  const getWordList = () => state.isUsingCustomWords ? state.customWords : PRESET_LISTS[state.selectedWordList].words;
+  // Ambil data koleksi kata dari database saat komponen dimount
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const collections = await getPublicVocabularies();
+        if (collections.length > 0) {
+          setState(prev => ({
+            ...prev,
+            wordCollections: collections,
+            selectedWordList: collections[0].name,
+            isLoading: false
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            isLoading: false
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching vocabularies:', error);
+        setState(prev => ({
+          ...prev,
+          isLoading: false
+        }));
+      }
+    };
+
+    fetchCollections();
+  }, []);
+
+  const getWordList = () => {
+    if (state.isUsingCustomWords) return state.customWords;
+    
+    const selectedCollection = state.wordCollections.find(
+      collection => collection.name === state.selectedWordList
+    );
+    return selectedCollection?.words || [];
+  };
 
   const setGameAreaHeight = (height: number) => {
     setState(prev => ({ ...prev, gameAreaHeight: height }));
@@ -121,6 +167,7 @@ export function useFallingWordGame() {
 
   const startGame = () => {
     if (state.isUsingCustomWords && state.customWords.length === 0) return;
+    if (!state.isUsingCustomWords && getWordList().length === 0) return;
     
     setState(prev => ({
       ...prev,
@@ -161,7 +208,7 @@ export function useFallingWordGame() {
     }
   };
 
-  const setSelectedWordList = (wordList: PresetListType) => {
+  const setSelectedWordList = (wordList: string) => {
     if (!state.gameStarted) {
       setState(prev => ({ ...prev, selectedWordList: wordList }));
     }
@@ -318,7 +365,6 @@ export function useFallingWordGame() {
 
   return {
     state,
-    presetWordLists: PRESET_LISTS,
     actions: {
       startGame,
       handleInputChange,

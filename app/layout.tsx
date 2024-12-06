@@ -9,6 +9,7 @@ import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { RegisterSW } from "@/components/pwa/register-sw-component";
 import { Toaster } from "react-hot-toast";
 import { MobileNavbar } from "@/components/mobile-navbar";
+import { Analytics } from '@vercel/analytics/react';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -74,6 +75,7 @@ export default async function RootLayout({
             {children}
             <MobileNavbar />
             <InstallPrompt />
+            <Analytics />
           </ThemeProvider>
         </SessionProvider>
       </body>

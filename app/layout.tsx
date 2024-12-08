@@ -10,6 +10,7 @@ import { RegisterSW } from "@/components/pwa/register-sw-component";
 import { Toaster } from "react-hot-toast";
 import { MobileNavbar } from "@/components/mobile-navbar";
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -59,7 +60,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Pejuangkorea Academy" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <script src="https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js"></script>
+        <script src="https://unpkg.com/ios-pwa-splash@1.0.0/cdn.min.js"></script>
         <script dangerouslySetInnerHTML={{
           __html: `
             iosPWASplash('/images/circle-logo.png', '#000000');
@@ -82,6 +83,7 @@ export default async function RootLayout({
             <MobileNavbar />
             <InstallPrompt />
             <Analytics />
+            <SpeedInsights />
           </ThemeProvider>
         </SessionProvider>
       </body>

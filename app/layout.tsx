@@ -10,6 +10,7 @@ import { RegisterSW } from "@/components/pwa/register-sw-component";
 import { Toaster } from "react-hot-toast";
 import { MobileNavbar } from "@/components/mobile-navbar";
 import { Analytics } from '@vercel/analytics/react';
+import Script from 'next/script';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -59,12 +60,6 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Pejuangkorea Academy" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        
-        {/* iOS PWA Splash Screen Generator */}
-        <script src="https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js"></script>
-        <script dangerouslySetInnerHTML={{
-          __html: `iosPWASplash('/images/circle-logo.png', '#000000');`
-        }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -84,6 +79,18 @@ export default async function RootLayout({
             <Analytics />
           </ThemeProvider>
         </SessionProvider>
+
+        {/* iOS PWA Splash Screen Generator */}
+        <Script src="https://unpkg.com/ios-pwa-splash@1.0.0/cdn.min.js" strategy="afterInteractive" />
+        <Script id="ios-pwa-splash-init" strategy="afterInteractive">
+          {`
+            window.addEventListener('load', function() {
+              if (typeof iosPWASplash === 'function') {
+                iosPWASplash('/images/circle-logo.png', '#000000');
+              }
+            });
+          `}
+        </Script>
       </body>
     </html>
   );

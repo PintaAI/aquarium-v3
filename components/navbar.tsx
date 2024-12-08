@@ -43,7 +43,7 @@ const data = {
       isActive: false,
     },
     {
-      title: "Kamus",
+      title: "Kosa-kata",
       url: "/vocabulary",
       icon: BookOpen,
       isActive: false,

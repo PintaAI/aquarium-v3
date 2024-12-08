@@ -333,7 +333,7 @@ export function FallingWordDisplay({
                   <div className="pr-4 space-y-4">
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Cari di kamus - ( Bahasa Korea )"
+                        placeholder="Cari di Kosa-kata - ( Bahasa Korea )"
                         value={dictionarySearch}
                         onChange={(e) => onDictionarySearchChange(e.target.value)}
                       />

@@ -15,7 +15,7 @@ Sebuah platform pembelajaran bahasa Korea yang dibangun dengan [Next.js 14](http
   - Toro-toro
 - 📱 Progressive Web App (PWA) Support
 - 🔔 Notifikasi Push
-- 📖 Kamus Korea
+- 📖 Kosa-kata Korea
 - 👥 Manajemen Profil Pengguna
 - 🎨 UI Modern dengan Tailwind CSS
 

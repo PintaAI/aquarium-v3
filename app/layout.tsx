@@ -81,16 +81,16 @@ export default async function RootLayout({
         </SessionProvider>
 
         {/* iOS PWA Splash Screen Generator */}
-        <Script src="https://unpkg.com/ios-pwa-splash@1.0.0/cdn.min.js" strategy="afterInteractive" />
-        <Script id="ios-pwa-splash-init" strategy="afterInteractive">
-          {`
-            window.addEventListener('load', function() {
-              if (typeof iosPWASplash === 'function') {
-                iosPWASplash('/images/circle-logo.png', '#000000');
-              }
-            });
-          `}
-        </Script>
+        <Script 
+          src="https://unpkg.com/ios-pwa-splash@1.0.0/cdn.min.js"
+          strategy="lazyOnload"
+          onLoad={() => {
+            const win = window as Window & typeof globalThis;
+            if (typeof win.iosPWASplash === 'function') {
+              win.iosPWASplash('/images/circle-logo.png', '#000000');
+            }
+          }}
+        />
       </body>
     </html>
   );

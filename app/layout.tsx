@@ -10,7 +10,6 @@ import { RegisterSW } from "@/components/pwa/register-sw-component";
 import { Toaster } from "react-hot-toast";
 import { MobileNavbar } from "@/components/mobile-navbar";
 import { Analytics } from '@vercel/analytics/react';
-import Script from 'next/script';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -79,18 +78,6 @@ export default async function RootLayout({
             <Analytics />
           </ThemeProvider>
         </SessionProvider>
-
-        {/* iOS PWA Splash Screen Generator */}
-        <Script 
-          src="https://unpkg.com/ios-pwa-splash@1.0.0/cdn.min.js"
-          strategy="lazyOnload"
-          onLoad={() => {
-            const win = window as Window & typeof globalThis;
-            if (typeof win.iosPWASplash === 'function') {
-              win.iosPWASplash('/images/circle-logo.png', '#000000');
-            }
-          }}
-        />
       </body>
     </html>
   );

@@ -29,7 +29,7 @@
   "screenshots": [
     {
       "src": "/images/circle-logo.png",
-      "sizes": "192x192",
+      "sizes": "128x128",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Pejuangkorea Academy Splash Screen"
@@ -37,6 +37,7 @@
   ],
   "splash_screen": {
     "background_color": "#000000",
-    "image": "/images/circle-logo.png"
+    "image": "/images/circle-logo.png",
+    "image_size": "128x128"
   }
 }

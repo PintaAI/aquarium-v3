@@ -60,12 +60,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Pejuangkorea Academy" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <script src="https://unpkg.com/ios-pwa-splash@1.0.0/cdn.min.js"></script>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            iosPWASplash('/images/circle-logo.png', '#000000');
-          `
-        }} />
+
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

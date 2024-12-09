@@ -1,58 +1,46 @@
-"use client";
+"use client"
+import { ReactNode, useEffect } from "react"
+import Script from "next/script"
 
-import { ReactNode, useEffect } from "react";
-import Script from "next/script";
-
-interface LayoutProps {
-  children: ReactNode;
-}
-
-export default function ToroToroLayout({ children }: LayoutProps) {
+export default function ToroToroLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
-    const handleScreenFit = (event: any) => {
-      document.body.className = 'fit';
-      console.log('Screenfit height:', event.detail.height);
+    // Handle screenfit event
+    window.addEventListener('screenfit', (event: any) => {
+      const { width, height } = event.detail
+      console.log(`Now @${width}x${height}`)
+      document.documentElement.style.setProperty('--game-height', `${height}px`)
+    })
+
+    // Handle virtual keyboard
+    const handleResize = () => {
+      // Get visual viewport height
+      const viewportHeight = window.visualViewport?.height || window.innerHeight;
+      // Get offset from top of the page
+      const offsetTop = window.visualViewport?.offsetTop || 0;
+      
+      // Update CSS variables for layout adjustments
+      document.documentElement.style.setProperty('--viewport-height', `${viewportHeight}px`);
+      document.documentElement.style.setProperty('--viewport-offset-top', `${offsetTop}px`);
     };
 
-    window.addEventListener('screenfit', handleScreenFit);
-    
+    // Listen to viewport changes (including keyboard show/hide)
+    window.visualViewport?.addEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('scroll', handleResize);
+
+    // Initial call
+    handleResize();
+
+    // Cleanup
     return () => {
-      window.removeEventListener('screenfit', handleScreenFit);
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
     };
-  }, []);
+  }, [])
 
   return (
     <>
-      <Script 
-        src="https://unpkg.com/screenfit" 
-        strategy="afterInteractive"
-        onLoad={() => {
-          console.log('Screenfit script loaded');
-        }}
-      />
-      <style jsx global>{`
-        body {
-          opacity: 0;
-          transition: opacity .3s ease-in;
-          width: 100%;
-          height: 100vh;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
-        }
-        
-        body.fit {
-          opacity: 1;
-        }
-
-        #__next {
-          width: 100%;
-          height: 100%;
-        }
-      `}</style>
-      <div style={{ width: '100%', height: '100vh' }}>
-        {children}
-      </div>
+      <Script src="https://unpkg.com/screenfit" strategy="afterInteractive" />
+      {children}
     </>
-  );
+  )
 }

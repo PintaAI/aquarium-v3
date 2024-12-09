@@ -140,7 +140,6 @@ export function FallingWordDisplay({
 
   useEffect(() => {
     if (previousWordsRef.current.length > fallingWords.length) {
-      // Temukan kata yang hilang dengan membandingkan array sebelumnya dan sekarang
       const removedWord = previousWordsRef.current.find(prevWord => 
         !fallingWords.some(currentWord => currentWord.id === prevWord.id)
       );
@@ -163,25 +162,17 @@ export function FallingWordDisplay({
   }, []);
 
   useEffect(() => {
-    if (!gameAreaRef.current) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      const height = entries[0]?.contentRect.height;
+    window.addEventListener('screenfit', (event: any) => {
+      const { height } = event.detail;
       if (height) {
         onSetGameAreaHeight(height);
       }
     });
-
-    resizeObserver.observe(gameAreaRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
   }, [onSetGameAreaHeight]);
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-3rem)] flex w-full items-center justify-center">
+      <div className="h-screen flex w-full items-center justify-center">
         <Card className="p-8">
           <h2 className="text-2xl font-bold mb-4">Loading...</h2>
           <p>Memuat koleksi kosakata...</p>
@@ -191,7 +182,13 @@ export function FallingWordDisplay({
   }
 
   return (
-    <div className="h-[calc(100vh-3rem)] flex w-full">
+    <div 
+      className="h-screen flex w-full"
+      style={{
+        height: 'var(--viewport-height, 100vh)',
+        transform: 'translateY(var(--viewport-offset-top, 0))',
+      }}
+    >
       <Card className="flex-1 p-2 sm:p-4 relative overflow-hidden m-0">
         <div className="flex-shrink-0 p-1 relative z-10">
           <div className="flex justify-between items-center">
@@ -285,136 +282,136 @@ export function FallingWordDisplay({
                   </Select>
                 </div>
 
-        <Dialog open={dialogOpen} onOpenChange={onDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="mt-4">
-              Pilih Kosa-Kata
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Pilih Koleksi Kosakata</DialogTitle>
-            </DialogHeader>
+                <Dialog open={dialogOpen} onOpenChange={onDialogOpenChange}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="mt-4">
+                      Pilih Kosa-Kata
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+                    <DialogHeader>
+                      <DialogTitle>Pilih Koleksi Kosakata</DialogTitle>
+                    </DialogHeader>
 
-            <Tabs defaultValue="collections" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="collections">Koleksi Kosa-Kata</TabsTrigger>
-                <TabsTrigger value="custom">Manual</TabsTrigger>
-              </TabsList>
+                    <Tabs defaultValue="collections" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="collections">Koleksi Kosa-Kata</TabsTrigger>
+                        <TabsTrigger value="custom">Manual</TabsTrigger>
+                      </TabsList>
 
-              <TabsContent value="collections" className="mt-4">
-                <ScrollArea className="h-[60vh]">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-4">
-                    {wordCollections.map((collection) => (
-                      <WordCollectionCard
-                        key={collection.name}
-                        title={collection.name}
-                        itemCount={collection.words.length}
-                        previewWord={collection.words[0] ? {
-                          term: collection.words[0].term,
-                          definition: collection.words[0].definition
-                        } : undefined}
-                        isSelected={selectedWordList === collection.name}
-                        isPublic={collection.isPublic}
-                        user={collection.user}
-                        onClick={() => {
-                          onWordListChange(collection.name);
-                          onUseCustomWords(false);
-                          onDialogOpenChange(false);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
-              </TabsContent>
+                      <TabsContent value="collections" className="mt-4">
+                        <ScrollArea className="h-[60vh]">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-4">
+                            {wordCollections.map((collection) => (
+                              <WordCollectionCard
+                                key={collection.name}
+                                title={collection.name}
+                                itemCount={collection.words.length}
+                                previewWord={collection.words[0] ? {
+                                  term: collection.words[0].term,
+                                  definition: collection.words[0].definition
+                                } : undefined}
+                                isSelected={selectedWordList === collection.name}
+                                isPublic={collection.isPublic}
+                                user={collection.user}
+                                onClick={() => {
+                                  onWordListChange(collection.name);
+                                  onUseCustomWords(false);
+                                  onDialogOpenChange(false);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </TabsContent>
 
-              <TabsContent value="custom" className="mt-4">
-                <ScrollArea className="h-[60vh]">
-                  <div className="pr-4 space-y-4">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Cari di Kosa-kata - ( Bahasa Korea )"
-                        value={dictionarySearch}
-                        onChange={(e) => onDictionarySearchChange(e.target.value)}
-                      />
-                      <Button 
-                        onClick={() => onDictionarySearch(dictionarySearch)}
-                        disabled={isSearching}
-                      >
-                        {isSearching ? 'Searching...' : 'Cari'}
-                      </Button>
-                    </div>
-
-                    {searchResults.length > 0 && (
-                      <div className="space-y-2 border rounded p-4">
-                        <h3 className="font-semibold">Dictionary Results:</h3>
-                        <div className="grid gap-2">
-                          {searchResults.map((result, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 border rounded bg-card">
-                              <span className="flex-1">{result.term}</span>
-                              <span className="flex-1">{result.definition}</span>
-                              <Button
-                                size="sm"
-                                onClick={() => onAddFromDictionary(result)}
+                      <TabsContent value="custom" className="mt-4">
+                        <ScrollArea className="h-[60vh]">
+                          <div className="pr-4 space-y-4">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Cari di Kosa-kata - ( Bahasa Korea )"
+                                value={dictionarySearch}
+                                onChange={(e) => onDictionarySearchChange(e.target.value)}
+                              />
+                              <Button 
+                                onClick={() => onDictionarySearch(dictionarySearch)}
+                                disabled={isSearching}
                               >
-                                Add
+                                {isSearching ? 'Searching...' : 'Cari'}
                               </Button>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="안녕하세요"
-                        value={newTerm}
-                        onChange={(e) => setNewTerm(e.target.value)}
-                      />
-                      <Input
-                        placeholder="halo"
-                        value={newDefinition}
-                        onChange={(e) => setNewDefinition(e.target.value)}
-                      />
-                      <Button className='text-lg m-0 p-5' onClick={handleAddCustomWord}>+</Button>
-                    </div>
+                            {searchResults.length > 0 && (
+                              <div className="space-y-2 border rounded p-4">
+                                <h3 className="font-semibold">Dictionary Results:</h3>
+                                <div className="grid gap-2">
+                                  {searchResults.map((result, index) => (
+                                    <div key={index} className="flex items-center gap-2 p-2 border rounded bg-card">
+                                      <span className="flex-1">{result.term}</span>
+                                      <span className="flex-1">{result.definition}</span>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => onAddFromDictionary(result)}
+                                      >
+                                        Add
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
-                    <div className="space-y-2">
-                      <h3 className="font-semibold">Kosa-Kata mu:</h3>
-                      <div className="grid gap-2">
-                        {customWords.map((word) => (
-                          <div key={word.id} className="flex items-center gap-2 p-2 border rounded bg-card">
-                            <span className="flex-1">{word.term}</span>
-                            <span className="flex-1">{word.definition}</span>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => onRemoveCustomWord(word.id)}
-                            >
-                              hapus
-                            </Button>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="안녕하세요"
+                                value={newTerm}
+                                onChange={(e) => setNewTerm(e.target.value)}
+                              />
+                              <Input
+                                placeholder="halo"
+                                value={newDefinition}
+                                onChange={(e) => setNewDefinition(e.target.value)}
+                              />
+                              <Button className='text-lg m-0 p-5' onClick={handleAddCustomWord}>+</Button>
+                            </div>
+
+                            <div className="space-y-2">
+                              <h3 className="font-semibold">Kosa-Kata mu:</h3>
+                              <div className="grid gap-2">
+                                {customWords.map((word) => (
+                                  <div key={word.id} className="flex items-center gap-2 p-2 border rounded bg-card">
+                                    <span className="flex-1">{word.term}</span>
+                                    <span className="flex-1">{word.definition}</span>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => onRemoveCustomWord(word.id)}
+                                    >
+                                      hapus
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {customWords.length > 0 && (
+                              <Button
+                                className="w-full"
+                                onClick={() => {
+                                  onUseCustomWords(true);
+                                  onDialogOpenChange(false);
+                                }}
+                              >
+                                Gunakan Kosakata Custom ({customWords.length} kata)
+                              </Button>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {customWords.length > 0 && (
-                      <Button
-                        className="w-full"
-                        onClick={() => {
-                          onUseCustomWords(true);
-                          onDialogOpenChange(false);
-                        }}
-                      >
-                        Gunakan Kosakata Custom ({customWords.length} kata)
-                      </Button>
-                    )}
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
-          </DialogContent>
-        </Dialog>
+                        </ScrollArea>
+                      </TabsContent>
+                    </Tabs>
+                  </DialogContent>
+                </Dialog>
 
                 <Button 
                   onClick={onStart}
@@ -424,12 +421,20 @@ export function FallingWordDisplay({
                 >
                   {gameOver ? 'Main Lagi?' : 'Start Game'}
                 </Button>
-
               </div>
             )}
           </div>
 
-          <div className="p-2 border-t bg-background relative z-10">
+          <div 
+            className="p-2 border-t bg-background relative z-10"
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              transform: 'translateY(calc(-1 * var(--viewport-offset-top, 0)))',
+            }}
+          >
             <Input
               type="text"
               value={userInput}

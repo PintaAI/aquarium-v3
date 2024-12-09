@@ -183,10 +183,17 @@ export function FallingWordDisplay({
 
   return (
     <div 
-      className="h-screen flex w-full"
+      className="h-screen flex w-full touch-none"
       style={{
         height: 'var(--viewport-height, 100vh)',
         transform: 'translateY(var(--viewport-offset-top, 0))',
+        transition: 'transform 0.3s ease-out',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden'
       }}
     >
       <Card className="flex-1 p-2 sm:p-4 relative overflow-hidden m-0">

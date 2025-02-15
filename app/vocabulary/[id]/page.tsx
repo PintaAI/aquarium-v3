@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { VocabularyTable } from "@/components/vocabulary/vocabulary-table";
 import { getVocabularyCollection } from "@/actions/vocabulary-actions";
 import { currentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -114,35 +114,7 @@ export default async function VocabularyDetailPage(
               </p>
             </div>
           ) : (
-            <div className="relative rounded-lg border overflow-x-auto">
-              <Table className="w-full">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-1/2 text-sm sm:text-base">Korea</TableHead>
-                    <TableHead className="w-1/2 text-sm sm:text-base">Indonesia</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {collection.items.map((item, index) => (
-                    <TableRow 
-                      key={item.id} 
-                      className={`${index % 2 === 0 ? 'bg-muted/30' : ''}`}
-                    >
-                      <TableCell 
-                        className="font-medium text-sm sm:text-base text-emerald-600 dark:text-emerald-400"
-                      >
-                        {item.korean}
-                      </TableCell>
-                      <TableCell 
-                        className="text-sm sm:text-base text-blue-600 dark:text-blue-400"
-                      >
-                        {item.indonesian}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <VocabularyTable items={collection.items} />
           )}
         </CardContent>
       </Card>

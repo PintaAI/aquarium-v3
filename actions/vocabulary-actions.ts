@@ -230,6 +230,41 @@ export async function getVocabularyItems(collectionId: number) {
   }
 }
 
+export async function searchVocabularyItems(query: string) {
+  try {
+    const user = await currentUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    const items = await db.vocabularyItem.findMany({
+      where: {
+        OR: [
+          { korean: { contains: query } },
+          { indonesian: { contains: query } },
+        ],
+        collection: {
+          OR: [
+            { userId: user.id },
+            { isPublic: true }
+          ]
+        }
+      },
+      include: {
+        collection: {
+          select: {
+            title: true
+          }
+        }
+      },
+      take: 50
+    })
+    
+    return { success: true, data: items }
+  } catch (error) {
+    console.error("[SEARCH_VOCABULARY_ITEMS]", error)
+    return { success: false, error: "Gagal mencari kosakata" }
+  }
+}
+
 export async function deleteVocabularyItem(id: number) {
   try {
     const user = await currentUser()

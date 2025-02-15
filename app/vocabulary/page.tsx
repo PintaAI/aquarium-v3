@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { VocabularySearchDialog } from "@/components/vocabulary/vocabulary-search-dialog"
 import { 
   getVocabularyCollections 
 } from "@/actions/vocabulary-actions"
@@ -27,24 +28,14 @@ export default async function VocabularyPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="bg-card rounded-lg shadow-sm p-4 border border-border mb-6">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1">
-            <Input
-              type="text"
-              placeholder="Cari kumpulan kosakata..."
-              className="pl-9 h-9 bg-background"
-            />
-            <SearchIcon className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-          </div>
-          
-          <Button asChild size="sm">
-            <Link href="/vocabulary/create" className="flex items-center gap-1.5">
-              <PlusIcon className="h-4 w-4" />
-              <span>Buat Baru</span>
-            </Link>
-          </Button>
-        </div>
+      <div className="flex justify-between items-center mb-6">
+        <VocabularySearchDialog />
+        <Button asChild>
+          <Link href="/vocabulary/create" className="flex items-center gap-1.5">
+            <PlusIcon className="h-4 w-4" />
+            <span>Buat Baru</span>
+          </Link>
+        </Button>
       </div>
 
       {/* Error Handling */}

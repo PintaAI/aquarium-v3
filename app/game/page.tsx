@@ -14,7 +14,7 @@ const GamePage = () => {
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto p-0 space-y-8">
       {/* Header Section */}
       <header className="text-center space-y-4">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">

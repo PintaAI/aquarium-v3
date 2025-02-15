@@ -18,7 +18,7 @@ export default function Layout({ children }: LayoutProps) {
       }
     >
       <AppSidebar />
-      <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4">
+      <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4 pb-24">
         {children}
       </div>
     </SidebarProvider>

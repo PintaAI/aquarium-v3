@@ -25,20 +25,6 @@ export const games: Game[] = [
     route: "/game/toro-toro"
   },
   {
-    id: "eps-topik",
-    title: "EPS-TOPIK Practice",
-    description: "Latihan soal untuk persiapan ujian EPS-TOPIK",
-    icon: GraduationCap,
-    route: "/game/eps-topik"
-  },
-  {
-    id: "pronounce", 
-    title: "Pronunciation Master",
-    description: "Latihan pengucapan kata-kata Korea dengan benar",
-    icon: Mic,
-    route: "/game/pronounce"
-  },
-  {
     id: "advanced-translate",
     title: "Advanced Translate",
     description: "Latihan menerjemahkan kalimat kompleks Korea-Indonesia",

@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { VocabularySearchDialog } from "@/components/vocabulary/vocabulary-search-dialog"
 import { 
   getVocabularyCollections 
@@ -13,8 +12,7 @@ import {
   PlusIcon,
   UserIcon,
   LockIcon,
-  UnlockIcon,
-  SearchIcon
+  UnlockIcon
 } from "lucide-react"
 
 export default async function VocabularyPage() {

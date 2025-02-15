@@ -3,6 +3,7 @@
 import { searchVocabularyItems } from "@/actions/vocabulary-actions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SearchIcon } from "lucide-react";
@@ -42,8 +43,16 @@ export function VocabularySearchDialog() {
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setSearchTerm("");
+      setResults([]);
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <SearchIcon className="h-4 w-4" />
@@ -61,14 +70,15 @@ export function VocabularySearchDialog() {
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             className="flex-1"
+            autoFocus
           />
           <Button onClick={handleSearch} disabled={isLoading}>
             {isLoading ? "Mencari..." : "Cari"}
           </Button>
         </div>
-        <div className="relative rounded-md border">
+        <ScrollArea className="relative rounded-md border max-h-[400px]">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow>
                 <TableHead className="w-[40%]">Korea</TableHead>
                 <TableHead className="w-[40%]">Indonesia</TableHead>
@@ -78,7 +88,7 @@ export function VocabularySearchDialog() {
             <TableBody>
               {results.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={2} className="h-24 text-center">
+                  <TableCell colSpan={3} className="h-24 text-center">
                     {searchTerm ? "Tidak ada hasil" : "Cari kosakata di semua koleksi"}
                   </TableCell>
                 </TableRow>
@@ -99,7 +109,7 @@ export function VocabularySearchDialog() {
               )}
             </TableBody>
           </Table>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

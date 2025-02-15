@@ -238,8 +238,8 @@ export async function searchVocabularyItems(query: string) {
     const items = await db.vocabularyItem.findMany({
       where: {
         OR: [
-          { korean: { contains: query } },
-          { indonesian: { contains: query } },
+          { korean: { contains: query, mode: 'insensitive' } },
+          { indonesian: { contains: query, mode: 'insensitive' } },
         ],
         collection: {
           OR: [

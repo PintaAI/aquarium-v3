@@ -132,3 +132,54 @@ body {
 .animate-slideDown {
   animation: slideDown 0.5s ease-out forwards;
 }
+
+/* Excalidraw Theme */
+.excalidraw {
+  --color-primary: hsl(150 100% 15%);
+  --color-primary-darker: hsl(150 100% 10%);
+  --color-primary-darkest: hsl(150 100% 5%);
+  --color-primary-light: hsl(150 100% 20%);
+  --color-primary-subtle: hsl(150 100% 25% / 0.3);
+  --color-secondary-darkest: hsl(150 100% 5%);
+  --color-secondary-darker: hsl(150 100% 10%);
+  --color-secondary: hsl(150 100% 15%);
+  --color-secondary-lighter: hsl(150 100% 20%);
+  --color-secondary-lightest: hsl(150 100% 25%);
+}
+
+.excalidraw.theme--dark {
+  --color-primary: hsl(150 100% 25%);
+  --color-primary-darker: hsl(150 100% 20%);
+  --color-primary-darkest: hsl(150 100% 15%);
+  --color-primary-light: hsl(150 100% 30%);
+  --color-primary-subtle: hsl(150 100% 35% / 0.3);
+  --color-secondary-darkest: hsl(150 100% 15%);
+  --color-secondary-darker: hsl(150 100% 20%);
+  --color-secondary: hsl(150 100% 25%);
+  --color-secondary-lighter: hsl(150 100% 30%);
+  --color-secondary-lightest: hsl(150 100% 35%);
+}
+
+.gradient-border {
+  position: relative;
+  background: hsl(var(--background));
+  border-radius: 0.5rem;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(to bottom right, 
+    hsl(var(--background)) 0%,
+    hsl(var(--muted-foreground)) 50%,
+    hsl(var(--background)) 100%
+  );
+  border-radius: 0.5rem;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}

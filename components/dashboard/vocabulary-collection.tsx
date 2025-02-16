@@ -1,0 +1,70 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { getLatestVocabularyCollections } from "@/actions/vocabulary-actions";
+
+interface VocabularyCollection {
+  id: number;
+  title: string;
+  isPublic: boolean;
+  items: Array<{ id: number }>;
+}
+
+export async function VocabularyCollection() {
+  const { data: collections } = await getLatestVocabularyCollections();
+  
+  if (!collections) return null;
+
+  return (
+    <Card className="border-none">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-md">Vocabulary Collection</CardTitle>
+          <a
+            href="/vocabulary"
+            className="text-xs font-medium hover:underline"
+          >
+            See more
+          </a>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[200px] w-full rounded-md">
+          <div className="space-y-4">
+            {collections.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-[150px] text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  You don't have any vocabulary collections yet
+                </p>
+                <a
+                  href="/vocabulary/create"
+                  className="text-xs font-medium hover:underline text-primary"
+                >
+                  Create your first collection
+                </a>
+              </div>
+            ) : (
+              collections.map((collection: VocabularyCollection) => (
+              <a
+                key={collection.id}
+                href={`/vocabulary/${collection.id}`}
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+              >
+                <div className="flex-1">
+                  <div className="font-medium line-clamp-1">{collection.title}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {collection.items.length} words
+                  </div>
+                </div>
+                <Badge variant="secondary" className="capitalize">
+                  {collection.isPublic ? "Public" : "Private"}
+                </Badge>
+              </a>
+              ))
+            )}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+}

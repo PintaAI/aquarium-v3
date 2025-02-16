@@ -287,3 +287,34 @@ export async function deleteVocabularyItem(id: number) {
     return { success: false, error: "Gagal menghapus kosakata" }
   }
 }
+
+export async function getLatestVocabularyCollections() {
+  try {
+    const user = await currentUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    const collections = await db.vocabularyCollection.findMany({
+      where: {
+        userId: user.id // Only get collections owned by the user
+      },
+      include: {
+        items: true,
+        user: {
+          select: {
+            name: true,
+            role: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 3 // Only get latest 3 collections
+    })
+    
+    return { success: true, data: collections }
+  } catch (error) {
+    console.error("[GET_USER_VOCABULARY_COLLECTIONS]", error)
+    return { success: false, error: "Gagal mengambil kumpulan kosakata pengguna" }
+  }
+}

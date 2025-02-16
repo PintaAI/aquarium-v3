@@ -184,6 +184,43 @@ export async function getCourse(courseId: number) {
   }
 }
 
+export async function getLatestJoinedCourses(): Promise<Course[]> {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return [];
+    }
+
+    const courses = await db.course.findMany({
+      where: {
+        members: {
+          some: {
+            id: user.id
+          }
+        }
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      },
+      take: 3
+    });
+
+    return courses as Course[];
+  } catch (error) {
+    console.error("Failed to fetch latest joined courses:", error);
+    return [];
+  }
+}
+
 export async function getCourses(): Promise<Course[]> {
   try {
     const courses = await db.course.findMany({

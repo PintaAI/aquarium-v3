@@ -1,5 +1,5 @@
 import { currentUser } from "@/lib/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { LatestCourses } from "@/components/dashboard/latest-courses";
 import { LatestArticles } from "@/components/dashboard/latest-articles";
@@ -40,14 +40,17 @@ export default async function HomePage() {
       <AppSidebar />
       <SidebarInset className="flex min-h-screen">
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto py-6 px-4 space-y-6">
+          <div className="container mx-auto py-6 px-4 space-y-6 pb-24">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
-                  <AvatarFallback>{user.name?.[0]?.toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <span className="text-xl font-medium">{user.name}</span>
+              <div className="flex items-center gap-1">
+                <Image
+                  src="/images/logoo.png"
+                  alt="Pejuangkorea Logo"
+                  width={40}
+                  height={40}
+                  className="h-12 w-12"
+                />
+                <span className="text-xl font-bold">Pejuangkorea Academy</span>
               </div>
               <DashboardCommand />
             </div>
@@ -64,9 +67,6 @@ export default async function HomePage() {
               </div>
               <div className="col-span-12 lg:col-span-6">
                 <LatestArticles />
-              </div>
-              <div className="col-span-12 lg:col-span-6">
-                <LearningProgress />
               </div>
             </div>
           </div>

@@ -7,13 +7,13 @@ export function GameShortcuts() {
     <Card className="border-none">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-md">Games</CardTitle>
-          <a
+          <CardTitle className="text-md">App</CardTitle>
+          <Link
             href="/game"
             className="text-xs font-medium hover:underline"
           >
-            See more
-          </a>
+            lihat lebih
+          </Link>
         </div>
       </CardHeader>
       <CardContent>

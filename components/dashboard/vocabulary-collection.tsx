@@ -19,12 +19,12 @@ export async function VocabularyCollection() {
     <Card className="border-none">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-md">Vocabulary Collection</CardTitle>
+          <CardTitle className="text-md">Koleksi Kosa-Kata</CardTitle>
           <a
             href="/vocabulary"
             className="text-xs font-medium hover:underline"
           >
-            See more
+            Selengkapnya
           </a>
         </div>
       </CardHeader>
@@ -34,13 +34,13 @@ export async function VocabularyCollection() {
             {collections.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[150px] text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  You don't have any vocabulary collections yet
+                  Kamu belum punya koleksi kosa-kata
                 </p>
                 <a
                   href="/vocabulary/create"
                   className="text-xs font-medium hover:underline text-primary"
                 >
-                  Create your first collection
+                  Tambah di sini
                 </a>
               </div>
             ) : (

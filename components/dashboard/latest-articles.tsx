@@ -17,9 +17,9 @@ export async function LatestArticles() {
     <Card className="border-none">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-md">Latest Articles</CardTitle>
+          <CardTitle className="text-md">Artikel</CardTitle>
           <a href="/artikel" className="text-xs font-medium hover:underline">
-            See more
+            Selengkapnya
           </a>
         </div>
       </CardHeader>

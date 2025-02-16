@@ -7,29 +7,31 @@ export async function POST(req: Request) {
   try {
     const { text } = await req.json();
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `Analisis teks berikut dan berikan terjemahan yang sesuai:
-    - Jika teks mengandung Hangul, terjemahkan ke Bahasa Indonesia
-    - Jika teks dalam Bahasa Indonesia, terjemahkan ke Bahasa Korea (Hangul)
-    - pastikan terjemahan menggunakan bhasa sehari hari yang di gunakan indonesia atau korea
+    const prompt = `🔍 **Analisis Teks dan Terjemahan**
 
-    Berikan output dalam format markdown:
+    📜 **Instruksi:**
+    - Jika teks mengandung Hangul, terjemahkan ke Bahasa Indonesia 🇮🇩
+    - Jika teks ditulis dalam Bahasa Indonesia, terjemahkan ke Bahasa Korea (Hangul) 🇰🇷 dengan gaya bahasa formal (hindari penggunaan banmal)
+    - Pastikan terjemahan menggunakan bahasa sehari-hari yang umum dipakai, namun tetap mempertahankan kesopanan dan keformalan sesuai konteks
 
+    📝 **Format Output (harap ikuti dengan tepat):**
+    
     # Teks Asli
     ${text}
-
+    
     ## Terjemahan
     [Terjemahan dalam bahasa target]
-
+    
     ## Cara Baca
-    [Romanisasi untuk teks Korea]
-
+    [Romanisasi untuk teks Korea, jika diperlukan]
+    
     ## Penjelasan Tata Bahasa
-    [Jelaskan struktur kalimat, partikel, grammar dan level kesopanan yang digunakan serta kosa kata terkait]
-
+    [Jelaskan struktur kalimat, partikel, tata bahasa, tingkat kesopanan yang digunakan, serta kosa kata terkait]
+    
     ## Konteks Budaya
-    [Jika ada konteks budaya yang relevan]`;
+    [Berikan penjelasan mengenai konteks budaya yang relevan, jika ada]`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

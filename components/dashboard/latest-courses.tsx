@@ -10,12 +10,12 @@ export async function LatestCourses() {
     <Card className="border-none">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-md">Latest Joined Courses</CardTitle>
+          <CardTitle className="text-md">Kursus-mu</CardTitle>
           <a
             href="/courses"
             className="text-xs font-medium hover:underline"
           >
-            See more
+            Selenhkapnya
           </a>
         </div>
       </CardHeader>
@@ -25,13 +25,13 @@ export async function LatestCourses() {
             {courses.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[150px] text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  You haven't joined any courses yet
+                  Kamu belum bergabung dengan kursus apapun
                 </p>
                 <a
                   href="/courses"
                   className="text-xs font-medium hover:underline text-primary"
                 >
-                  Browse courses
+                  Cari di sini
                 </a>
               </div>
             ) : (

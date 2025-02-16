@@ -13,7 +13,7 @@ export function GameShortcuts() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">App</CardTitle>
           <Link
-            href="/games"
+            href="/game"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
           >
             View all

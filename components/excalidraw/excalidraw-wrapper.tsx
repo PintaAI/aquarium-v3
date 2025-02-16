@@ -28,7 +28,7 @@ const defaultUIOptions: ExcalidrawProps["UIOptions"] = {
     saveAsImage: true,
     saveToActiveFile: false,
     changeViewBackgroundColor: true,
-    toggleTheme: false,
+    toggleTheme: true,
     clearCanvas: true,
   },
 };

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { getLatestVocabularyCollections } from "@/actions/vocabulary-actions";
+import { ChevronRight } from "lucide-react";
 
 interface VocabularyCollection {
   id: number;
@@ -19,12 +20,13 @@ export async function VocabularyCollection() {
     <Card className="border-none">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-md">Koleksi Kosa-Kata</CardTitle>
+          <CardTitle className="text-md">Kosa-Kata</CardTitle>
           <a
             href="/vocabulary"
-            className="text-xs font-medium hover:underline"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
           >
-            Selengkapnya
+            View all
+            <ChevronRight className="h-4 w-4 ml-1" />
           </a>
         </div>
       </CardHeader>

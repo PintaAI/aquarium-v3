@@ -1,12 +1,11 @@
 import { currentUser } from "@/lib/auth";
 import Image from "next/image";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { LatestCourses } from "@/components/dashboard/latest-courses";
-import { LatestArticles } from "@/components/dashboard/latest-articles";
-import { GameShortcuts } from "@/components/dashboard/game-shortcuts";
-import { VocabularyCollection } from "@/components/dashboard/vocabulary-collection";
-import { LearningProgress } from "@/components/dashboard/learning-progress";
-import { DashboardCommand } from "@/components/dashboard/dashboard-command";
+import { LatestCourses } from "@/components/menu/latest-courses";
+import { LatestArticles } from "@/components/menu/latest-articles";
+import { GameShortcuts } from "@/components/menu/game-shortcuts";
+import { VocabularyCollection } from "@/components/menu/vocabulary-collection";
+import { SearchBox } from "@/components/ui/search-box";
 import Hero from "@/components/landing/hero";
 import Fitur from "@/components/landing/fitur";
 import Testimoni from "@/components/landing/testimoni";
@@ -40,32 +39,36 @@ export default async function HomePage() {
       <AppSidebar />
       <SidebarInset className="flex min-h-screen">
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto py-2 px-2 space-y-6 pb-24">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
+          <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-1 pb-24">
+            <header className="flex items-center justify-between  pb-2">
+              <div className="flex items-center">
                 <Image
                   src="/images/logoo.png"
                   alt="Pejuangkorea Logo"
                   width={40}
                   height={40}
                   className="h-12 w-12"
+                  priority
                 />
-                <span className="text-xl font-bold">Pejuangkorea Academy</span>
+                <span className="text-md font-bold">Pejuangkorea Academy</span>
               </div>
-              <DashboardCommand />
-            </div>
+            </header>
+            
+            <SearchBox
+              placeholder="Search for courses, articles, or vocabulary..."
+              className="mb-0"
+            />
             
             <div className="grid grid-cols-12 gap-6 lg:gap-8">
-              <div className="col-span-12 lg:col-span-3">
+              {/* Left Column */}
+              <div className="col-span-12 lg:col-span-3 space-y-6">
                 <GameShortcuts />
-              </div>
-              <div className="col-span-12 lg:col-span-6">
-                <LatestCourses />
-              </div>
-              <div className="col-span-12 lg:col-span-3">
                 <VocabularyCollection />
               </div>
-              <div className="col-span-12 lg:col-span-6">
+              
+              {/* Main Content */}
+              <div className="col-span-12 lg:col-span-9 space-y-6">
+                <LatestCourses />
                 <LatestArticles />
               </div>
             </div>

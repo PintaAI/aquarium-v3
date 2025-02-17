@@ -3,6 +3,9 @@
 import { useSession } from "next-auth/react"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { Card } from "@/components/ui/card"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function ProfilPage() {
   const { data: session } = useSession()
@@ -15,7 +18,15 @@ export default function ProfilPage() {
           <h1 className="text-2xl font-bold">Profile</h1>
           
           {user && (
-            <div className="space-y-4">
+          <div className="space-y-4 relative">
+            <div className="absolute right-0 top-0 flex gap-2">
+              <ThemeToggle />
+              {user.role === "GURU" && (
+                <Button variant="outline" asChild>
+                  <Link href="/teach">Go to Teach</Link>
+                </Button>
+              )}
+            </div>
               {user.image && (
                 <div className="w-24 h-24 rounded-full overflow-hidden">
                   <img 
@@ -27,6 +38,10 @@ export default function ProfilPage() {
               )}
               
               <div className="space-y-2">
+                <div>
+                  <span className="font-semibold">Account Type:</span>{" "}
+                  <span className="capitalize">{user.plan || "Free"}</span>
+                </div>
                 {user.name && (
                   <div>
                     <span className="font-semibold">Name:</span> {user.name}

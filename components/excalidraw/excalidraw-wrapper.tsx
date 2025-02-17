@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { useCallback,} from "react";
+import Link from "next/link";
 import type {
   ExcalidrawInitialDataState,
   ExcalidrawProps,
@@ -61,11 +62,13 @@ const ExcalidrawWrapper = ({
           onChange={handleChange}
           UIOptions={defaultUIOptions}
           renderTopRightUI={() => (
-            <img
-              src="/images/circle-logo.png"
-              alt="Pejuangkorea Academy"
-              className="w-9 h-9 opacity-80 hover:opacity-100 transition-opacity m-0.5"
-            />
+            <Link href="/">
+              <img
+                src="/images/circle-logo.png"
+                alt="Pejuangkorea Academy"
+                className="w-9 h-9 opacity-80 hover:opacity-100 transition-opacity m-0.5"
+              />
+            </Link>
           )}
           viewModeEnabled={viewModeEnabled}
           zenModeEnabled={zenModeEnabled}

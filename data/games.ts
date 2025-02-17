@@ -1,11 +1,14 @@
-import { Languages, BookOpen, GraduationCap, Mic, BookText, ScrollText } from "lucide-react";
+import { Languages, BookOpen, GraduationCap, BookText, ScrollText } from "lucide-react";
+import { TbAlphabetKorean } from "react-icons/tb";
 import { LucideIcon } from "lucide-react";
+import { IconType } from "react-icons";
+import { FaKeyboard } from "react-icons/fa";
 
 export interface Game {
   id: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: LucideIcon | IconType;
   route: string;
 }
 
@@ -26,23 +29,23 @@ export const games: Game[] = [
   },
   {
     id: "hangeul",
-    title: "Hangeul",
+    title: "HanRush",
     description: "Pelajari dasar-dasar huruf Korea (Hangeul) dengan cara yang menyenangkan",
-    icon: Languages,
+    icon: TbAlphabetKorean,
     route: "/game/hangeul"
   },
   {
     id: "toro-toro",
     title: "Toro-Toro",
     description: "Permainan tebak kata Korea dengan sistem point",
-    icon: BookOpen,
+    icon: FaKeyboard,
     route: "/game/toro-toro"
   },
   {
     id: "advanced-translate",
     title: "Translate",
     description: "Latihan menerjemahkan kalimat kompleks Korea-Indonesia",
-    icon: BookText,
+    icon: Languages,
     route: "/game/advanced-translate"
   },
   {

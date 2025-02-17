@@ -61,7 +61,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Set sidebar closed by default for game and artikel routes only on initial load
   React.useEffect(() => {
-    if (!initialPathLoaded && (pathname.startsWith('/game') || pathname.startsWith('/artikel'))) {
+    if (!initialPathLoaded && (pathname === '/' || pathname.startsWith('/game') || pathname.startsWith('/artikel'))) {
       setOpen(false)
       setInitialPathLoaded(true)
     }

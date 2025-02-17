@@ -11,7 +11,7 @@ export async function LatestCourses() {
     <Card className="border-none shadow-sm">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Kursus-mu</CardTitle>
+          <CardTitle className="text-lg font-semibold">Materi</CardTitle>
           <a
             href="/courses"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"

@@ -8,6 +8,8 @@ import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Users } from "lucide-react"
+import { joinRoom } from "@/actions/room-actions"
+import { useRouter } from "next/navigation"
 
 interface Room {
   id: string
@@ -25,6 +27,18 @@ interface ActiveLiveSessionProps {
 }
 
 export function ActiveLiveSession({ rooms, isLoading = false }: ActiveLiveSessionProps) {
+  const router = useRouter()
+
+  const handleJoinRoom = async (e: React.MouseEvent<HTMLAnchorElement>, roomId: string) => {
+    e.preventDefault()
+    try {
+      await joinRoom({ roomId })
+      router.push(`/room/${roomId}`)
+    } catch (error) {
+      console.error("Failed to join room:", error)
+    }
+  }
+
   return (
     <Card className="col-span-3 border-none shadow-none">
       <CardHeader className="pb-3">
@@ -56,7 +70,12 @@ export function ActiveLiveSession({ rooms, isLoading = false }: ActiveLiveSessio
                   </div>
                 ))
               : rooms.map((room) => (
-                  <Link key={room.id} href={`/room/${room.id}`} className="block">
+                  <Link 
+                    key={room.id} 
+                    href={`/room/${room.id}`} 
+                    onClick={(e) => handleJoinRoom(e, room.id)} 
+                    className="block"
+                  >
                     <div className="flex items-start gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm">
                       <Avatar className="mt-1 border shrink-0 h-10 w-10">
                         <AvatarImage src={room.host.image ?? ""} alt={room.host.name ?? "Host"} />

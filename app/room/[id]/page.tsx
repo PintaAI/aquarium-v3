@@ -193,7 +193,7 @@ export default function RoomPage({ params }: PageProps) {
           if (room.creatorId === user?.id) {
             await endRoom(id)
           }
-          router.push("/room")
+          router.push("/")
         }}
       >
         <MyVideoConference room={room} user={user} />

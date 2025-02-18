@@ -32,20 +32,7 @@ export default async function RoomPage() {
           }
         }))} />
 
-        <div>
-          <h2 className="text-2xl font-bold mb-4">All Rooms</h2>
-          {rooms.length === 0 ? (
-            <div className="text-muted-foreground">
-              No active rooms found
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {rooms.map((room) => (
-                <RoomCard key={room.id} room={room} />
-              ))}
-            </div>
-          )}
-        </div>
+
       </div>
     </div>
   )

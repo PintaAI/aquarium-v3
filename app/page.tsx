@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { getArticles } from "@/actions/article-actions";
+import { getLiveSessions } from "@/actions/room-actions";
 import Image from "next/image";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { LatestCourses } from "@/components/menu/latest-courses";
@@ -13,6 +14,7 @@ import Testimoni from "@/components/landing/testimoni";
 import Cta from "@/components/landing/cta";
 import Navbar from "@/components/navbar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ActiveLiveSession } from "@/components/menu/active-live-session";
 
 export default async function HomePage() {
   const user = await currentUser();
@@ -65,6 +67,17 @@ export default async function HomePage() {
               <div className="col-span-12 lg:col-span-3 space-y-6">
                 <GameShortcuts />
                 <VocabularyCollection />
+                <ActiveLiveSession 
+                  rooms={(await getLiveSessions()).map(room => ({
+                    id: room.id,
+                    title: room.name,
+                    createdAt: room.createdAt,
+                    host: {
+                      name: room.creator.name,
+                      image: room.creator.image
+                    }
+                  }))} 
+                />
               </div>
               
               {/* Main Content */}

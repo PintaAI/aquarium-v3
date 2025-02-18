@@ -80,6 +80,35 @@ export async function joinRoom({ roomId }: JoinRoomParams) {
   }
 }
 
+export async function getLiveSessions() {
+  try {
+    const user = await currentUser()
+    
+    if (!user) {
+      throw new Error("Unauthorized")
+    }
+
+    const rooms = await db.room.findMany({
+      where: {
+        isActive: true
+      },
+      include: {
+        creator: true,
+      },
+      orderBy: {
+        createdAt: "desc"
+      },
+      take: 5
+    })
+
+    return rooms
+
+  } catch (error) {
+    console.error("[LIVE_SESSIONS_GET]", error)
+    throw error
+  }
+}
+
 export async function getRooms() {
   try {
     const user = await currentUser()

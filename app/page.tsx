@@ -56,7 +56,6 @@ export default async function HomePage() {
                 <span className="text-md font-bold">Pejuangkorea Academy</span>
               </div>
             </header>
-            
             <SearchBox
               placeholder="Cari artikel, kursus, game..."
               className="mb-0 bg-primary/35 rounded-lg"
@@ -75,7 +74,8 @@ export default async function HomePage() {
                     host: {
                       name: room.creator.name,
                       image: room.creator.image
-                    }
+                    },
+                    numParticipants: room.numParticipants || 0
                   }))} 
                 />
               </div>

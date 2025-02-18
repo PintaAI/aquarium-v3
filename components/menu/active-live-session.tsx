@@ -19,6 +19,7 @@ interface Room {
     name: string | null
     image: string | null
   }
+  numParticipants: number
 }
 
 interface ActiveLiveSessionProps {
@@ -93,8 +94,9 @@ export function ActiveLiveSession({ rooms, isLoading = false }: ActiveLiveSessio
                           </time>
                         </div>
                       </div>
-                      <div className="shrink-0 rounded-md border bg-muted/30 w-16 h-16 flex items-center justify-center">
+                      <div className="shrink-0 rounded-md border bg-muted/30 w-16 h-16 flex flex-col items-center justify-center gap-1">
                         <Users className="text-muted-foreground/50 h-6 w-6" />
+                        <span className="text-sm text-muted-foreground">{room.numParticipants}</span>
                       </div>
                     </div>
                   </Link>

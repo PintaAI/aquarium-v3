@@ -3,6 +3,8 @@
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { currentUser } from "@/lib/auth"
+import { Room } from "livekit-server-sdk"
+import { getActiveLiveKitRooms } from "@/lib/livekit"
 
 interface CreateRoomParams {
   name: string
@@ -88,20 +90,37 @@ export async function getLiveSessions() {
       throw new Error("Unauthorized")
     }
 
+    // Get actually active rooms from LiveKit
+    const liveKitRooms = await getActiveLiveKitRooms()
+
+    // If no active rooms in LiveKit, return early
+    if (liveKitRooms.length === 0) {
+      return []
+    }
+
+    // Get room details from database for active LiveKit rooms
     const rooms = await db.room.findMany({
       where: {
-        isActive: true
+        id: {
+          in: liveKitRooms.map((room: Room) => room.name)
+        }
       },
       include: {
         creator: true,
       },
       orderBy: {
         createdAt: "desc"
-      },
-      take: 5
+      }
     })
 
-    return rooms
+    // Combine LiveKit data with database data
+    return rooms.map((room) => {
+      const liveKitRoom = liveKitRooms.find((lr: Room) => lr.name === room.id)
+      return {
+        ...room,
+        numParticipants: liveKitRoom?.numParticipants || 0
+      }
+    })
 
   } catch (error) {
     console.error("[LIVE_SESSIONS_GET]", error)

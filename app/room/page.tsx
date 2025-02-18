@@ -1,0 +1,40 @@
+import { getRooms } from "@/actions/room-actions"
+import { RoomCard } from "@/components/room/room-card"
+import { CreateRoomForm } from "@/components/room/create-room-form"
+import { currentUser } from "@/lib/auth"
+import { db } from "@/lib/db"
+
+export default async function RoomPage() {
+  const [user, rooms] = await Promise.all([
+    currentUser(),
+    getRooms()
+  ])
+
+  // Get all available courses
+  const courses = user?.role === "GURU" ? await db.course.findMany() : []
+
+  return (
+    <div className="container py-6">
+      <div className="space-y-6">
+        {user?.role === "GURU" && (
+          <CreateRoomForm courses={courses} />
+        )}
+
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Active Rooms</h2>
+          {rooms.length === 0 ? (
+            <div className="text-muted-foreground">
+              No active rooms found
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {rooms.map((room) => (
+                <RoomCard key={room.id} room={room} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

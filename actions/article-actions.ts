@@ -20,6 +20,15 @@ export interface Article {
     name: string | null
     image: string | null
   }
+  firstImageUrl: string | null
+}
+
+function getFirstImageUrl(html: string): string | null {
+  const match = html.match(/<img.*?src="(.*?)"/);
+  if (match && match[1]) {
+    return match[1];
+  }
+  return null;
 }
 
 export async function addArticle(data: z.infer<typeof addArticleSchema>) {
@@ -141,7 +150,10 @@ export async function getArticle(articleId: number) {
       return null
     }
 
-    return article
+    return {
+      ...article,
+      firstImageUrl: getFirstImageUrl(article.htmlDescription)
+    }
   } catch (error) {
     console.error('Error fetching article data')
     throw error
@@ -164,7 +176,12 @@ export async function getArticles(): Promise<Article[]> {
         createdAt: 'desc',
       },
     })
-    return articles as Article[]
+    const articlesWithImage = articles.map(article => ({
+      ...article,
+      firstImageUrl: getFirstImageUrl(article.htmlDescription)
+    }));
+    
+    return articlesWithImage as Article[]
   } catch (error) {
     console.error("Failed to fetch articles:", error)
     throw new Error("Failed to fetch articles")

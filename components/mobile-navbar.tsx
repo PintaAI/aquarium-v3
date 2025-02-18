@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from "next-auth/react";
-import { Home, BookOpen, GamepadIcon, BookText, User } from "lucide-react";
+import { Home, BookOpen, BookText, User } from "lucide-react";
+import { RiApps2AiFill } from "react-icons/ri";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import AuthCard from "./form/AuthCard";
@@ -41,7 +42,7 @@ export function MobileNavbar() {
             pathname.startsWith("/game") ? "text-foreground" : "text-foreground/60"
           }`}
         >
-          <GamepadIcon className="h-6 w-6" />
+          <RiApps2AiFill className="h-8 w-8" />
         </Link>
         <Link 
           href="/vocabulary" 

@@ -38,7 +38,7 @@ export async function LatestCourses() {
               </div>
             ) : (
               courses.map((course) => (
-                <div key={course.id} className="w-[300px] flex-none">
+                <div key={course.id} className="w-[280px] flex-none">
                   <CourseListCard
                     course={course}
                     isAuthor={false}

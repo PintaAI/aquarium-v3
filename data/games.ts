@@ -10,6 +10,7 @@ export interface Game {
   description: string;
   icon: LucideIcon | IconType;
   route: string;
+  type: string;
 }
 
 export const games: Game[] = [
@@ -18,6 +19,7 @@ export const games: Game[] = [
     title: "Ujian Sertifikat",
     description: "Latihan ujian sertifikasi bahasa Korea dengan format standar",
     icon: ScrollText,
+    type: "App",
     route: "/game/ujian-sertifikat"
   },
   {
@@ -25,34 +27,39 @@ export const games: Game[] = [
     title: "Soal Harian",
     description: "Latihan soal bahasa Korea harian untuk meningkatkan kemampuan",
     icon: GraduationCap,
-    route: "/game/soal-harian"
+    route: "/game/soal-harian",
+    type: "App"
   },
   {
     id: "hangeul",
     title: "HanRush",
     description: "Pelajari dasar-dasar huruf Korea (Hangeul) dengan cara yang menyenangkan",
     icon: TbAlphabetKorean,
-    route: "/game/hangeul"
+    route: "/game/hangeul",
+    type: "Game"
   },
   {
     id: "toro-toro",
     title: "Toro-Toro",
     description: "Permainan tebak kata Korea dengan sistem point",
     icon: FaKeyboard,
-    route: "/game/toro-toro"
+    route: "/game/toro-toro",
+    type: "Game"
   },
   {
     id: "advanced-translate",
     title: "Translate",
     description: "Latihan menerjemahkan kalimat kompleks Korea-Indonesia",
     icon: Languages,
-    route: "/game/advanced-translate"
+    route: "/game/advanced-translate",
+    type: "App"
   },
   {
     id: "e-book",
     title: "E-Book",
     description: "Baca buku digital bahasa Korea untuk meningkatkan pemahaman",
     icon: BookText,
-    route: "/game/e-book"
+    route: "/game/e-book",
+    type: "Resource"
   }
 ];

@@ -9,6 +9,7 @@ interface GameCardProps {
 export function GameCard({ game }: GameCardProps) {
   const Icon = game.icon;
 
+
   return (
     <Link href={game.route}>
       <Card className="group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:-translate-y-1">
@@ -39,7 +40,7 @@ export function GameCard({ game }: GameCardProps) {
           </div>
           <div className="mt-2">
             <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
-              Game
+              {game.type}
             </span>
           </div>
         </CardContent>

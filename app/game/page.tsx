@@ -18,10 +18,10 @@ const GamePage = () => {
       {/* Header Section */}
       <header className="text-center space-y-4">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Game Pembelajaran
+          Pejuangkorea
         </h1>
         <p className="text-primary/80 max-w-2xl mx-auto">
-          Pilih game edukasi yang sesuai dengan kebutuhan belajarmu. Setiap game dirancang untuk membantu memahami Bahasa Korea dengan cara yang menyenangkan.
+          Di bawah ini adalah beberapa App yang bisa kamu gunakan untuk belajar bahasa korea
         </p>
       </header>
 
@@ -34,7 +34,7 @@ const GamePage = () => {
           />
           <input
             type="text"
-            placeholder="Cari game..."
+            placeholder="Cari Aplikasi"
             className="w-full pl-10 pr-4 py-2 border border-secondary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

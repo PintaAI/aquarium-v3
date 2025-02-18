@@ -1,4 +1,5 @@
 import { currentUser } from "@/lib/auth";
+import { getArticles } from "@/actions/article-actions";
 import Image from "next/image";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { LatestCourses } from "@/components/menu/latest-courses";
@@ -55,11 +56,11 @@ export default async function HomePage() {
             </header>
             
             <SearchBox
-              placeholder="Search for courses, articles, or vocabulary..."
-              className="mb-0"
+              placeholder="Cari artikel, kursus, game..."
+              className="mb-0 bg-primary/35 rounded-lg"
             />
             
-            <div className="grid grid-cols-12 gap-6 lg:gap-8">
+            <div className="grid grid-cols-10 gap-2 lg:gap-1">
               {/* Left Column */}
               <div className="col-span-12 lg:col-span-3 space-y-6">
                 <GameShortcuts />
@@ -67,9 +68,9 @@ export default async function HomePage() {
               </div>
               
               {/* Main Content */}
-              <div className="col-span-12 lg:col-span-9 space-y-6">
+              <div className="col-span-12 lg:col-span-7 space-y-6">
                 <LatestCourses />
-                <LatestArticles />
+                <LatestArticles articles={await getArticles()} />
               </div>
             </div>
           </div>

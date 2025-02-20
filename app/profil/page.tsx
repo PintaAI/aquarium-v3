@@ -1,6 +1,6 @@
 "use client"
 
-import { Settings, User, UserCircle, Mail } from "lucide-react"
+import { Settings, User, UserCircle, Mail, Users, Video, PlusCircle } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
@@ -103,6 +103,32 @@ export default function ProfilPage() {
                   </div>
                 </div>
               </div>
+              
+              {user.role === "GURU" && (
+                <div className="space-y-4 pt-6 mt-6 border-t">
+                  <h3 className="font-medium">Teaching Tools</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Button variant="outline" asChild className="h-auto py-4 px-6">
+                      <Link href="/room" className="flex flex-col items-center gap-2">
+                        <Video className="h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-medium">Live Sessions</div>
+                          <p className="text-xs text-muted-foreground">View active study rooms</p>
+                        </div>
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild className="h-auto py-4 px-6">
+                      <Link href="/room" className="flex flex-col items-center gap-2">
+                        <PlusCircle className="h-6 w-6" />
+                        <div className="text-center">
+                          <div className="font-medium">Create Room</div>
+                          <p className="text-xs text-muted-foreground">Start a new study session</p>
+                        </div>
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-4 border-t pt-6">
               <Button variant="outline" className="w-full">

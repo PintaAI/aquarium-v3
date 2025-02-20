@@ -60,13 +60,7 @@ export default async function HomePage() {
               placeholder="Cari artikel, kursus, game..."
               className="mb-0 bg-primary/35 rounded-lg"
             />
-            
-            <div className="grid grid-cols-10 gap-2 lg:gap-1">
-              {/* Left Column */}
-              <div className="col-span-12 lg:col-span-3 space-y-6">
-                <GameShortcuts />
-                <VocabularyCollection />
-                <ActiveLiveSession 
+            <ActiveLiveSession 
                   rooms={(await getLiveSessions()).map(room => ({
                     id: room.id,
                     title: room.name,
@@ -78,6 +72,13 @@ export default async function HomePage() {
                     numParticipants: room.numParticipants || 0
                   }))} 
                 />
+            
+            <div className="grid grid-cols-10 gap-2 lg:gap-1">
+              {/* Left Column */}
+              <div className="col-span-12 lg:col-span-3 space-y-6">
+                <GameShortcuts />
+                <VocabularyCollection />
+                
               </div>
               
               {/* Main Content */}

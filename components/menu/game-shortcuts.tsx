@@ -34,8 +34,8 @@ export function GameShortcuts() {
                 href={game.route}
                 className="flex flex-col items-center p-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-300 group"
               >
-                <div className="mb-3 p-2 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors">
-                  <game.icon className="h-6 w-6 text-primary" />
+                <div className="mb-3 p-2 rounded-full group-hover:bg-primary/20 transition-colors bg-accent/50">
+                  <game.icon className="h-6 w-6 text-primary " />
                 </div>
                 <span className="text-sm text-center font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                   {game.title}

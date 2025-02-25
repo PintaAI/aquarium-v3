@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ThemeToggle } from "./theme-toggle";
 import { Separator } from "./ui/separator";
 import { usePathname } from "next/navigation";
-import { UseCurrentUser } from "@/hooks/use-current-user";
+import { UseCurrentUser } from "../hooks/use-current-user";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
@@ -163,7 +163,24 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Navigation */}
-    
+      <nav className="md:hidden fixed bottom-0 z-50 w-full h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
+        <div className="grid h-full grid-cols-4 items-center justify-items-center">
+          {data.navMain.map((item) => (
+            <Link
+              key={item.title}
+              href={item.url}
+              className={`flex flex-col items-center gap-1 ${
+                pathname.startsWith(item.url)
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-xs">{item.title}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
     </>
   );
 }

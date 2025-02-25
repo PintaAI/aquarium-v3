@@ -33,7 +33,7 @@ export function LatestArticles({ articles, isLoading = false }: LatestArticlesPr
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[450px] pr-4 -mr-4">
+        <ScrollArea className="h-[570px] pr-4 -mr-4 ">
           <div className="space-y-4">
             {isLoading
               ? Array.from({ length: 5 }).map((_, i) => (

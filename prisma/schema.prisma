@@ -171,6 +171,7 @@ model VocabularyItem {
   id          Int                  @id @default(autoincrement())
   korean      String
   indonesian  String
+  isChecked   Boolean              @default(false)
   collection  VocabularyCollection @relation(fields: [collectionId], references: [id])
   collectionId Int
   createdAt   DateTime             @default(now())

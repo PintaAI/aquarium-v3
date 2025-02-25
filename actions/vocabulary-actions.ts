@@ -318,3 +318,37 @@ export async function getLatestVocabularyCollections() {
     return { success: false, error: "Gagal mengambil kumpulan kosakata pengguna" }
   }
 }
+
+export async function toggleVocabularyItemCheck(id: number) {
+  try {
+    const user = await currentUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    // Get the item and its collection to check permissions
+    const item = await db.vocabularyItem.findUnique({
+      where: { id },
+      include: { collection: true }
+    })
+
+    if (!item) {
+      return { success: false, error: "Kosakata tidak ditemukan" }
+    }
+
+    // Check if user owns the collection or if it's public
+    if (!item.collection.isPublic && item.collection.userId !== user.id) {
+      return { success: false, error: "Tidak memiliki akses" }
+    }
+
+    // Toggle the isChecked state
+    const updatedItem = await db.vocabularyItem.update({
+      where: { id },
+      data: { isChecked: !item.isChecked }
+    })
+
+    revalidatePath("/vocabulary")
+    return { success: true, data: updatedItem }
+  } catch (error) {
+    console.error("[TOGGLE_VOCABULARY_ITEM]", error)
+    return { success: false, error: "Gagal mengupdate status kosakata" }
+  }
+}

@@ -1,0 +1,45 @@
+import { getRequiredSession } from "@/lib/session"
+import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { ProfileSection } from "./components/profile-section"
+
+
+export default async function DashboardPage() {
+  // This will automatically redirect to login if not authenticated
+  const session = await getRequiredSession()
+
+  return (
+    <div className="min-h-screen p-8">
+      <header className="container flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            Welcome back, {session.user.email}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <Button variant="outline" asChild>
+            <a href="/api/auth/signout">Sign Out</a>
+          </Button>
+        </div>
+      </header>
+
+      <main className="container">
+        <div className="grid gap-6">
+          {/* Server-side rendered profile */}
+          <section className="rounded-lg border p-4">
+            <h2 className="font-semibold mb-2">Your Profile (Server)</h2>
+            <div className="text-sm text-muted-foreground">
+              <p>Role: {session.user.role}</p>
+              <p>ID: {session.user.id}</p>
+            </div>
+          </section>
+
+          {/* Client-side rendered profile with live updates */}
+          <ProfileSection />
+        </div>
+      </main>
+    </div>
+  )
+}

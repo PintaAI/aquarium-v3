@@ -1,8 +1,7 @@
 import { getRequiredSession } from "@/lib/session"
-import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ProfileSection } from "./components/profile-section"
-import Link from "next/link"
+import { AuthButton } from "@/components/auth/auth-button"
 
 
 export default async function DashboardPage() {
@@ -20,9 +19,7 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          <Button variant="outline" asChild>
-            <Link href="/api/auth/signout">Sign Out </Link>
-          </Button>
+          <AuthButton/>
         </div>
       </header>
 

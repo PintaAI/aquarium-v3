@@ -38,7 +38,8 @@ export async function POST(req: Request) {
     }
 
     // Don't include password in the returned user object
-    const { password: _, ...userWithoutPassword } = user
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: removedPassword, ...userWithoutPassword } = user
 
     return NextResponse.json(userWithoutPassword)
   } catch (error) {

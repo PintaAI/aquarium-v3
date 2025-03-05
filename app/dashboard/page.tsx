@@ -13,7 +13,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen p-8">
-      <header className="container flex items-center justify-between mb-8">
+      <header className="flex items-center mx-auto max-w-4xl justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground mt-2">
@@ -26,8 +26,8 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <main className="container">
-        <div className="grid gap-6">
+      <main>
+        <div className="flex flex-col gap-6 mx-auto max-w-4xl">
           {/* Server-side rendered profile */}
           <section className="rounded-lg border p-4">
             <h2 className="font-semibold mb-2">Your Profile (Server)</h2>

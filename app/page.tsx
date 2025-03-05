@@ -2,11 +2,17 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { AuthDrawer } from "@/components/auth/auth-drawer"
 import { SiteFooter } from "@/components/site-footer"
 import { getCourses } from "@/app/actions/courses-actions"
-import { CourseCard } from "@/components/ui/course-card"
+import { getVocabularyCollections } from "@/app/actions/vocabulary-actions"
+import { getModules } from "@/app/actions/module-actions"
+import { CourseCard } from "@/components/card/course-card"
+import { VocabularyCard } from "@/components/card/vocabulary-card"
+import { ModuleCard } from "@/components/card/module-card"
 import Link from "next/link"
 
 export default async function Home() {
   const courses = await getCourses()
+  const collections = await getVocabularyCollections()
+  const modules = courses.length > 0 ? await getModules(courses[0].id) : []
   return (
     <>
       <header className="fixed top-0 right-0 p-4 flex items-center gap-4">
@@ -29,16 +35,39 @@ export default async function Home() {
             </Link>
             </div>
             
-            {courses.length > 0 && (
-              <div className="w-full">
-                <h2 className="text-2xl font-bold mb-6">Featured Courses</h2>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {courses.map((course) => (
-                    <CourseCard key={course.id} course={course} />
-                  ))}
+            <div className="w-full grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {collections.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">Featured Collection</h2>
+                  <VocabularyCard
+                    title={collections[0].title}
+                    description={collections[0].description}
+                    user={collections[0].user}
+                    totalItems={collections[0].totalItems}
+                    checkedItems={collections[0].checkedItems}
+                  />
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Single Course Card */}
+              {courses.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">Featured Course</h2>
+                  <CourseCard course={courses[0]} />
+                </div>
+              )}
+
+              {/* Single Module Card */}
+              {modules.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">Featured Module</h2>
+                  <ModuleCard
+                    title={modules[0].title}
+                    description={modules[0].description}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>

@@ -1,6 +1,6 @@
 import Image from "next/image"
-import { Badge } from "./badge"
-import { Button } from "./button"
+import { Badge } from "../ui/badge"
+import { Button } from "../ui/button"
 import Link from "next/link"
 import type { Course, User } from "@prisma/client"
 

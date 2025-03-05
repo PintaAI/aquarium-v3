@@ -1,9 +1,10 @@
 import { getRequiredSession } from "@/lib/session"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { ProfileSection } from "./components/profile-section"
+
 import { AuthButton } from "@/components/auth/auth-button"
 import { PushNotificationHandler } from "@/components/push-notification-handler"
 import { SendNotificationForm } from "@/components/send-notification-form"
+import { ProfileSection } from "@/components/experiment/profile-section"
 
 
 export default async function DashboardPage() {

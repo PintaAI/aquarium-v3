@@ -3,7 +3,7 @@
 import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { registerUser } from "@/app/action/auth-action"
+import { registerUser } from "@/app/actions/auth-action"
 
 type AuthMode = "login" | "register"
 

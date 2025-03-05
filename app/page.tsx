@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { AuthDrawer } from "@/components/auth/auth-drawer"
 import { SiteFooter } from "@/components/site-footer"
 import dynamic from "next/dynamic"
-import "/public/css/excalidraw-fixed.css"
+
 
 // Dynamically import the Excalidraw wrapper with SSR disabled
 const ExcalidrawWrapper = dynamic(

@@ -116,6 +116,55 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* Excalidraw theme variables */
+.custom-styles .excalidraw {
+  --color-primary: var(--primary);
+  --color-primary-darker: var(--secondary);
+  --color-primary-darkest: var(--primary);
+  --color-primary-light: var(--muted);
+  --color-primary-light-darker: var(--accent);
+
+  /* Background colors */
+  --island-bg-color: var(--background);
+  --default-bg-color: var(--background);
+  --popup-bg-color: var(--background);
+  
+  /* Text colors */
+  --text-primary-color: var(--foreground);
+  --icon-fill-color: var(--foreground);
+
+  /* Surface colors */
+  --color-surface-low: var(--muted);
+  --color-surface-mid: var(--accent);
+  --color-surface-high: var(--secondary);
+  --color-surface-primary-container: var(--muted);
+  --popup-text-color: var(--foreground);
+}
+
+.custom-styles .excalidraw.theme--dark {
+  /* Dark theme colors */
+  --color-primary: var(--background);
+  --color-primary-darker: var(--secondary);
+  --color-primary-darkest: var(--primary);
+  --color-primary-light: var(--muted);
+  --color-primary-light-darker: var(--accent);
+
+  /* Background colors */
+  --island-bg-color: var(--background);
+  --default-bg-color: var(--background);
+  --popup-bg-color: var(--background);
+  
+  /* Text colors */
+  --text-primary-color: var(--foreground);
+  --icon-fill-color: var(--foreground);
+  
+  /* Surface colors */
+  --color-surface-low: var(--secondary);
+  --color-surface-mid: var(--accent);
+  --color-surface-high: var(--muted);
+  --color-surface-primary-container: var(--muted);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

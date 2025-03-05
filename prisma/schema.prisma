@@ -25,6 +25,7 @@ model User {
   createdRooms          Room[]                 @relation("RoomCreator")
   moduleCompletions     UserModuleCompletion[]
   vocabularyCollections VocabularyCollection[]
+  pushNotifications     PushNotification[]
   joinedCourses         Course[]               @relation("CourseMembers")
   joinedRooms           Room[]                 @relation("RoomParticipants")
 }
@@ -140,6 +141,19 @@ model UserModuleCompletion {
   user        User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, moduleId])
+}
+
+model PushNotification {
+  id         String   @id @default(cuid())
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VocabularyCollection {

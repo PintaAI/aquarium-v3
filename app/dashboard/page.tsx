@@ -2,6 +2,8 @@ import { getRequiredSession } from "@/lib/session"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ProfileSection } from "./components/profile-section"
 import { AuthButton } from "@/components/auth/auth-button"
+import { PushNotificationHandler } from "@/components/push-notification-handler"
+import { SendNotificationForm } from "@/components/send-notification-form"
 
 
 export default async function DashboardPage() {
@@ -36,6 +38,14 @@ export default async function DashboardPage() {
 
           {/* Client-side rendered profile with live updates */}
           <ProfileSection />
+
+          {/* Push Notification Handler */}
+          <PushNotificationHandler />
+
+          {/* Admin Only: Send Notifications */}
+          {session.user.role === 'ADMIN' && (
+            <SendNotificationForm />
+          )}
         </div>
       </main>
     </div>

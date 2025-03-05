@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db"
+import { db } from "@/lib/db"
 import { compare } from "bcryptjs"
 import { NextResponse } from "next/server"
 
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json(null)
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: {
         email
       },

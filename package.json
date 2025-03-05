@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",
-    "@excalidraw/excalidraw": "0.18.0-rc.7",
+    "@excalidraw/excalidraw": "0.18.0-d92384b77-3",
     "@prisma/client": "^6.4.1",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-slot": "^1.1.2",

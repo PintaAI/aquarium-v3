@@ -26,7 +26,7 @@ export async function getModules(courseId: number) {
 
 export async function getModule(id: number) {
   try {
-    const module = await db.module.findUnique({
+    const moduleData = await db.module.findUnique({
       where: { id },
       select: {
         id: true,
@@ -35,7 +35,7 @@ export async function getModule(id: number) {
       }
     })
 
-    return module
+    return moduleData
   } catch (error) {
     console.error("Error fetching module:", error)
     return null

@@ -28,7 +28,7 @@ export function PushNotificationHandler() {
       const sub = await registration.pushManager.getSubscription()
       setSubscription(sub)
       setLoading(false)
-    } catch (err) {
+    } catch {
       setError('Failed to register service worker')
       setLoading(false)
     }

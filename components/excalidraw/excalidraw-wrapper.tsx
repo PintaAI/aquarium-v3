@@ -8,17 +8,19 @@ import "@/public/css/index.css";
 interface ExcalidrawWrapperProps {
   height?: string | number;
   width?: string | number;
+  className?: string;
 }
 
 const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({ 
-  height = "500px", 
-  width = "100%" 
+  height,
+  width,
+  className
 }) => {
   const { theme } = useTheme();
 
   return (
-    <div className="custom-styles">
-      <div style={{ height, width }}>
+    <div className={`custom-styles h-full w-full ${className || ''}`}>
+      <div className="h-full w-full" style={{ height, width }}>
         <Excalidraw theme={theme === "dark" ? "dark" : "light"} />
       </div>
     </div>

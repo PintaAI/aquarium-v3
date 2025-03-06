@@ -1,4 +1,5 @@
-import { getCourse } from "@/actions/course-actions";
+
+import { getCourse } from "@/app/actions/course-actions";
 import { notFound } from "next/navigation";
 import { ModuleList } from "@/components/courses/module-list";
 import { CourseHeader } from "@/components/courses/course-header";
@@ -24,15 +25,15 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
     notFound();
   }
 
-  // Cek apakah user sudah bergabung dengan kursus
-  const isJoined = user ? course.members.some(member => member.id === user.id) : false;
+  // Check if user has joined the course
+  const isJoined = user ? course.members?.some(member => member.id === user.id) ?? false : false;
 
   // Transform modules to match the ModuleList component's expected format
   const formattedModules = course.modules.map((module, index) => ({
     id: module.id.toString(),
     courseId: courseId.toString(),
     title: module.title,
-    description: module.description,
+    description: module.description ?? "",
     duration: "Duration placeholder",
     isCompleted: false,
     isLocked: false,
@@ -61,7 +62,7 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
           />
           
           <div className="mt-6">
-            <ContentBody htmlDescription={course.htmlDescription} />
+            <ContentBody htmlDescription={course.htmlDescription ?? course.description ?? ""} />
           </div>
         </div>
 

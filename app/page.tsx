@@ -1,40 +1,73 @@
-import { ThemeToggle } from "@/components/theme-toggle"
-import { AuthDrawer } from "@/components/auth/auth-drawer"
-import { SiteFooter } from "@/components/site-footer"
-import Link from "next/link"
-import { auth } from "@/auth"
+import { currentUser } from "@/lib/auth";
+import { getArticles } from "@/app/actions/article-actions";
+import Image from "next/image";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { LatestCourses } from "@/components/menu/latest-courses";
+import { LatestArticles } from "@/components/menu/latest-articles";
+import { GameShortcuts } from "@/components/menu/game-shortcuts";
+import { VocabularyCollection } from "@/components/menu/vocabulary-collection";
+import { SearchBox } from "@/components/ui/search-box";
+import { AppSidebar } from "@/components/app-sidebar";
+import { LandingHero } from "@/components/landingpage";
 
-export default async function Home() {
-  const session = await auth()
-  return (
-    <>
-      <header className="fixed top-0 right-0 p-4 flex items-center gap-4">
-        <AuthDrawer />
-        <ThemeToggle />
-      </header>
-      <main className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="w-full max-w-6xl text-center">
-          <h1 className="text-4xl font-bold mb-6">Welcome to Aquarium</h1>
-          <p className="text-lg mb-8 text-muted-foreground">
-            A platform for learning and teaching.
-          </p>
-          <div className="flex flex-col items-center gap-8">
-            {session && (
-              <div className="flex justify-center gap-4">
-                <Link 
-                  href="/dashboard"
-                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                >
-                  Go to Dashboard
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+export default async function HomePage() {
+  const user = await currentUser();
+
+  if (!user) {
+    return (
+      <main>
+        <LandingHero />
       </main>
-      <footer className="fixed bottom-0 w-full p-4">
-        <SiteFooter />
-      </footer>
-    </>
-  )
+    );
+  }
+
+  return (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "350px",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar />
+      <SidebarInset className="flex min-h-screen">
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-1 pb-24">
+            <header className="flex items-center justify-between  pb-2">
+              <div className="flex items-center">
+                <Image
+                  src="/images/logoo.png"
+                  alt="Pejuangkorea Logo"
+                  width={40}
+                  height={40}
+                  className="h-12 w-12"
+                  priority
+                />
+                <span className="text-md font-bold">Pejuangkorea Academy</span>
+              </div>
+            </header>
+            <SearchBox
+              placeholder="Cari artikel, kursus, game..."
+              className="mb-0 bg-primary/35 rounded-lg"
+            />
+            
+            <div className="grid grid-cols-10 gap-2 lg:gap-1">
+              {/* Left Column */}
+              <div className="col-span-12 lg:col-span-3 space-y-6">
+                <GameShortcuts />
+                <VocabularyCollection />
+                
+              </div>
+              
+              {/* Main Content */}
+              <div className="col-span-12 lg:col-span-7 space-y-6">
+                <LatestCourses />
+                <LatestArticles articles={await getArticles()} />
+              </div>
+            </div>
+          </div>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

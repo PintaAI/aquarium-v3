@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { User, BarChart, Clock } from "lucide-react";
-import { joinCourse, getFirstModule } from "@/actions/module-actions";
+import { joinCourse, getFirstModule } from "@/app/actions/module-actions";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 

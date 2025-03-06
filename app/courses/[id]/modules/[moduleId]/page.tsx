@@ -2,7 +2,7 @@
 
 import { notFound } from "next/navigation";
 import { ModuleList } from "@/components/courses/module-list";
-import { getModule, completeModule } from "@/actions/module-actions";
+import { getModule, completeModule } from "@/app/actions/module-actions";
 import { ModuleHeader } from "@/components/courses/module-header";
 import { ContentBody } from "@/components/courses/content-body";
 import { useState, useEffect, use } from "react";

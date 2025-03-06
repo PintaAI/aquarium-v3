@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { getJoinedCourses } from "@/actions/course-actions"
+import { getJoinedCourses } from "@/app/actions/course-actions"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { BookOpen, GraduationCap } from "lucide-react"

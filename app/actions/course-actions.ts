@@ -11,8 +11,16 @@ export interface Course {
   id: number
   title: string
   description: string | null
+  htmlDescription?: string
   level: string
   thumbnail: string | null
+  isLocked: boolean
+  modules: Array<{
+    id: number
+    title: string
+    description?: string
+    order: number
+  }>
   createdAt: Date
   updatedAt: Date
   author: {
@@ -20,9 +28,11 @@ export interface Course {
     name: string | null
     image: string | null
   }
+  members?: Array<{
+    id: string
+  }>
 }
 
-// Fungsi untuk mendapatkan kursus yang diikuti user
 export async function getJoinedCourses() {
   try {
     const user = await currentUser();
@@ -42,15 +52,23 @@ export async function getJoinedCourses() {
         id: true,
         title: true,
         description: true,
+        level: true,
         thumbnail: true,
+        isLocked: true,
+        createdAt: true,
+        updatedAt: true,
         modules: {
           select: {
             id: true,
             title: true,
             order: true
-          },
-          orderBy: {
-            order: 'asc'
+          }
+        },
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true
           }
         }
       },
@@ -59,7 +77,7 @@ export async function getJoinedCourses() {
       }
     });
 
-    return courses;
+    return courses as Course[];
   } catch (error) {
     console.error("Failed to fetch joined courses:", error);
     return [];
@@ -68,9 +86,7 @@ export async function getJoinedCourses() {
 
 export async function addCourse(data: z.infer<typeof addCourseSchema>) {
   try {
-    // Validate input data
     const validatedData = addCourseSchema.parse(data)
-    
     const user = await currentUser()
 
     if (!user || user.role !== 'GURU') {
@@ -97,9 +113,7 @@ export async function addCourse(data: z.infer<typeof addCourseSchema>) {
 
 export async function updateCourse(courseId: number, data: z.infer<typeof updateCourseSchema>) {
   try {
-    // Validate input data
     const validatedData = updateCourseSchema.parse(data)
-
     const updatedCourse = await db.course.update({
       where: { id: courseId },
       data: validatedData,
@@ -123,7 +137,6 @@ export async function deleteCourse(courseId: number) {
       throw new Error("Unauthorized")
     }
 
-    // Verify user owns the course
     const course = await db.course.findUnique({
       where: {
         id: courseId,
@@ -135,15 +148,12 @@ export async function deleteCourse(courseId: number) {
       throw new Error("Unauthorized")
     }
 
-    // Delete course and its modules in a transaction
     await db.$transaction([
-      // First delete all modules
       db.module.deleteMany({
         where: {
           courseId,
         },
       }),
-      // Then delete the course
       db.course.delete({
         where: {
           id: courseId,
@@ -164,11 +174,31 @@ export async function getCourse(courseId: number) {
     console.log('Fetching course data...')
     const course = await db.course.findUnique({
       where: { id: courseId },
-      include: {
-        author: true,
-        modules: true,
-        members: true,
-      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        level: true,
+        thumbnail: true,
+        isLocked: true,
+        createdAt: true,
+        updatedAt: true,
+        modules: {
+          select: {
+            id: true,
+            title: true,
+            order: true
+          }
+        },
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true
+          }
+        },
+        members: true
+      }
     })
 
     if (!course) {
@@ -177,7 +207,7 @@ export async function getCourse(courseId: number) {
     }
 
     console.log('Course data retrieved successfully')
-    return course
+    return course as Course
   } catch (error) {
     console.error('Error fetching course data')
     throw error
@@ -199,14 +229,29 @@ export async function getLatestJoinedCourses(): Promise<Course[]> {
           }
         }
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        level: true,
+        thumbnail: true,
+        isLocked: true,
+        createdAt: true,
+        updatedAt: true,
+        modules: {
+          select: {
+            id: true,
+            title: true,
+            order: true
+          }
+        },
         author: {
           select: {
             id: true,
             name: true,
-            image: true,
-          },
-        },
+            image: true
+          }
+        }
       },
       orderBy: {
         updatedAt: 'desc'
@@ -224,15 +269,30 @@ export async function getLatestJoinedCourses(): Promise<Course[]> {
 export async function getCourses(): Promise<Course[]> {
   try {
     const courses = await db.course.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        level: true,
+        thumbnail: true,
+        isLocked: true,
+        createdAt: true,
+        updatedAt: true,
+        modules: {
+          select: {
+            id: true,
+            title: true,
+            order: true
+          }
+        },
         author: {
           select: {
             id: true,
             name: true,
-            image: true,
-          },
-        },
-      },
+            image: true
+          }
+        }
+      }
     })
     return courses as Course[]
   } catch (error) {
@@ -246,18 +306,30 @@ export async function getCourseWithModules(courseId: number) {
     console.log('Fetching course modules...')
     const courseData = await db.course.findUnique({
       where: { id: courseId },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        level: true,
+        thumbnail: true,
+        isLocked: true,
+        createdAt: true,
+        updatedAt: true,
         modules: {
           select: {
             id: true,
             title: true,
-            order: true,
-          },
-          orderBy: {
-            order: 'asc',
-          },
+            order: true
+          }
         },
-      },
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true
+          }
+        }
+      }
     })
 
     if (!courseData) {
@@ -266,7 +338,7 @@ export async function getCourseWithModules(courseId: number) {
     }
 
     console.log('Course modules retrieved successfully')
-    return courseData
+    return courseData as Course
   } catch (error) {
     console.error('Error fetching course modules')
     throw error
@@ -289,7 +361,6 @@ export async function startCourse(courseId: number) {
       throw new Error("Course not found")
     }
 
-    // Add user to course members
     await db.course.update({
       where: { id: courseId },
       data: {

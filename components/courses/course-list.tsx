@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card,  CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusIcon, SearchIcon } from "lucide-react";
-import { Course, deleteCourse } from "@/actions/course-actions";
+import { Course, deleteCourse } from "@/app/actions/course-actions";
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { CourseListCard } from './course-list-card';

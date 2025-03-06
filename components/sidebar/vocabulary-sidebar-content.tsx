@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Book } from "lucide-react"
-import { getVocabularyCollections } from "@/actions/vocabulary-actions"
+import { getVocabularyCollections } from "@/app/actions/vocabulary-actions"
 import { UseCurrentUser } from "@/hooks/use-current-user"
 
 interface VocabularyItem {

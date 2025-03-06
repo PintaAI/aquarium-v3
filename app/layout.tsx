@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./prosemirror.css"
 import { ThemeProvider } from "@/provider/theme-provider";
 import { SessionProvider } from "next-auth/react";
+import { MobileNavbar } from "@/components/ui/mobile-navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,7 +58,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
-            <PWAHandler />
+           <MobileNavbar />
           </ThemeProvider>
         </SessionProvider>
       </body>
@@ -66,4 +66,4 @@ export default function RootLayout({
   );
 }
 
-import { PWAHandler } from '@/components/pwa-handler';
+

@@ -2,16 +2,19 @@
 
 import { ReactNode, Fragment } from "react";
 import { useSelectedLayoutSegments } from "next/navigation";
-
+import { AppSidebar } from "../../components/app-sidebar";
+import { MobileNavbar } from "../../components/ui/mobile-navbar";
 import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../../components/ui/breadcrumb";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import {
+  
+  SidebarProvider,
 
+} from "../../components/ui/sidebar";
 
 interface LayoutProps {
   children: ReactNode;
@@ -61,9 +64,10 @@ export default function Layout({ children }: LayoutProps) {
       }
     >
       <AppSidebar />
-      <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4">
+      <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4 pb-16 md:pb-4">
         {children}
       </div>
+      
     </SidebarProvider>
   );
 }

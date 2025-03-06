@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Book, GamepadIcon, Newspaper, User, BookOpen, Command } from "lucide-react"
+import { Book, GamepadIcon, Newspaper,  BookOpen, ChevronsLeft } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -180,7 +180,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">
         <SidebarHeader className="border-b">
-          <div className="flex items-center justify-between px-2 py-0">
+          <div className="flex items-center justify-between px-1  py-0">
             <div className="flex items-center gap-3">
               {activeNavItem && (
                 <>
@@ -189,7 +189,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </>
               )}
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <button
+                onClick={() => setOpen(!open)}
+                className="p-2 hover:bg-accent hover:text-accent-foreground rounded-md"
+                aria-label="Toggle sidebar"
+              >
+                <ChevronsLeft className={`h-4 w-4 transition-transform ${!open ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>

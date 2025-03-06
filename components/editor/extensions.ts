@@ -16,11 +16,14 @@ import {
   TiptapImage,
   TiptapLink,
   TiptapUnderline,
-  Twitter,
   UpdatedImage,
   Youtube,
   Mathematics
 } from 'novel/extensions'
+import Table from '@tiptap/extension-table'
+import TableRow from '@tiptap/extension-table-row'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
 import { UploadImagesPlugin } from 'novel/plugins'
 
 import { cx } from 'class-variance-authority'
@@ -133,13 +136,6 @@ const youtube = Youtube.configure({
   inline: false
 })
 
-const twitter = Twitter.configure({
-  HTMLAttributes: {
-    class: cx('not-prose')
-  },
-  inline: false
-})
-
 const mathematics = Mathematics.configure({
   HTMLAttributes: {
     class: cx('text-foreground rounded p-1 hover:bg-accent cursor-pointer')
@@ -150,6 +146,32 @@ const mathematics = Mathematics.configure({
 })
 
 const characterCount = CharacterCount.configure()
+
+// Table extensions
+const table = Table.configure({
+  resizable: true,
+  HTMLAttributes: {
+    class: cx('border-collapse table-auto w-auto my-2 border border-muted')
+  }
+})
+
+const tableRow = TableRow.configure({
+  HTMLAttributes: {
+    class: cx('border-b border-muted')
+  }
+})
+
+const tableHeader = TableHeader.configure({
+  HTMLAttributes: {
+    class: cx('border-b border-muted bg-muted p-1.5 text-left font-medium')
+  }
+})
+
+const tableCell = TableCell.configure({
+  HTMLAttributes: {
+    class: cx('p-1.5 border-r border-muted first:border-l border-muted')
+  }
+})
 
 export const defaultExtensions = [
   starterKit,
@@ -163,7 +185,6 @@ export const defaultExtensions = [
   aiHighlight,
   codeBlockLowlight,
   youtube,
-  twitter,
   mathematics,
   characterCount,
   TiptapUnderline,
@@ -172,5 +193,9 @@ export const defaultExtensions = [
   TextStyle,
   Color,
   CustomKeymap,
-  GlobalDragHandle
+  GlobalDragHandle,
+  table,
+  tableRow,
+  tableHeader,
+  tableCell
 ]

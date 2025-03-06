@@ -7,14 +7,90 @@ import {
   ImageIcon,
   List,
   ListOrdered,
+  Table,
   Text,
   TextQuote,
-  Twitter,
   Youtube
 } from 'lucide-react'
 import { createSuggestionItems } from 'novel/extensions'
 import { Command, renderItems } from 'novel/extensions'
 import { uploadFn } from './image-upload'
+import { YoutubeDialog } from './dialogs/youtube-dialog'
+import { TableDialog } from './dialogs/table-dialog'
+import { useState } from 'react'
+
+interface DialogState {
+  youtubeDialog: boolean;
+  tableDialog: boolean;
+  currentEditor: any;
+  currentRange: any;
+}
+
+// Global state for dialogs since they're rendered at the root
+let dialogState: DialogState = {
+  youtubeDialog: false,
+  tableDialog: false,
+  currentEditor: null,
+  currentRange: null
+}
+
+let setYoutubeOpen: ((open: boolean) => void) | null = null
+let setTableOpen: ((open: boolean) => void) | null = null
+
+export function DialogProvider() {
+  const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false)
+  const [tableDialogOpen, setTableDialogOpen] = useState(false)
+
+  // Store setters for global access
+  setYoutubeOpen = setYoutubeDialogOpen
+  setTableOpen = setTableDialogOpen
+
+  const handleYoutubeSubmit = (videoLink: string) => {
+    setYoutubeDialogOpen(false)
+    
+    const ytregex = new RegExp(
+      /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/
+    )
+
+    if (ytregex.test(videoLink)) {
+      dialogState.currentEditor
+        ?.chain()
+        .focus()
+        .deleteRange(dialogState.currentRange)
+        .setYoutubeVideo({
+          src: videoLink
+        })
+        .run()
+    } else {
+      alert('Please enter a correct Youtube Video Link')
+    }
+  }
+
+  const handleTableSubmit = (rows: number, cols: number) => {
+    setTableDialogOpen(false)
+    dialogState.currentEditor
+      ?.chain()
+      .focus()
+      .deleteRange(dialogState.currentRange)
+      .insertTable({ rows, cols, withHeaderRow: true })
+      .run()
+  }
+
+  return (
+    <>
+      <YoutubeDialog
+        open={youtubeDialogOpen}
+        onOpenChange={setYoutubeDialogOpen}
+        onSubmit={handleYoutubeSubmit}
+      />
+      <TableDialog
+        open={tableDialogOpen}
+        onOpenChange={setTableDialogOpen}
+        onSubmit={handleTableSubmit}
+      />
+    </>
+  )
+}
 
 export const suggestionItems = createSuggestionItems([
   {
@@ -149,53 +225,20 @@ export const suggestionItems = createSuggestionItems([
     searchTerms: ['video', 'youtube', 'embed'],
     icon: <Youtube size={18} />,
     command: ({ editor, range }) => {
-      const videoLink = prompt('Please enter Youtube Video Link')
-      //From https://regexr.com/3dj5t
-      const ytregex = new RegExp(
-        /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/
-      )
-
-      if (ytregex.test(videoLink as string)) {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setYoutubeVideo({
-            src: videoLink as string
-          })
-          .run()
-      } else {
-        if (videoLink !== null) {
-          alert('Please enter a correct Youtube Video Link')
-        }
-      }
+      dialogState.currentEditor = editor
+      dialogState.currentRange = range
+      setYoutubeOpen?.(true)
     }
   },
   {
-    title: 'Twitter',
-    description: 'Embed a Tweet.',
-    searchTerms: ['twitter', 'embed'],
-    icon: <Twitter size={18} />,
+    title: 'Table',
+    description: 'Add a table.',
+    searchTerms: ['table', 'grid', 'spreadsheet', 'rows', 'columns'],
+    icon: <Table size={18} />,
     command: ({ editor, range }) => {
-      const tweetLink = prompt('Please enter Twitter Link')
-      const tweetRegex = new RegExp(
-        /^https?:\/\/(www\.)?x\.com\/([a-zA-Z0-9_]{1,15})(\/status\/(\d+))?(\/\S*)?$/
-      )
-
-      if (tweetRegex.test(tweetLink as string)) {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setTweet({
-            src: tweetLink as string
-          })
-          .run()
-      } else {
-        if (tweetLink !== null) {
-          alert('Please enter a correct Twitter Link')
-        }
-      }
+      dialogState.currentEditor = editor
+      dialogState.currentRange = range
+      setTableOpen?.(true)
     }
   }
 ])

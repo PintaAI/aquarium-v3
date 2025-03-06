@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EyeIcon, EyeOffIcon, MinusIcon, PlusIcon, ShuffleIcon, SearchIcon } from "lucide-react";
 import { startTransition, useOptimistic, useState, useMemo } from "react";
-import { toggleVocabularyItemCheck } from "@/actions/vocabulary-actions";
+import { toggleVocabularyItemCheck } from "@/app/actions/vocabulary-actions";
 import { toast } from "sonner";
 
 interface VocabularyItem {

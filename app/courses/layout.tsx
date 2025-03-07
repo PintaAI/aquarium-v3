@@ -3,7 +3,6 @@
 import { ReactNode, Fragment } from "react";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { AppSidebar } from "../../components/app-sidebar";
-import { MobileNavbar } from "../../components/ui/mobile-navbar";
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -30,31 +29,6 @@ const segmentLabels: Record<string, string> = {
 export default function Layout({ children }: LayoutProps) {
   const segments = useSelectedLayoutSegments();
   
-  const breadcrumbItems = segments.map((segment, index) => {
-    // Handle dynamic segments (those in brackets)
-    const isIdSegment = segment.startsWith('[') && segment.endsWith(']');
-    const label = isIdSegment ? 'Detail Kursus' : (segmentLabels[segment] || segment);
-    const isLast = index === segments.length - 1;
-    const href = '/' + segments.slice(0, index + 1).join('/');
-
-    if (isLast) {
-      return (
-        <BreadcrumbItem key={`item-${segment}`} className="hidden md:block">
-          <BreadcrumbPage>{label}</BreadcrumbPage>
-        </BreadcrumbItem>
-      );
-    }
-
-    return (
-      <Fragment key={`fragment-${segment}`}>
-        <BreadcrumbItem className="hidden md:block">
-          <BreadcrumbLink href={href}>{label}</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator className="hidden md:block" />
-      </Fragment>
-    );
-  });
-
   return (
     <SidebarProvider
       style={

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { getLatestVocabularyCollections } from "@/app/actions/vocabulary-actions"
+import { VocabularyCard } from "@/components/card/vocabulary-card"
 import { ChevronRight, Plus } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { id } from "date-fns/locale"
@@ -40,30 +41,22 @@ export async function VocabularyCollection() {
                 <p className="text-sm text-muted-foreground">Anda belum memiliki koleksi kosa kata.</p>
                 <Link
                   href="/vocabulary/create"
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium dark:text-black text-secondary bg-primary rounded-md hover:bg-primary/90 transition-colors"
+                  className="inline-flex items-center px-4 py-2 text-sm  font-medium dark:text-primary text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Buat Koleksi
                 </Link>
               </div>
             ) : (
-              collections.map((collection: VocabularyCollection) => (
-                <Link
-                  key={collection.id}
-                  href={`/vocabulary/${collection.id}`}
-                  className="block p-4 border rounded-lg hover:bg-accent/50 transition-all hover:shadow-sm"
-                >
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <h3 className="font-semibold line-clamp-1 text-foreground/90">{collection.title}</h3>
-                      <time className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDistanceToNow(new Date(collection.createdAt), { addSuffix: true, locale: id })}
-                      </time>
-                    </div>
-                    <p className="text-sm text-muted-foreground/90 line-clamp-2">
-                      {collection.description || "Tidak ada deskripsi"}
-                    </p>
-                  </div>
+              collections.map((collection) => (
+                <Link key={collection.id} href={`/vocabulary/${collection.id}`} className="block">
+                  <VocabularyCard
+                    title={collection.title}
+                    description={collection.description}
+                    user={collection.user}
+                    items={collection.items}
+                    isPublic={collection.isPublic}
+                  />
                 </Link>
               ))
             )}
@@ -73,4 +66,3 @@ export async function VocabularyCollection() {
     </Card>
   )
 }
-

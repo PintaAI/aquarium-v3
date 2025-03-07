@@ -5,12 +5,12 @@ import { db } from '@/lib/db'
 import webpush from 'web-push'
 
 // Define types for push subscription
-interface PushSubscriptionKeys {
+export interface PushSubscriptionKeys {
   p256dh: string
   auth: string
 }
 
-interface WebPushSubscription {
+export interface WebPushSubscription {
   endpoint: string
   keys: PushSubscriptionKeys
 }
@@ -72,15 +72,28 @@ interface NotificationResult {
   error?: unknown
 }
 
-export async function sendNotification(userId: string | 'all', title: string, message: string) {
+export interface NotificationMessage {
+  body: string
+  url?: string
+}
+
+export async function sendNotification(
+  userId: string | 'all',
+  title: string,
+  message: string | NotificationMessage
+) {
   try {
     const notifications = await db.pushNotification.findMany({
       where: userId === 'all' ? {} : { userId },
     })
 
+    const messageBody = typeof message === 'string' ? message : message.body
+    const messageUrl = typeof message === 'string' ? undefined : message.url
+
     const payload = JSON.stringify({
       title,
-      body: message,
+      body: messageBody,
+      url: messageUrl
     })
 
     const results = await Promise.allSettled(

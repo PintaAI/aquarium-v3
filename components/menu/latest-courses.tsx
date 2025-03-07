@@ -23,7 +23,7 @@ export async function LatestCourses() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[258px] w-full rounded-md">
+        <ScrollArea className="h-[228px] w-full rounded-md">
           <div className="flex flex-row space-x-4 min-w-full p-1">
             {courses.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[150px] w-full text-center space-y-2">

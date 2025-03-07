@@ -29,7 +29,7 @@ export default async function VocabularyDetailPage(
   const collectionId = parseInt(params.id);
 
   // Ambil detail collection menggunakan server action
-  const { success: collectionSuccess, data: collection, error: collectionError } =
+  const { success: collectionSuccess, data: collection, } =
     await getVocabularyCollection(collectionId);
 
   if (!collectionSuccess || !collection) {

@@ -1,83 +1,95 @@
-"use client";
+import { currentUser } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import { LiveSessionList } from "@/components/live-session/live-session-list"
+import { CreateLiveSessionForm } from "@/components/live-session/create-live-session-form"
+import { db } from "@/lib/db"
+import { Metadata } from "next"
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
+export const metadata: Metadata = {
+  title: "Live Teaching",
+  description: "Live teaching sessions",
 }
 
-export default function LiveSessionPage() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [newTodo, setNewTodo] = useState("");
+export default async function LiveSessionPage() {
+  const user = await currentUser()
 
-  const addTodo = () => {
-    if (!newTodo.trim()) return;
-    
-    setTodos([
-      ...todos,
-      {
-        id: Date.now(),
-        text: newTodo,
-        completed: false,
+  if (!user) {
+    redirect("/auth/login")
+  }
+
+  // Construct query based on user role
+  const sessions = await db.liveSession.findMany({
+    where: user.role === "ADMIN" ? undefined : {
+      OR: [
+        { isActive: true },
+        { creatorId: user.id },
+        {
+          participants: {
+            some: { id: user.id }
+          }
+        }
+      ]
+    },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        }
       },
-    ]);
-    setNewTodo("");
-  };
+      course: {
+        select: {
+          id: true,
+          title: true,
+        }
+      },
+      participants: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        }
+      },
+      _count: {
+        select: {
+          participants: true
+        }
+      }
+    },
+    orderBy: {
+      scheduledStart: "desc" as const
+    }
+  })
 
-  const toggleTodo = (id: number) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
+  // Get courses for create form (only for GURU and ADMIN)
+  const courses = (user.role === "GURU" || user.role === "ADMIN") ? 
+    await db.course.findMany({
+      select: {
+        id: true,
+        title: true,
+      },
+      orderBy: {
+        title: 'asc'
+      }
+    }) : []
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Live Session To-Do List</h1>
-      
-      <div className="flex gap-2 mb-4">
-        <Input
-          type="text"
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-          placeholder="Add new todo..."
-          onKeyPress={(e) => e.key === "Enter" && addTodo()}
-        />
-        <Button onClick={addTodo}>Add</Button>
+    <div className="container py-6">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold">Live Sessions</h1>
+          <p className="text-muted-foreground">
+            {user.role === "ADMIN" ? "Manage all live teaching sessions" :
+             user.role === "GURU" ? "Create and manage your live teaching sessions" :
+             "Join live teaching sessions"}
+          </p>
+        </div>
+        {(user.role === "GURU" || user.role === "ADMIN") && (
+          <CreateLiveSessionForm courses={courses} />
+        )}
       </div>
-
-      <div className="space-y-2">
-        {todos.map((todo) => (
-          <div
-            key={todo.id}
-            className="flex items-center justify-between p-2 border rounded"
-          >
-            <div 
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => toggleTodo(todo.id)}
-            >
-              <input
-                type="checkbox"
-                checked={todo.completed}
-                onChange={() => toggleTodo(todo.id)}
-                className="w-4 h-4"
-              />
-              <span className={todo.completed ? "line-through text-gray-500" : ""}>
-                {todo.text}
-              </span>
-            </div>
-            <Badge variant={todo.completed ? "secondary" : "default"}>
-              {todo.completed ? "Completed" : "Pending"}
-            </Badge>
-          </div>
-        ))}
-      </div>
+      <LiveSessionList sessions={sessions} user={user} />
     </div>
-  );
+  )
 }

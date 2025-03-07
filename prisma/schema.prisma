@@ -22,16 +22,16 @@ model User {
   sessions              Session[]
   authoredArticles      Article[]              @relation("ArticleAuthor")
   authoredCourses       Course[]               @relation("CourseAuthor")
-  createdRooms          Room[]                 @relation("RoomCreator")
+  createdLiveSessions   LiveSession[]          @relation("LiveSessionCreator")
   moduleCompletions     UserModuleCompletion[]
   vocabularyCollections VocabularyCollection[]
   pushNotifications     PushNotification[]
   joinedCourses         Course[]               @relation("CourseMembers")
-  joinedRooms           Room[]                 @relation("RoomParticipants")
+  joinedLiveSessions    LiveSession[]          @relation("LiveSessionParticipants")
 }
 
 model Course {
-  id              Int         @id @default(autoincrement())
+  id              Int          @id @default(autoincrement())
   title           String
   description     String?
   jsonDescription String?
@@ -39,29 +39,34 @@ model Course {
   level           CourseLevel
   thumbnail       String?
   icon            String?
-  isCompleted     Boolean     @default(false)
-  isLocked        Boolean     @default(false)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  isCompleted     Boolean      @default(false)
+  isLocked        Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   authorId        String
-  author          User        @relation("CourseAuthor", fields: [authorId], references: [id])
-  modules         Module[]    @relation("CourseModules")
-  rooms           Room[]      @relation("CourseRooms")
-  members         User[]      @relation("CourseMembers")
+  author          User         @relation("CourseAuthor", fields: [authorId], references: [id])
+  modules         Module[]     @relation("CourseModules")
+  liveSessions    LiveSession[] @relation("CourseLiveSessions")
+  members         User[]       @relation("CourseMembers")
 }
 
-model Room {
-  id           String   @id @default(cuid())
-  name         String
-  description  String?
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  creatorId    String
-  courseId     Int
-  course       Course   @relation("CourseRooms", fields: [courseId], references: [id])
-  creator      User     @relation("RoomCreator", fields: [creatorId], references: [id])
-  participants User[]   @relation("RoomParticipants")
+model LiveSession {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  isActive        Boolean  @default(true)
+  scheduledStart  DateTime
+  scheduledEnd    DateTime?
+  actualStart     DateTime?
+  actualEnd       DateTime?
+  recordingUrl    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  creatorId       String
+  courseId        Int
+  course          Course   @relation("CourseLiveSessions", fields: [courseId], references: [id])
+  creator         User     @relation("LiveSessionCreator", fields: [creatorId], references: [id])
+  participants    User[]   @relation("LiveSessionParticipants")
 }
 
 model Module {

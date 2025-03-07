@@ -1,6 +1,6 @@
 "use client"
 
-import { createVocabularyCollection, updateVocabularyCollection, deleteVocabularyCollection, getVocabularyCollection } from "@/actions/vocabulary-actions"
+import { createVocabularyCollection, updateVocabularyCollection, deleteVocabularyCollection, getVocabularyCollection } from "@/app/actions/vocabulary-actions"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState, useTransition } from "react"
 

@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import { VocabularySearchDialog } from "@/components/vocabulary/vocabulary-search-dialog"
 import { 
   getVocabularyCollections 
@@ -10,10 +9,8 @@ import Link from "next/link"
 import { 
   FolderIcon,
   PlusIcon,
-  UserIcon,
-  LockIcon,
-  UnlockIcon
 } from "lucide-react"
+import { VocabularyCard } from "@/components/card/vocabulary-card"
 
 export default async function VocabularyPage() {
   const user = await currentUser()
@@ -64,56 +61,15 @@ export default async function VocabularyPage() {
       {/* Vocabulary Collections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {success && collections?.map((collection) => (
-          <Link href={`/vocabulary/${collection.id}`} key={collection.id}>
-            <Card className="group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:-translate-y-1">
-              <div className="relative h-32 w-full overflow-hidden">
-                {/* Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-primary/20 to-emerald-500/20">
-                  {/* Decorative Orbs */}
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
-                  <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-emerald-500/20 rounded-full blur-2xl" />
-                </div>
-                
-                {/* Top Row: Word Count and Privacy */}
-                <div className="absolute top-2 inset-x-2 flex justify-between items-center">
-                  <div className="px-2.5 py-1 rounded-full bg-primary/20 backdrop-blur-sm">
-                    <span className="text-xs font-medium text-primary-foreground">
-                      {collection.items.length} kata
-                    </span>
-                  </div>
-                  <div className="p-1.5 rounded-full bg-background/50 backdrop-blur-sm">
-                    {collection.isPublic ? (
-                      <UnlockIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                    ) : (
-                      <LockIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                  </div>
-                </div>
-
-                {/* Bottom Row: Author */}
-                <div className="absolute bottom-2 left-2 flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/50 backdrop-blur-sm">
-                    <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xs font-medium text-foreground">
-                      {collection.user?.name || 'Anonymous'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <CardContent className="p-4">
-                <div>
-                  <CardTitle className="text-lg font-bold mb-1.5 line-clamp-1 group-hover:text-primary transition-colors">
-                    {collection.title}
-                  </CardTitle>
-                  {collection.description && (
-                    <CardDescription className="text-sm text-muted-foreground line-clamp-2">
-                      {collection.description}
-                    </CardDescription>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          <Link href={`/vocabulary/${collection.id}`} key={collection.id} className="block">
+            <VocabularyCard
+              title={collection.title}
+              description={collection.description}
+              user={collection.user}
+              items={collection.items}
+              isPublic={collection.isPublic}
+              
+            />
           </Link>
         ))}
       </div>

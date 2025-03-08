@@ -34,7 +34,7 @@ export async function VocabularyCollection() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[210px] w-full rounded-md pr-4">
+        <ScrollArea className="h-[230px] w-full rounded-md pr-4">
           <div className="space-y-3">
             {collections.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[210px] text-center space-y-4 bg-muted-foreground/10 rounded-lg">

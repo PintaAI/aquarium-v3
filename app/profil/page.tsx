@@ -40,7 +40,7 @@ export default function ProfilPage() {
   }
 
   return (
-    <div className="container max-w-3xl mx-auto px-4 py-8 space-y-6">
+    <div className="container max-w-3xl mx-auto px-4 py-8 space-y-6 pb-20">
       <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
         <div>
           <h1 className="text-3xl font-bold">Account Settings</h1>
@@ -59,11 +59,26 @@ export default function ProfilPage() {
             <CardHeader className="relative pb-8 border-b bg-muted/10">
               <div className="flex items-center gap-6 flex-col sm:flex-row">
                 {user.image ? (
-                  <Image 
-                    src={user.image} 
-                    alt={user.name || "Profile"} 
-                    className="w-24 h-24 rounded-full object-cover border-2 border-border"
-                  />
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-border">
+                    <Image 
+                      src={user.image} 
+                      alt={user.name || "Profile"} 
+                      width={96}
+                      height={96}
+                      className="object-cover w-full h-full"
+                      onError={(e) => {
+                        console.error("Failed to load profile image");
+                        const imgElement = e.currentTarget;
+                        imgElement.style.display = 'none';
+                        
+                        const parentElement = imgElement.parentElement;
+                        if (parentElement) {
+                          parentElement.classList.add('bg-muted');
+                          parentElement.innerHTML = `<div class="flex items-center justify-center h-full w-full"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>`;
+                        }
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
                     <User className="w-12 h-12 text-muted-foreground" />
@@ -113,9 +128,11 @@ export default function ProfilPage() {
               <div className="flex items-center justify-between w-full gap-4">
                 <AuthButton className="flex-1" />
                 <ThemeToggle />
-                <Button variant="outline" className="flex-1">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Edit Profile
+                <Button variant="outline" className="flex-1" asChild>
+                  <Link href="/profil/edit">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Link>
                 </Button>
               </div>
             </CardFooter>

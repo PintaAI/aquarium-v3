@@ -3,6 +3,7 @@ import { TbAlphabetKorean } from "react-icons/tb";
 import { LucideIcon } from "lucide-react";
 import { IconType } from "react-icons";
 import { FaKeyboard } from "react-icons/fa";
+import { VscTable } from "react-icons/vsc";
 
 export interface Game {
   id: string;
@@ -23,11 +24,11 @@ export const games: Game[] = [
     route: "/game/ujian-sertifikat"
   },
   {
-    id: "soal-harian",
-    title: "Soal Harian",
+    id: "TTS",
+    title: "TTS",
     description: "Latihan soal bahasa Korea harian untuk meningkatkan kemampuan",
-    icon: GraduationCap,
-    route: "/game/soal-harian",
+    icon: VscTable,
+    route: "/game/tts",
     type: "App"
   },
   {

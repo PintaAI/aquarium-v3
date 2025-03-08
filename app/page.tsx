@@ -37,7 +37,7 @@ export default async function HomePage() {
         <main className="flex-1 overflow-y-auto">
           <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-1 pb-24">
             <div className="space-y-4">
-              <header className="flex items-center justify-between  pb-2">
+              <header className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3 pb-2">
                 <div className="flex items-center">
                   <Image
                     src="/images/logoo.png"
@@ -49,8 +49,10 @@ export default async function HomePage() {
                   />
                   <span className="text-md font-bold">Pejuangkorea Academy</span>
                 </div>
+                <div className="w-full md:w-[600px]">
+                  <ActiveLiveSessionBanner />
+                </div>
               </header>
-              <ActiveLiveSessionBanner />
               <SearchBox
                 placeholder="Cari artikel, kursus, game..."
                 className="mb-0 bg-primary/35 rounded-lg pb-1"

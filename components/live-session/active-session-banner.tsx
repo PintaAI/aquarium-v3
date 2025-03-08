@@ -4,8 +4,7 @@
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import Marquee from "react-fast-marquee"
-
+import { Loader2 } from "lucide-react"
 interface Session {
   id: string
   name: string
@@ -44,6 +43,8 @@ async function getActiveSessions(signal?: AbortSignal): Promise<Session[]> {
 export function ActiveLiveSessionBanner() {
   const [isVisible, setIsVisible] = useState(true)
   const [session, setSession] = useState<Session | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isNavigating, setIsNavigating] = useState(false)
 
   useEffect(() => {
     // Create animation effect by toggling visibility
@@ -69,6 +70,7 @@ export function ActiveLiveSessionBanner() {
       try {
         pollCount++;
         console.log("[ActiveSessions] Poll attempt:", pollCount);
+        setIsLoading(true);
         
         const sessions = await getActiveSessions(controller.signal);
         console.log("[ActiveSessions] Found sessions:", sessions.length);
@@ -78,6 +80,7 @@ export function ActiveLiveSessionBanner() {
           // Since we're already filtering for active sessions in the API,
           // we can just take the first one
           setSession(sessions.length > 0 ? sessions[0] : null);
+          setIsLoading(false);
           
           // Schedule next poll if under 10 attempts
           if (pollCount < 10) {
@@ -111,12 +114,30 @@ export function ActiveLiveSessionBanner() {
     };
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-emerald-500/10 border border-emerald-500/20 rounded-lg py-2 px-3 flex items-center gap-3">
+        <div className="w-3 h-3 rounded-full bg-emerald-500/20 animate-pulse" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="h-4 w-2/3 bg-emerald-500/20 rounded animate-pulse" />
+          <div className="h-4 w-1/3 bg-emerald-500/20 rounded animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
   if (!session) return null
 
   return (
     <Link 
       href={`/dashboard/live-session/${session.id}`}
-      className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 hover:from-emerald-500/20 hover:to-emerald-500/10 transition-all border border-emerald-500/20 rounded-lg p-3 flex items-center gap-3 group"
+      onClick={() => setIsNavigating(true)}
+      className={cn(
+        "bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-emerald-500/10",
+        "hover:from-emerald-500/15 hover:via-emerald-500/10 hover:to-emerald-500/15",
+        "transition-all duration-300 border border-emerald-500/20 rounded-lg py-2 px-3 flex items-center gap-3 group",
+        isNavigating && "pointer-events-none opacity-70"
+      )}
     >
       <div className="relative">
         <div className={cn(
@@ -126,14 +147,22 @@ export function ActiveLiveSessionBanner() {
         )} />
         <div className="absolute inset-0 w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
       </div>
-      <div className="flex-1">
-        <Marquee
-          direction="right"
-          speed={40}
-          pauseOnHover
-        >
-          Live Session: {session.name} - {session.course.title}
-        </Marquee>
+      <div className="flex-1 min-w-0 flex items-center gap-3">
+        <p className="text-sm font-medium text-emerald-700 truncate">
+          {session.name}
+          <span className="text-muted-foreground mx-2">•</span>
+          <span className="text-muted-foreground">{session.course.title}</span>
+        </p>
+        <span className="shrink-0 text-xs text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-2">
+          {isNavigating ? (
+            <>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>Tunggu sebentar ...</span>
+            </>
+          ) : (
+            "Gabung Live Session ➜"
+          )}
+        </span>
       </div>
     </Link>
   )

@@ -38,6 +38,10 @@ export function CreateLiveSessionForm({ courses }: CreateLiveSessionFormProps) {
   const [selectedCourse, setSelectedCourse] = useState<string>("")
   const router = useRouter()
 
+  const now = new Date()
+  const currentDate = now.toISOString().split('T')[0]
+  const currentTime = now.toTimeString().slice(0, 5)
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
@@ -129,6 +133,7 @@ export function CreateLiveSessionForm({ courses }: CreateLiveSessionFormProps) {
                 name="scheduledStartDate"
                 type="date"
                 required
+                defaultValue={currentDate}
               />
             </div>
             <div className="space-y-2">
@@ -140,6 +145,7 @@ export function CreateLiveSessionForm({ courses }: CreateLiveSessionFormProps) {
                 name="scheduledStartTime"
                 type="time"
                 required
+                defaultValue={currentTime}
               />
             </div>
           </div>

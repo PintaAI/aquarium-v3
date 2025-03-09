@@ -1,5 +1,5 @@
 import { ModuleForm } from '@/components/courses/module-form';
-import { getModuleForEditing } from '@/actions/module-actions';
+import { getModuleForEditing } from '@/app/actions/module-actions';
 import { currentUser } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/lib/db';

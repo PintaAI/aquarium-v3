@@ -1,14 +1,7 @@
 "use client";
 
-import { ReactNode, Fragment } from "react";
-import { useSelectedLayoutSegments } from "next/navigation";
+import { ReactNode, } from "react";
 import { AppSidebar } from "../../components/app-sidebar";
-import {
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../../components/ui/breadcrumb";
 import {
   
   SidebarProvider,
@@ -19,15 +12,8 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const segmentLabels: Record<string, string> = {
-  'courses': 'Kursus',
-  'create-course': 'Buat Kursus',
-  'edit-course': 'Edit Kursus',
-  'create-module': 'Buat Modul',
-};
-
 export default function Layout({ children }: LayoutProps) {
-  const segments = useSelectedLayoutSegments();
+  
   
   return (
     <SidebarProvider

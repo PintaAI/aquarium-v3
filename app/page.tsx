@@ -1,7 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { getArticles } from "@/app/actions/article-actions";
 import { ActiveLiveSessionBanner } from "@/components/live-session/active-session-banner";
-import { getLiveSessionWithAccess } from "@/app/actions/live-session-actions";
 import Image from "next/image";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { LatestCourses } from "@/components/menu/latest-courses";

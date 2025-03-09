@@ -3,8 +3,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { getLatestVocabularyCollections } from "@/app/actions/vocabulary-actions"
 import { VocabularyCard } from "@/components/card/vocabulary-card"
 import { ChevronRight, Plus } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { id } from "date-fns/locale"
 import Link from "next/link"
 
 interface VocabularyCollection {

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
-import { createModule, updateModule } from '@/actions/module-actions'
+import { createModule, updateModule } from '@/app/actions/module-actions'
 
 interface ModuleFormProps {
   courseId: number;

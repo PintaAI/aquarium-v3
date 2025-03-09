@@ -28,7 +28,6 @@ const HangulWordGame = () => {
     handleMouseUp,
     giveHint,
     resetGame,
-    createBoard
   } = useHangulGame({ level: selectedLevel || LEVELS[0] });
 
   // Initialize the game when level is selected

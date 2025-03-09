@@ -1,5 +1,5 @@
 import { ArticleForm } from "@/components/articles/article-form";
-import { getArticle } from "@/actions/article-actions";
+import { getArticle } from "@/app/actions/article-actions";
 import { currentUser } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 

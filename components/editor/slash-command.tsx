@@ -19,15 +19,22 @@ import { YoutubeDialog } from './dialogs/youtube-dialog'
 import { TableDialog } from './dialogs/table-dialog'
 import { useState } from 'react'
 
+import type { EditorInstance } from 'novel';
+
+interface Range {
+  from: number;
+  to: number;
+}
+
 interface DialogState {
   youtubeDialog: boolean;
   tableDialog: boolean;
-  currentEditor: any;
-  currentRange: any;
+  currentEditor: EditorInstance | null;
+  currentRange: Range | null;
 }
 
 // Global state for dialogs since they're rendered at the root
-let dialogState: DialogState = {
+const dialogState: DialogState = {
   youtubeDialog: false,
   tableDialog: false,
   currentEditor: null,
@@ -56,7 +63,7 @@ export function DialogProvider() {
       dialogState.currentEditor
         ?.chain()
         .focus()
-        .deleteRange(dialogState.currentRange)
+        .deleteRange(dialogState.currentRange!)
         .setYoutubeVideo({
           src: videoLink
         })
@@ -71,7 +78,7 @@ export function DialogProvider() {
     dialogState.currentEditor
       ?.chain()
       .focus()
-      .deleteRange(dialogState.currentRange)
+      .deleteRange(dialogState.currentRange!)
       .insertTable({ rows, cols, withHeaderRow: true })
       .run()
   }

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import ReactMarkdown from 'react-markdown';
+
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -129,7 +129,7 @@ export default function AdvancedTranslateGame() {
               <Label>Hasil Terjemahan</Label>
               <Card className="p-3 bg-muted/50 relative">
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown>{result}</ReactMarkdown>
+                  {result}
                 </div>
                 <div className="absolute top-2 right-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />

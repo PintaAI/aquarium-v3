@@ -1,5 +1,5 @@
 import { CourseForm } from '@/components/courses/course-form'
-import { getCourse } from '@/actions/course-actions'
+import { getCourse } from '@/app/actions/course-actions'
 import { notFound, redirect } from 'next/navigation'
 import { CourseLevel } from '@prisma/client'
 import { currentUser } from '@/lib/auth'
@@ -26,7 +26,7 @@ export default async function EditCoursePage(props: EditCoursePageProps) {
   }
 
   // Verify user owns the course
-  if (courseData.authorId !== user.id) {
+  if (courseData.author.id !== user.id) {
     redirect('/courses')
   }
 

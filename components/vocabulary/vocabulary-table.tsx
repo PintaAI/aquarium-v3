@@ -45,14 +45,14 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
 
   // Filter and randomize items
   const filteredItems = useMemo(() => {
-    let items = orderedItems.filter(item =>
+    const items = orderedItems.filter(item =>
       searchQuery ? 
         item.korean.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.indonesian.toLowerCase().includes(searchQuery.toLowerCase())
       : true
     );
     return isRandomOrder ? [...items].sort(() => Math.random() - 0.5) : items;
-  }, [initialItems, searchQuery, isRandomOrder]);
+  }, [orderedItems, searchQuery, isRandomOrder]);
 
   const increaseFontSize = () => setFontSize(prev => Math.min(prev + 2, 24));
   const decreaseFontSize = () => setFontSize(prev => Math.max(prev - 2, 12));

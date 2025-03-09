@@ -1,6 +1,6 @@
 'use client'
 
-import { DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided, DraggableStateSnapshot } from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided, DraggableStateSnapshot, DropResult } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -157,13 +157,13 @@ export function ModuleList({ modules: initialModules, courseId, courseAuthorId }
   const { data: session } = useSession();
   const isAuthor = session?.user?.id === courseAuthorId;
   const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   // Sort modules by order initially
   const sortedModules = [...initialModules].sort((a, b) => a.order - b.order);
   const [modules, setModules] = useOptimistic(sortedModules);
 
-  const onDragEnd = async (result: any) => {
+  const onDragEnd = async (result: DropResult) => {
     if (!result.destination || !isAuthor) return;
 
     const items = Array.from(modules);
@@ -186,7 +186,7 @@ export function ModuleList({ modules: initialModules, courseId, courseAuthorId }
         title: "Success",
         description: "Module order updated",
       });
-    } catch (error) {
+    } catch {
       startTransition(() => {
         setModules(sortedModules);
       });

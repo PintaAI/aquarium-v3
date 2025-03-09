@@ -29,13 +29,13 @@ async function getActiveSessions(signal?: AbortSignal): Promise<Session[]> {
     const data = await response.json()
     console.log("[ActiveSessions] Received:", data)
     return data.activeSessions || []
-  } catch (error) {
+  } catch (e) {
     // Don't log aborted requests as errors
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (e instanceof DOMException && e.name === 'AbortError') {
       console.log('[ActiveSessions] Request aborted')
       return []
     }
-    console.error("[ActiveSessions] Error:", error)
+    console.error("[ActiveSessions] Error:", e)
     return []
   }
 }
@@ -89,7 +89,7 @@ export function ActiveLiveSessionBanner() {
             console.log("[ActiveSessions] Reached max polls, stopping");
           }
         }
-      } catch (error) {
+      } catch {
         // Error handling is done in getActiveSessions
         // Still try to schedule next poll on error if under 10 attempts
         if (isMounted && pollCount < 10) {

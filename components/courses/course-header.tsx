@@ -48,7 +48,7 @@ export function CourseHeader({
       }
 
       window.location.href = `/courses/${id}/modules/${firstModule.id}`;
-    } catch (error: any) {
+    } catch {
       toast.error("Gagal memulai kursus");
     } finally {
       setLoading(false);
@@ -73,8 +73,8 @@ export function CourseHeader({
       toast.success("Berhasil bergabung dengan kursus!");
       // Setelah berhasil bergabung, langsung navigasi ke modul pertama
       await navigateToFirstModule();
-    } catch (error: any) {
-      const errorMessage = error?.message || "Gagal bergabung dengan kursus";
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Gagal bergabung dengan kursus";
       if (errorMessage.includes('Already joined')) {
         toast.error("Anda sudah bergabung dengan kursus ini");
       } else {

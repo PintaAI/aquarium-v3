@@ -1,14 +1,14 @@
 import { useState, useCallback } from 'react';
 import { GridCell, WordCell, PlacedWord, Direction, Level } from './types';
 import {
-  MIN_WORD_LENGTH,
+
   WORDS_TO_PLACE_PER_LEVEL,
   HINT_COOLDOWN_MS,
   POINTS_PER_CHAR,
   COMMON_SYLLABLES,
   KOREAN_DICTIONARY,
   DIRECTIONS,
-  LEVELS
+
 } from './constants';
 
 interface UseHangulGameProps {
@@ -24,7 +24,6 @@ export function useHangulGame({ level }: UseHangulGameProps) {
   const [score, setScore] = useState(0);
   const [foundWords, setFoundWords] = useState<string[]>([]);
   const [hintCells, setHintCells] = useState<WordCell[]>([]);
-  const [hintsUsed, setHintsUsed] = useState(0);
   const [hintCooldown, setHintCooldown] = useState(false);
   const [placedWords, setPlacedWords] = useState<PlacedWord[]>([]);
 
@@ -252,8 +251,6 @@ export function useHangulGame({ level }: UseHangulGameProps) {
   const giveHint = useCallback(() => {
     clearHints();
     
-    setHintsUsed(prev => prev + 1);
-    
     setHintCooldown(true);
     setTimeout(() => {
       setHintCooldown(false);
@@ -294,7 +291,6 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     setScore(0);
     setFoundWords([]);
     setHintCells([]);
-    setHintsUsed(0);
     setHintCooldown(false);
   }, [createBoard]);
 

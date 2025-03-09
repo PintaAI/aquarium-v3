@@ -2,7 +2,7 @@
 
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "@/components/ui/button"
-import { User, UserRoles } from "@prisma/client"
+import { UserRoles } from "@prisma/client"
 import { useState } from "react"
 import { joinLiveSession, endLiveSession, deleteLiveSession, startLiveSession } from "@/app/actions/live-session-actions"
 import { useRouter } from "next/navigation"

@@ -11,7 +11,8 @@ export interface Course {
   id: number
   title: string
   description: string | null
-  htmlDescription?: string
+  jsonDescription: string | null
+  htmlDescription: string | null
   level: string
   thumbnail: string | null
   isLocked: boolean
@@ -52,6 +53,8 @@ export async function getJoinedCourses() {
         id: true,
         title: true,
         description: true,
+        jsonDescription: true,
+        htmlDescription: true,
         level: true,
         thumbnail: true,
         isLocked: true,
@@ -178,6 +181,8 @@ export async function getCourse(courseId: number) {
         id: true,
         title: true,
         description: true,
+        jsonDescription: true,
+        htmlDescription: true,
         level: true,
         thumbnail: true,
         isLocked: true,
@@ -233,6 +238,8 @@ export async function getLatestJoinedCourses(): Promise<Course[]> {
         id: true,
         title: true,
         description: true,
+        jsonDescription: true,
+        htmlDescription: true,
         level: true,
         thumbnail: true,
         isLocked: true,
@@ -273,6 +280,8 @@ export async function getCourses(): Promise<Course[]> {
         id: true,
         title: true,
         description: true,
+        jsonDescription: true,
+        htmlDescription: true,
         level: true,
         thumbnail: true,
         isLocked: true,
@@ -310,6 +319,8 @@ export async function getCourseWithModules(courseId: number) {
         id: true,
         title: true,
         description: true,
+        jsonDescription: true,
+        htmlDescription: true,
         level: true,
         thumbnail: true,
         isLocked: true,

@@ -8,7 +8,6 @@ import {
   EditorCommandItem,
   EditorCommandList,
   EditorContent,
-  type EditorInstance,
   EditorRoot,
   type JSONContent
 } from 'novel'
@@ -33,7 +32,11 @@ import { ColorSelector } from '@/components/editor/selectors/color-selector'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-let hljs: any
+interface HLJS {
+  highlightElement: (element: HTMLElement) => void;
+}
+
+let hljs: HLJS
 
 const extensions = [...defaultExtensions, slashCommand]
 
@@ -68,8 +71,7 @@ export default function Editor({ initialValue, onChange }: EditorProps) {
   const highlightCodeblocks = (content: string) => {
     const doc = new DOMParser().parseFromString(content, 'text/html')
     doc.querySelectorAll('pre code').forEach(el => {
-      // @ts-ignore
-      hljs.highlightElement(el)
+      hljs.highlightElement(el as HTMLElement)
     })
     return new XMLSerializer().serializeToString(doc)
   }

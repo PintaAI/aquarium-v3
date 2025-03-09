@@ -53,7 +53,7 @@ export function CreateLiveSessionForm({ courses }: CreateLiveSessionFormProps) {
     const scheduledStartTime = formData.get("scheduledStartTime") as string
 
     try {
-      const session = await createLiveSession(parseInt(selectedCourse), {
+      await createLiveSession(parseInt(selectedCourse), {
         name,
         description,
         scheduledStart: new Date(`${scheduledStartDate}T${scheduledStartTime}`),

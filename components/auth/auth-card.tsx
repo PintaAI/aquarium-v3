@@ -1,165 +1,213 @@
-"use client"
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useFormStatus } from 'react-dom';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { FaGoogle } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { login } from '@/app/actions/login';
+import { register } from '@/app/actions/register';
+import { UserRoles } from '@prisma/client';
+import { Loader2 } from 'lucide-react';
 
-import { signIn } from "next-auth/react"
-import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { registerUser } from "@/app/actions/auth-action"
-
-type AuthMode = "login" | "register"
-
-interface FormData {
-  email: string
-  password: string
-  name?: string
+interface AuthCardProps {
+  mode?: 'login' | 'register';
 }
 
-export function AuthCard() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/"
-  const urlError = searchParams.get("error")
-  const [error, setError] = useState<string>("")
-  const [mode, setMode] = useState<AuthMode>("login")
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-    name: "",
-  })
+function SubmitButton({ isLogin, isLoading }: { isLogin: boolean; isLoading: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={pending || isLoading}>
+      {isLoading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          {isLogin ? 'Signing In...' : 'Registering...'}
+        </>
+      ) : (
+        <>{isLogin ? 'Sign In' : 'Register'}</>
+      )}
+    </Button>
+  );
+}
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
+const AuthCard = ({ mode = 'login' }: AuthCardProps) => {
+  const [isLogin] = useState(mode === 'login');
+  const [role, setRole] = useState<UserRoles>(UserRoles.MURID);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleGoogleAuth = () => {
+    const callbackUrl = isLogin ? '/' : '/auth/complete-registration';
+    signIn('google', { callbackUrl, state: { role } });
+  };
+
+  const handleModeSwitch = () => {
+    if (isLogin) {
+      router.push('/auth/register');
+    } else {
+      router.push('/auth/login');
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setIsLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email');
+    const password = formData.get('password');
+
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      setError('Invalid email or password');
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      if (mode === "register") {
-        const result = await registerUser(formData)
-        if (result.error) {
-          setError(result.error)
-          return
+      if (isLogin) {
+        const result = await login({ email, password });
+
+        if ('error' in result) {
+          setError(result.error || 'An unexpected error occurred during login');
+        } else if ('success' in result) {
+          setSuccess(result.success);
+          if (result.shouldRefresh) {
+            window.location.href = result.redirectTo || '/';
+          } else if (result.redirectTo) {
+            router.push(result.redirectTo);
+          }
+        }
+      } else {
+        const name = formData.get('name');
+        if (typeof name !== 'string') {
+          setError('Invalid name');
+          setIsLoading(false);
+          return;
+        }
+
+        const result = await register({ email, password, name, role });
+
+        if ('error' in result) {
+          setError(typeof result.error === 'string' ? result.error : 'An unexpected error occurred during registration');
+        } else {
+          setSuccess('Registration successful. Please sign in.');
+          setTimeout(() => router.push('/auth/sign-in'), 2000);
         }
       }
-
-      const res = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      })
-
-      if (res?.error) {
-        setError(res.error)
-        return
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
       }
-
-      router.push(callbackUrl)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Something went wrong")
     } finally {
-      setLoading(false)
+      setIsLoading(false);
     }
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const toggleMode = () => {
-    setMode((prev) => (prev === "login" ? "register" : "login"))
-    // Reset form data and error when switching modes
-    setFormData({ email: "", password: "", name: "" })
-    setError("")
-  }
+  };
 
   return (
-    <div className="w-full max-w-sm space-y-4 rounded-lg border bg-card p-6 shadow-lg">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">
-          {mode === "login" ? "Login" : "Register"}
-        </h1>
-        <p className="text-muted-foreground">
-          {mode === "login"
-            ? "Enter your credentials to continue"
-            : "Create an account to get started"}
-        </p>
-      </div>
-
-      <form onSubmit={onSubmit} className="space-y-4">
-        {mode === "register" && (
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="John Doe"
-              required={mode === "register"}
-              className="w-full rounded-md border px-3 py-2"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-md mx-auto"
+    >
+      <Card className="w-full shadow-lg">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-center items-center mb-2">
+            <Image
+              src="/images/logoo.png"
+              alt="PejuangKorea Logo"
+              width={60}
+              height={60}
+              className="rounded-full"
             />
           </div>
-        )}
+          <CardTitle className="text-2xl font-bold text-center">{isLogin ? 'Login' : 'Register'}</CardTitle>
+          <CardDescription className="text-center">{isLogin ? 'Sign in to your account' : 'Silahkan daftarkan akun anda'}</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            {!isLogin && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Enter your name"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Select onValueChange={(value) => setRole(value as UserRoles)} defaultValue={UserRoles.MURID}>
+                    <SelectTrigger id="role" className="w-full">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={UserRoles.GURU}>Guru</SelectItem>
+                      <SelectItem value={UserRoles.MURID}>Murid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <SubmitButton isLogin={isLogin} isLoading={isLoading} />
+            {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+            {success && <p className="text-sm text-green-500 text-center">{success}</p>}
+            <Button onClick={handleGoogleAuth} type="button" variant="outline" className="w-full" disabled={isLoading}>
+              <FaGoogle className="mr-2" />
+              {isLogin ? 'Sign in' : 'Register'} with Google
+            </Button>
+            <p className="text-sm text-center text-muted-foreground">
+              {isLogin ? "Belum daftar? " : "Sudah mempunyai akun? "}
+              <button
+                onClick={handleModeSwitch}
+                type="button"
+                className="text-primary hover:underline font-medium"
+                disabled={isLoading}
+              >
+                {isLogin ? 'Register' : 'Login'}
+              </button>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </motion.div>
+  );
+};
 
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="m@example.com"
-            required
-            className="w-full rounded-md border px-3 py-2"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            required
-            className="w-full rounded-md border px-3 py-2"
-          />
-        </div>
-
-        {(error || urlError) && (
-          <div className="text-sm text-destructive">
-            {error || (urlError === "CredentialsSignin"
-              ? "Invalid email or password"
-              : "Something went wrong")}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          className="w-full rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          disabled={loading}
-        >
-          {loading ? "Loading..." : mode === "login" ? "Sign In" : "Sign Up"}
-        </button>
-
-        <button
-          type="button"
-          onClick={toggleMode}
-          className="w-full text-sm text-muted-foreground hover:underline"
-        >
-          {mode === "login"
-            ? "Don't have an account? Sign up"
-            : "Already have an account? Sign in"}
-        </button>
-      </form>
-    </div>
-  )
-}
+export default AuthCard;

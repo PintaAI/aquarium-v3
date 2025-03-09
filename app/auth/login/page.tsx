@@ -1,4 +1,5 @@
-import { AuthCard } from "@/components/auth/auth-card"
+
+import AuthCard from "@/components/auth/auth-card"
 import { Suspense } from "react"
 
 export default function LoginPage() {

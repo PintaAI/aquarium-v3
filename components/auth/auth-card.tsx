@@ -17,7 +17,8 @@ export function AuthCard() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/"
-  const error = searchParams.get("error")
+  const urlError = searchParams.get("error")
+  const [error, setError] = useState<string>("")
   const [mode, setMode] = useState<AuthMode>("login")
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<FormData>({
@@ -34,7 +35,8 @@ export function AuthCard() {
       if (mode === "register") {
         const result = await registerUser(formData)
         if (result.error) {
-          throw new Error(result.error)
+          setError(result.error)
+          return
         }
       }
 
@@ -44,11 +46,14 @@ export function AuthCard() {
         redirect: false,
       })
 
-      if (!res?.error) {
-        router.push(callbackUrl)
+      if (res?.error) {
+        setError(res.error)
+        return
       }
+
+      router.push(callbackUrl)
     } catch (error) {
-      console.error("Authentication error:", error)
+      setError(error instanceof Error ? error.message : "Something went wrong")
     } finally {
       setLoading(false)
     }
@@ -61,8 +66,9 @@ export function AuthCard() {
 
   const toggleMode = () => {
     setMode((prev) => (prev === "login" ? "register" : "login"))
-    // Reset form data when switching modes
+    // Reset form data and error when switching modes
     setFormData({ email: "", password: "", name: "" })
+    setError("")
   }
 
   return (
@@ -128,11 +134,11 @@ export function AuthCard() {
           />
         </div>
 
-        {error && (
+        {(error || urlError) && (
           <div className="text-sm text-destructive">
-            {error === "CredentialsSignin"
+            {error || (urlError === "CredentialsSignin"
               ? "Invalid email or password"
-              : "Something went wrong"}
+              : "Something went wrong")}
           </div>
         )}
 

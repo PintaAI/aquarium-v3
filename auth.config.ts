@@ -27,14 +27,14 @@ export const config = {
           }
 
           const response = await fetch(new URL("/api/auth/verify-credentials", baseUrl), {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
           })
 
           if (!response.ok) {
@@ -43,11 +43,11 @@ export const config = {
           }
 
           const user = await response.json()
-          if (!user?.id) {
-            return null
-          }
+        if (!user?.id) {
+          return null
+        }
 
-          return user
+        return user
         } catch (error) {
           console.error("[AUTH] Error verifying credentials:", error)
           return null

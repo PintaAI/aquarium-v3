@@ -1,19 +1,44 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-
 import { ThemeProvider } from "@/provider/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { MobileNavbar } from "@/components/ui/mobile-navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const atma = localFont({
+  src: [
+    {
+      path: '../public/fonts/Atma/Atma-Light.ttf',
+      weight: '300',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/Atma/Atma-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/Atma/Atma-Medium.ttf',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/Atma/Atma-SemiBold.ttf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/Atma/Atma-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: "--font-atma",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const jua = localFont({
+  src: '../public/fonts/Jua/Jua-Regular.ttf',
+  variable: "--font-jua",
 });
 
 export const viewport: Viewport = {
@@ -49,7 +74,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${atma.variable} ${jua.variable} antialiased`}
       >
         <SessionProvider>
           <ThemeProvider

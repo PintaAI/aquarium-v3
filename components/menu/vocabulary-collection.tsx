@@ -41,7 +41,7 @@ export async function VocabularyCollection() {
                 <p className="text-sm text-muted-foreground">Anda belum memiliki koleksi kosa kata.</p>
                 <Link
                   href="/vocabulary/create"
-                  className="inline-flex items-center px-4 py-2 text-sm  font-medium dark:text-primary text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Buat Koleksi

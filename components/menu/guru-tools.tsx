@@ -51,17 +51,7 @@ export function GuruTools({ role }: GuruToolsProps) {
   if (role !== "GURU") return null
 
   return (
-    <div className="mb-4 shadow-md shadow-emerald-900 rounded-lg p-1">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="ml-1 text-sm font-bold">쌤 Tools</h3>
-        <Link
-          href="/dashboard"
-          className="text-xs text-muted-foreground hover:text-foreground flex items-center"
-        >
-          Dashboard
-          <ChevronRight className="h-3 w-3 ml-1" />
-        </Link>
-      </div>
+    <div className="mb-4 shadow-md shadow-emerald-900 rounded-lg pt-2 p-1">
       <div className="grid grid-cols-5 gap-2">
         {tools.map((tool) => (
           <Tooltip key={tool.id}>

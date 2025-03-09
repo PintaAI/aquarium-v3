@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "npm install --legacy-peer-deps && next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "prisma generate"
+    "lint": "next lint"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",

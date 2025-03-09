@@ -9,8 +9,9 @@ import { RiApps2AiFill } from "react-icons/ri";
 
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { AuthCard } from '../auth/auth-card';
+
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import AuthCard from '../auth/auth-card';
 
 export function MobileNavbar() {
   const { data: session } = useSession();

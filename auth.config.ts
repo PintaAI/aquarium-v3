@@ -1,92 +1,38 @@
-import Credentials from "next-auth/providers/credentials"
-import { type NextAuthConfig } from "next-auth"
-import { UserRoles } from "@prisma/client"
+import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
+import type { NextAuthConfig } from "next-auth";
+import { LoginSchema } from "./schemas";
+import { getUserByEmail } from "./data/user";
+import bcrypt from "bcryptjs";
 
-export const config = {
-  theme: {
-    logo: "/next.svg",
-    brandColor: "#2563eb",
-  },
+// Notice this is only an object, not a full Auth.js instance
+export default {
   providers: [
+    Google({
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
+    }),
+    Apple,
     Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials): Promise<any> {
-        if (!credentials?.email || !credentials?.password || 
-            typeof credentials.email !== 'string' || 
-            typeof credentials.password !== 'string') {
-          return null
-        }
+      async authorize(credentials) {
+        const validatedFields = LoginSchema.safeParse(credentials);
 
-        try {
-          const isVercelPreview = Boolean(
-            process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
-          )
+        if (validatedFields.success) {
+          const { email, password } = validatedFields.data;
+          const user = await getUserByEmail(email);
+          if (!user || !user.password) return null;
           
-          console.log("[AUTH] VERCEL_ENV:", process.env.VERCEL_ENV)
-          console.log("[AUTH] Is Vercel Preview:", isVercelPreview)
-          console.log("[AUTH] VERCEL_URL:", process.env.VERCEL_URL)
-          console.log("[AUTH] NEXTAUTH_URL:", process.env.NEXTAUTH_URL)
+          console.log("Comparing passwords");
+          const passwordMatch = await bcrypt.compare(password, user.password);
+          console.log(`Password match result: ${passwordMatch}`);
 
-          let baseUrl: string
-          if (process.env.NEXTAUTH_URL) {
-            baseUrl = process.env.NEXTAUTH_URL
-          } else if (isVercelPreview) {
-            baseUrl = `https://${process.env.VERCEL_URL}`
-          } else {
-            baseUrl = 'http://localhost:3000'
+          if (passwordMatch) {
+            return user;
           }
-          
-          console.log("[AUTH] Using baseUrl:", baseUrl)
-          
-          const response = await fetch(new URL("/api/auth/verify-credentials", baseUrl), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
-          })
-
-          if (!response.ok) {
-            console.error("[AUTH] Failed to verify credentials:", await response.text())
-            return null
-          }
-
-          const user = await response.json()
-        if (!user?.id) {
-          return null
         }
-
-        return user
-        } catch (error) {
-          console.error("[AUTH] Error verifying credentials:", error)
-          return null
-        }
+        return null;
       }
     })
   ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.role = user.role
-      }
-      return token
-    },
-    session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub
-        session.user.role = token.role as UserRoles
-      }
-      return session
-    }
-  },
-  pages: {
-    signIn: "/auth/login",
-    signOut: "/auth/signout"
-  }
 } satisfies NextAuthConfig

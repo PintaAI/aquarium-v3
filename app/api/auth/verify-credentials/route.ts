@@ -5,9 +5,9 @@ import { NextResponse } from "next/server"
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { email, password: rawPassword } = body
+    const { email, password } = body
 
-    if (!email || !rawPassword) {
+    if (!email || !password) {
       return new NextResponse("Missing credentials", { status: 400 })
     }
 
@@ -30,14 +30,13 @@ export async function POST(req: Request) {
       return new NextResponse("Invalid credentials", { status: 401 })
     }
 
-    const isValidPassword = await compare(rawPassword, user.password)
+    const isValidPassword = await compare(password, user.password)
     if (!isValidPassword) {
       return new NextResponse("Invalid credentials", { status: 401 })
     }
 
-    // Exclude password from response
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user
     
     return NextResponse.json(userWithoutPassword)
   } catch (error) {

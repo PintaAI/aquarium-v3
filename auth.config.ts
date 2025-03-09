@@ -21,11 +21,26 @@ export const config = {
         }
 
         try {
-          const baseUrl = process.env.NEXTAUTH_URL ?? `https://${process.env.VERCEL_URL}`
-          if (!baseUrl) {
-            throw new Error("NEXTAUTH_URL or VERCEL_URL must be set")
-          }
+          const isVercelPreview = Boolean(
+            process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
+          )
+          
+          console.log("[AUTH] VERCEL_ENV:", process.env.VERCEL_ENV)
+          console.log("[AUTH] Is Vercel Preview:", isVercelPreview)
+          console.log("[AUTH] VERCEL_URL:", process.env.VERCEL_URL)
+          console.log("[AUTH] NEXTAUTH_URL:", process.env.NEXTAUTH_URL)
 
+          let baseUrl: string
+          if (process.env.NEXTAUTH_URL) {
+            baseUrl = process.env.NEXTAUTH_URL
+          } else if (isVercelPreview) {
+            baseUrl = `https://${process.env.VERCEL_URL}`
+          } else {
+            baseUrl = 'http://localhost:3000'
+          }
+          
+          console.log("[AUTH] Using baseUrl:", baseUrl)
+          
           const response = await fetch(new URL("/api/auth/verify-credentials", baseUrl), {
           method: "POST",
           headers: {

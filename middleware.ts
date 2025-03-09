@@ -4,5 +4,8 @@ import { config as authConfig } from "./auth.config"
 export const { auth: middleware } = NextAuth(authConfig)
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/api/auth/verify-credentials"
+  ],
 }

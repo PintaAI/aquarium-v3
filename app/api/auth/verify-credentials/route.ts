@@ -4,46 +4,43 @@ import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json()
+    const body = await req.json()
+    const { email, password } = body
 
     if (!email || !password) {
-      return NextResponse.json(null)
+      return new NextResponse("Missing credentials", { status: 400 })
     }
 
     const user = await db.user.findUnique({
-      where: {
-        email
-      },
+      where: { email },
       select: {
         id: true,
-        email: true,
         name: true,
+        email: true,
         password: true,
         role: true,
-        image: true
-      }
+      },
     })
 
-    if (!user?.password) {
-      return NextResponse.json(null)
+    if (!user) {
+      return new NextResponse("Invalid credentials", { status: 401 })
     }
 
-    const isPasswordValid = await compare(
-      password,
-      user.password
-    )
-
-    if (!isPasswordValid) {
-      return NextResponse.json(null)
+    if (!user.password) {
+      return new NextResponse("Invalid credentials", { status: 401 })
     }
 
-    // Don't include password in the returned user object
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: removedPassword, ...userWithoutPassword } = user
+    const isValidPassword = await compare(password, user.password)
+    if (!isValidPassword) {
+      return new NextResponse("Invalid credentials", { status: 401 })
+    }
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user
+    
     return NextResponse.json(userWithoutPassword)
   } catch (error) {
-    console.error("Credential verification error:", error)
-    return NextResponse.json(null)
+    console.error("[VERIFY_CREDENTIALS]", error)
+    return new NextResponse("Internal Error", { status: 500 })
   }
 }

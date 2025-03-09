@@ -20,22 +20,38 @@ export const config = {
           return null
         }
 
-        const user = await fetch(new URL("/api/auth/verify-credentials", process.env.NEXTAUTH_URL), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
-        }).then(res => res.json())
+        try {
+          const baseUrl = process.env.NEXTAUTH_URL ?? `https://${process.env.VERCEL_URL}`
+          if (!baseUrl) {
+            throw new Error("NEXTAUTH_URL or VERCEL_URL must be set")
+          }
 
-        if (!user?.id) {
+          const response = await fetch(new URL("/api/auth/verify-credentials", baseUrl), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          })
+
+          if (!response.ok) {
+            console.error("[AUTH] Failed to verify credentials:", await response.text())
+            return null
+          }
+
+          const user = await response.json()
+          if (!user?.id) {
+            return null
+          }
+
+          return user
+        } catch (error) {
+          console.error("[AUTH] Error verifying credentials:", error)
           return null
         }
-
-        return user
       }
     })
   ],

@@ -4,16 +4,26 @@ import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { currentUser } from "@/lib/auth"
 
-interface VocabularyItem {
+interface CreateVocabularyItem {
   korean: string
   indonesian: string
+  type?: "WORD" | "SENTENCE"
+}
+
+interface VocabularyItem extends CreateVocabularyItem {
+  id: number
+  isChecked: boolean
+  type: "WORD" | "SENTENCE"
+  collectionId: number
+  createdAt: Date
+  updatedAt: Date
 }
 
 // Collection Actions
 export async function createVocabularyCollection(
   title: string, 
   description: string | undefined,
-  items: VocabularyItem[] = []
+  items: CreateVocabularyItem[] = []
 ) {
   try {
     const user = await currentUser()
@@ -33,7 +43,8 @@ export async function createVocabularyCollection(
         await tx.vocabularyItem.createMany({
           data: items.map(item => ({
             ...item,
-            collectionId: collection.id
+            collectionId: collection.id,
+            type: item.type || "WORD"
           }))
         })
       }
@@ -97,7 +108,18 @@ export async function getVocabularyCollections() {
         ]
       },
       include: {
-        items: true,
+        items: {
+          select: {
+            id: true,
+            korean: true,
+            indonesian: true,
+            isChecked: true,
+            type: true,
+            createdAt: true,
+            updatedAt: true,
+            collectionId: true
+          }
+        },
         user: {
           select: {
             name: true,
@@ -121,7 +143,7 @@ export async function updateVocabularyCollection(
   id: number, 
   title: string, 
   description?: string,
-  items?: VocabularyItem[]
+  items?: CreateVocabularyItem[]
 ) {
   try {
     const user = await currentUser()
@@ -202,7 +224,10 @@ export async function deleteVocabularyCollection(id: number) {
   }
 }
 
-export async function getVocabularyItems(collectionId: number) {
+export async function getVocabularyItems(
+  collectionId: number,
+  vocabularyType?: "WORD" | "SENTENCE"
+) {
   try {
     const user = await currentUser()
     if (!user) return { success: false, error: "Unauthorized" }
@@ -219,7 +244,10 @@ export async function getVocabularyItems(collectionId: number) {
     if (!collection) return { success: false, error: "Kumpulan kosakata tidak ditemukan" }
 
     const items = await db.vocabularyItem.findMany({
-      where: { collectionId },
+      where: {
+        collectionId,
+        ...(vocabularyType ? { type: vocabularyType } : {})
+      },
       orderBy: { createdAt: 'desc' }
     })
     
@@ -298,7 +326,18 @@ export async function getLatestVocabularyCollections() {
         userId: user.id // Only get collections owned by the user
       },
       include: {
-        items: true,
+        items: {
+          select: {
+            id: true,
+            korean: true,
+            indonesian: true,
+            isChecked: true,
+            type: true,
+            createdAt: true,
+            updatedAt: true,
+            collectionId: true
+          }
+        },
         user: {
           select: {
             name: true,
@@ -316,6 +355,28 @@ export async function getLatestVocabularyCollections() {
   } catch (error) {
     console.error("[GET_USER_VOCABULARY_COLLECTIONS]", error)
     return { success: false, error: "Gagal mengambil kumpulan kosakata pengguna" }
+  }
+}
+
+export async function getRandomVocabularies() {
+  try {
+    const user = await currentUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    const items = await db.$queryRaw<VocabularyItem[]>`
+      SELECT v.* 
+      FROM "VocabularyItem" v
+      JOIN "VocabularyCollection" c ON v."collectionId" = c.id
+      WHERE v.type = 'WORD'
+      AND (c."userId" = ${user.id} OR c."isPublic" = true)
+      ORDER BY RANDOM()
+      LIMIT 20
+    `
+    
+    return { success: true, data: items }
+  } catch (error) {
+    console.error("[GET_RANDOM_VOCABULARIES]", error)
+    return { success: false, error: "Gagal mengambil kosakata acak" }
   }
 }
 

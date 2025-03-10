@@ -21,6 +21,12 @@ interface ModuleData {
   htmlDescription: string;
   order: number;
   courseId: number;
+  completions: Array<{
+    isCompleted: boolean;
+  }>;
+  userCompletions: Array<{
+    isCompleted: boolean;
+  }>;
   course: {
     author: {
       id: string;
@@ -33,6 +39,9 @@ interface ModuleData {
       description: string;
       order: number;
       courseId: number;
+      completions: Array<{
+        isCompleted: boolean;
+      }>;
     }>;
   };
 }
@@ -57,16 +66,15 @@ export default function ModulePage(props: ModulePageProps) {
       const courseId = parseInt(resolvedParams.id);
       const moduleId = parseInt(resolvedParams.moduleId);
 
-      const fetchModuleData = async () => {
-        const data = await getModule(courseId, moduleId);
-        if (!data) {
-          notFound();
-        } else {
-          setModuleData(data as ModuleData);
-          // Assume module is not completed initially
-          setIsCompleted(false);
-        }
-      };
+const fetchModuleData = async () => {
+  const data = await getModule(courseId, moduleId);
+  if (!data) {
+    notFound();
+  } else {
+    setModuleData(data as ModuleData);
+    setIsCompleted(data.completions?.[0]?.isCompleted || false);
+  }
+};
 
       fetchModuleData();
     }
@@ -97,6 +105,7 @@ export default function ModulePage(props: ModulePageProps) {
     description: mod.description,
     duration: "Duration placeholder",
     isLocked: false,
+    isCompleted: mod.completions?.length > 0,
     order: mod.order ?? index // menggunakan order dari data atau index sebagai fallback
   }));
 

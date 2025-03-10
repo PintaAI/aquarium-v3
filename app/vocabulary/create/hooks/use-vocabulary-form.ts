@@ -1,102 +1,108 @@
 "use client"
 
-import { createVocabularyCollection, updateVocabularyCollection, deleteVocabularyCollection, getVocabularyCollection } from "@/app/actions/vocabulary-actions"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState, useTransition } from "react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { 
+  createVocabularyCollection, 
+  updateVocabularyCollection, 
+  deleteVocabularyCollection 
+} from "@/app/actions/vocabulary-actions"
 
-interface VocabularyItem {
-  korean: string
-  indonesian: string
+interface VocabularyFormProps {
+  initialData?: {
+    id: number
+    title: string
+    description?: string | null
+    items: {
+      korean: string
+      indonesian: string
+      type: "WORD" | "SENTENCE"
+    }[]
+  }
 }
 
-export function useVocabularyForm() {
+export function useVocabularyForm(props?: VocabularyFormProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const isEdit = searchParams.get("edit") === "true"
-  const collectionId = searchParams.get("id")
-  const [isPending, startTransition] = useTransition()
-  
-  // State untuk form
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  
-  // State untuk menyimpan items
-  const [items, setItems] = useState<VocabularyItem[]>([])
+  const [isPending, setIsPending] = useState(false)
+  const [title, setTitle] = useState(props?.initialData?.title ?? "")
+  const [description, setDescription] = useState(props?.initialData?.description ?? "")
+  const [items, setItems] = useState(props?.initialData?.items ?? [])
   const [newKorean, setNewKorean] = useState("")
   const [newIndonesian, setNewIndonesian] = useState("")
+  const [selectedType, setSelectedType] = useState<"WORD" | "SENTENCE">("WORD")
 
-  useEffect(() => {
-    if (isEdit && collectionId) {
-      startTransition(async () => {
-        const result = await getVocabularyCollection(parseInt(collectionId))
-        if (result.success && result.data) {
-          // Set state dengan data yang ada
-          setTitle(result.data.title)
-          setDescription(result.data.description || "")
-          // Load items jika dalam mode edit
-          setItems(result.data.items.map(item => ({
-            korean: item.korean,
-            indonesian: item.indonesian
-          })))
-        }
-      })
-    }
-  }, [isEdit, collectionId])
+  const isEdit = !!props?.initialData
 
-  async function formAction(e: React.FormEvent) {
-    e.preventDefault()
-
-    // Validasi title tidak boleh kosong
-    if (!title.trim()) {
-      alert("Judul tidak boleh kosong")
-      return
-    }
-
-    startTransition(async () => {
-      let result
-      if (isEdit && collectionId) {
-        result = await updateVocabularyCollection(parseInt(collectionId), title, description, items)
-      } else {
-        result = await createVocabularyCollection(title, description, items)
-      }
-      
-      if (result.success) {
-        router.push("/vocabulary")
-      }
-    })
-  }
-
-  async function deleteAction() {
-    if (!collectionId || !confirm("Apakah Anda yakin ingin menghapus kumpulan kosakata ini?")) {
-      return
-    }
-
-    startTransition(async () => {
-      const result = await deleteVocabularyCollection(parseInt(collectionId))
-      if (result.success) {
-        router.push("/vocabulary")
-      }
-    })
-  }
-
-  function handleAddItem(e: React.FormEvent) {
-    e.preventDefault()
+  const handleAddItem = () => {
     if (newKorean && newIndonesian) {
-      setItems([...items, { korean: newKorean, indonesian: newIndonesian }])
+      setItems([
+        ...items,
+        {
+          korean: newKorean,
+          indonesian: newIndonesian,
+          type: selectedType
+        }
+      ])
       setNewKorean("")
       setNewIndonesian("")
     }
   }
 
-  function handleRemoveItem(index: number) {
+  const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index))
   }
 
+  const formAction = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (isPending) return
+
+    try {
+      setIsPending(true)
+      
+      if (isEdit && props?.initialData?.id) {
+        await updateVocabularyCollection(
+          props.initialData.id,
+          title,
+          description || undefined,
+          items
+        )
+      } else {
+        await createVocabularyCollection(
+          title,
+          description || undefined,
+          items
+        )
+      }
+
+      router.push("/vocabulary")
+      router.refresh()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsPending(false)
+    }
+  }
+
+  const deleteAction = async () => {
+    if (!props?.initialData?.id || isPending) return
+    if (!confirm("Yakin ingin menghapus kumpulan kosakata ini?")) return
+
+    try {
+      setIsPending(true)
+      await deleteVocabularyCollection(props.initialData.id)
+      router.push("/vocabulary")
+      router.refresh()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsPending(false)
+    }
+  }
+
   return {
-    // State
     title,
     setTitle,
-    description,
+    description, 
     setDescription,
     items,
     newKorean,
@@ -105,8 +111,8 @@ export function useVocabularyForm() {
     setNewIndonesian,
     isPending,
     isEdit,
-    
-    // Actions
+    selectedType,
+    setSelectedType,
     formAction,
     deleteAction,
     handleAddItem,

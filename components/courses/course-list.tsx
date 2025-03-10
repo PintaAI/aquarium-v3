@@ -108,13 +108,13 @@ export default function CourseList({ initialCourses, userRole, userId, error }: 
         
         {userRole === 'GURU' && (
           <Link href="/courses/create-course" passHref>
-            <Card className="group h-full bg-secondary border-dashed border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+            <Card className="group h-full bg-primary/20 dark:bg-primary/10 border-dashed border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
               <div className="flex flex-col h-full items-center justify-center text-center p-8">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <PlusIcon className="h-8 w-8 text-primary" aria-hidden="true" />
                 </div>
-                <CardTitle className="text-xl font-bold mb-2 text-foreground">Add New Course</CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">
+                <CardTitle className="text-xl font-bold mb-2">Add New Course</CardTitle>
+                <CardDescription className="text-sm">
                   Create and share your knowledge with students
                 </CardDescription>
               </div>

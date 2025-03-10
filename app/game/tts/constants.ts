@@ -40,13 +40,63 @@ export const COMMON_SYLLABLES = [
   '기', '니', '디', '리', '미', '비', '시', '이', '지', '히'
 ];
 
-// Korean dictionary for valid words
-export const KOREAN_DICTIONARY = [
-  '나무', '사람', '학교', '한국', '음식', '친구', '가족', '시간', '사랑', '여행',
-  '도시', '공부', '책상', '의자', '컴퓨터', '전화', '물', '바다', '하늘', '땅',
-  '달', '해', '별', '꽃', '산', '눈', '비', '차', '집', '길', 
-  '학생', '선생', '가방', '연필', '종이', '창문', '문화', '역사', '과학', '미술',
-  '음악', '운동', '건강', '병원', '의사', '약국', '약사', '경찰', '소방', '군인'
+// Korean words with their meanings
+export interface KoreanWord {
+  word: string;
+  meaning: string;
+}
+
+export const KOREAN_DICTIONARY: KoreanWord[] = [
+  { word: '나무', meaning: 'Pohon' },
+  { word: '사람', meaning: 'Orang' },
+  { word: '학교', meaning: 'Sekolah' },
+  { word: '한국', meaning: 'Korea' },
+  { word: '음식', meaning: 'Makanan' },
+  { word: '친구', meaning: 'Teman' },
+  { word: '가족', meaning: 'Keluarga' },
+  { word: '시간', meaning: 'Waktu' },
+  { word: '사랑', meaning: 'Cinta' },
+  { word: '여행', meaning: 'Perjalanan' },
+  { word: '도시', meaning: 'Kota' },
+  { word: '공부', meaning: 'Belajar' },
+  { word: '책상', meaning: 'Meja' },
+  { word: '의자', meaning: 'Kursi' },
+  { word: '컴퓨터', meaning: 'Komputer' },
+  { word: '전화', meaning: 'Telepon' },
+  { word: '물', meaning: 'Air' },
+  { word: '바다', meaning: 'Laut' },
+  { word: '하늘', meaning: 'Langit' },
+  { word: '땅', meaning: 'Tanah' },
+  { word: '달', meaning: 'Bulan' },
+  { word: '해', meaning: 'Matahari' },
+  { word: '별', meaning: 'Bintang' },
+  { word: '꽃', meaning: 'Bunga' },
+  { word: '산', meaning: 'Gunung' },
+  { word: '눈', meaning: 'Salju/mata' },
+  { word: '비', meaning: 'Hujan' },
+  { word: '차', meaning: 'Mobil/teh' },
+  { word: '집', meaning: 'Rumah' },
+  { word: '길', meaning: 'Jalan' },
+  { word: '학생', meaning: 'Murid' },
+  { word: '선생', meaning: 'Guru' },
+  { word: '가방', meaning: 'Tas' },
+  { word: '연필', meaning: 'Pensil' },
+  { word: '종이', meaning: 'Kertas' },
+  { word: '창문', meaning: 'Jendela' },
+  { word: '문화', meaning: 'Budaya' },
+  { word: '역사', meaning: 'Sejarah' },
+  { word: '과학', meaning: 'Sains' },
+  { word: '미술', meaning: 'Seni' },
+  { word: '음악', meaning: 'Musik' },
+  { word: '운동', meaning: 'Olahraga' },
+  { word: '건강', meaning: 'Kesehatan' },
+  { word: '병원', meaning: 'Rumah sakit' },
+  { word: '의사', meaning: 'Dokter' },
+  { word: '약국', meaning: 'Apotek' },
+  { word: '약사', meaning: 'Apoteker' },
+  { word: '경찰', meaning: 'Polisi' },
+  { word: '소방', meaning: 'Pemadam kebakaran' },
+  { word: '군인', meaning: 'Tentara' }
 ];
 
 // Valid directions for word placement and line drawing - only horizontal and vertical

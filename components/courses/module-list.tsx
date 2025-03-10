@@ -106,13 +106,13 @@ export function ModuleCard({ module, index, isAuthor, provided, snapshot }: Modu
                 {index + 1}
               </span>
               <div className="flex items-center gap-2">
-                {isCompleted ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                ) : isLocked ? (
-                  <Lock className="w-5 h-5 text-gray-400" />
-                ) : (
-                  <PlayCircle className="w-5 h-5 text-blue-500" />
-                )}
+  {isCompleted ? (
+    <CheckCircle className="w-5 h-5 text-green-500" />
+  ) : isLocked ? (
+    <Lock className="w-5 h-5 text-muted-foreground" />
+  ) : (
+    <PlayCircle className="w-5 h-5 text-primary" />
+  )}
                 <h3 className="text-lg font-medium line-clamp-1 group-hover:text-primary transition-colors">
                   {title}
                 </h3>

@@ -1,39 +1,35 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { FoundWord } from '../types';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface FoundWordsProps {
-  foundWords: string[];
+  foundWords: FoundWord[];
 }
 
-export function FoundWords({ foundWords }: FoundWordsProps) {
+export const FoundWords = ({ foundWords }: FoundWordsProps) => {
+  if (foundWords.length === 0) return null;
+
   return (
-    <Card className="mt-6 w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg sm:text-xl">
-          Kata ({foundWords.length})
-        </CardTitle>
-        <Separator />
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle>Kata ditemukan:</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap gap-2 justify-start">
-          {foundWords.map((word, index) => (
-            <Badge 
-              key={index} 
-              variant="secondary"
-              className="px-3 py-1.5 text-sm sm:text-base"
-            >
-              {word}
-            </Badge>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          {foundWords.map(({ word, meaning }, index) => (
+            <Card key={index} className="bg-muted">
+              <CardContent className="p-3">
+                <div className="text-lg font-medium">{word}</div>
+                <div className="text-sm text-muted-foreground">{meaning}</div>
+              </CardContent>
+            </Card>
           ))}
-          {foundWords.length === 0 && (
-            <p className="text-muted-foreground italic text-sm sm:text-base w-full">
-              Belum ada kata yang ditemukan
-            </p>
-          )}
         </div>
       </CardContent>
     </Card>
   );
-}
+};

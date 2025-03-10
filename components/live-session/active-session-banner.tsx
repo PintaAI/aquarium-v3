@@ -43,7 +43,6 @@ async function getActiveSessions(signal?: AbortSignal): Promise<Session[]> {
 export function ActiveLiveSessionBanner() {
   const [isVisible, setIsVisible] = useState(true)
   const [session, setSession] = useState<Session | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isNavigating, setIsNavigating] = useState(false)
 
   useEffect(() => {
@@ -70,7 +69,6 @@ export function ActiveLiveSessionBanner() {
       try {
         pollCount++;
         console.log("[ActiveSessions] Poll attempt:", pollCount);
-        setIsLoading(true);
         
         const sessions = await getActiveSessions(controller.signal);
         console.log("[ActiveSessions] Found sessions:", sessions.length);
@@ -80,7 +78,6 @@ export function ActiveLiveSessionBanner() {
           // Since we're already filtering for active sessions in the API,
           // we can just take the first one
           setSession(sessions.length > 0 ? sessions[0] : null);
-          setIsLoading(false);
           
           // Schedule next poll if under 10 attempts
           if (pollCount < 10) {
@@ -113,18 +110,6 @@ export function ActiveLiveSessionBanner() {
       }
     };
   }, []);
-
-  if (isLoading) {
-    return (
-      <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-emerald-500/10 border border-emerald-500/20 rounded-lg py-2 px-3 flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-emerald-500/20 animate-pulse" />
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="h-4 w-2/3 bg-emerald-500/20 rounded animate-pulse" />
-          <div className="h-4 w-1/3 bg-emerald-500/20 rounded animate-pulse" />
-        </div>
-      </div>
-    )
-  }
 
   if (!session) return null
 

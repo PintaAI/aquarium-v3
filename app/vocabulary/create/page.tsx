@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, Plus, Trash2, X, Type, FileText, Book } from "lucide-react"
+import { Plus, Trash2, X, Type, FileText, Book, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -27,20 +28,15 @@ export default function CreateVocabularyPage() {
     deleteAction,
     handleAddItem,
     handleRemoveItem,
+    selectedType,
+    setSelectedType,
   } = useVocabularyForm()
 
   return (
     <div className="container max-w-5xl mx-auto p-4 md:p-6 min-h-[calc(100vh-4rem)]">
       <Card className="p-4 md:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link
-              href="/vocabulary"
-              className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Kembali</span>
-            </Link>
+          <div className="flex items-center">
             <h1 className="text-xl md:text-2xl font-bold text-primary">
               {isEdit ? "Edit Kosakata" : "Tambah Kosakata"}
             </h1>
@@ -111,28 +107,49 @@ export default function CreateVocabularyPage() {
             <div className="flex items-center gap-2">
               <Book className="h-4 w-4 text-muted-foreground" />
               <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
-              Daftar Kosakata
+              {selectedType === "WORD" ? "Daftar Kata" : "Daftar Kalimat"}
                 <span className="text-sm font-normal text-muted-foreground">
-                  ({items.length} kata)
+                  ({items.length} {selectedType === "WORD" ? "kata" : "kalimat"})
                 </span>
               </h2>
             </div>
             
-            {/* Input kosakata baru */}
-            <div className="flex flex-col sm:flex-row gap-2">
+          {/* Pemilih tipe kosakata */}
+          <div className="mb-4">
+            <Tabs 
+              defaultValue="WORD" 
+              value={selectedType} 
+              onValueChange={(value) => setSelectedType(value as "WORD" | "SENTENCE")} 
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+                <TabsTrigger value="WORD" className="flex items-center gap-2">
+                  <Type className="h-4 w-4" />
+                  <span>Kata</span>
+                </TabsTrigger>
+                <TabsTrigger value="SENTENCE" className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Kalimat</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* Input kosakata baru */}
+          <div className="flex flex-col sm:flex-row gap-2">
               <div className="flex-1 flex gap-2">
                 <Input
                   type="text"
                   value={newKorean}
                   onChange={(e) => setNewKorean(e.target.value)}
-                  placeholder="Kata Korea"
+                  placeholder={selectedType === "WORD" ? "Kata Korea" : "Kalimat Korea"}
                   className="flex-1"
                 />
                 <Input
                   type="text"
                   value={newIndonesian}
                   onChange={(e) => setNewIndonesian(e.target.value)}
-                  placeholder="Arti Indonesia"
+                  placeholder={selectedType === "WORD" ? "Arti Indonesia" : "Terjemahan Indonesia"}
                   className="flex-1"
                 />
               </div>

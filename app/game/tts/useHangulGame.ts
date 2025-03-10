@@ -1,15 +1,14 @@
-import { useState, useCallback } from 'react';
-import { GridCell, WordCell, PlacedWord, Direction, Level } from './types';
+import { useState, useCallback, useEffect } from 'react';
+import { GridCell, WordCell, PlacedWord, Direction, Level, FoundWord } from './types';
 import {
-
   WORDS_TO_PLACE_PER_LEVEL,
   HINT_COOLDOWN_MS,
   POINTS_PER_CHAR,
   COMMON_SYLLABLES,
-  KOREAN_DICTIONARY,
   DIRECTIONS,
-
+  KoreanWord
 } from './constants';
+import { getGameWords } from './actions/get-game-words';
 
 interface UseHangulGameProps {
   level: Level;
@@ -22,13 +21,27 @@ export function useHangulGame({ level }: UseHangulGameProps) {
   const [currentWord, setCurrentWord] = useState('');
   const [message, setMessage] = useState('Cari kosa kata Bahasa Korea!');
   const [score, setScore] = useState(0);
-  const [foundWords, setFoundWords] = useState<string[]>([]);
+  const [foundWords, setFoundWords] = useState<FoundWord[]>([]);
   const [hintCells, setHintCells] = useState<WordCell[]>([]);
   const [hintCooldown, setHintCooldown] = useState(false);
   const [placedWords, setPlacedWords] = useState<PlacedWord[]>([]);
+  const [dictionary, setDictionary] = useState<KoreanWord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load dictionary when component mounts
+  useEffect(() => {
+    setIsLoading(true);
+    getGameWords().then(words => {
+      setDictionary(words);
+      setIsLoading(false);
+      resetGame(); // Reset game after dictionary is loaded
+    });
+  }, []);
 
   // Create game board with pre-placed words
   const createBoard = useCallback(() => {
+    if (dictionary.length === 0) return null;
+
     const gridSize = level.gridSize;
     const newGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
     const placedWordsList: PlacedWord[] = [];
@@ -58,9 +71,10 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     };
 
     // Try to place each word from the dictionary
-    const wordsToPlace = [...KOREAN_DICTIONARY]
+    const wordsToPlace = [...dictionary]
       .sort(() => 0.5 - Math.random())
-      .slice(0, WORDS_TO_PLACE_PER_LEVEL[level.id as keyof typeof WORDS_TO_PLACE_PER_LEVEL]);
+      .slice(0, WORDS_TO_PLACE_PER_LEVEL[level.id as keyof typeof WORDS_TO_PLACE_PER_LEVEL])
+      .map(wordObj => wordObj.word);
     
     for (const word of wordsToPlace) {
       let placed = false;
@@ -111,7 +125,7 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     );
     
     return { finalGrid, placedWordsList };
-  }, [level]);
+  }, [level, dictionary]);
 
   // Check if a move is valid (adjacent to the last selected cell)
   const isValidMove = useCallback((lastCell: WordCell | null, currentCell: WordCell) => {
@@ -201,10 +215,12 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     
     // Allow single character selection for 1-character words
     if (selectedCells.length >= 1) {
-      if (KOREAN_DICTIONARY.includes(currentWord)) {
-        setMessage(`Word found: ${currentWord}!`);
+      const foundWord = dictionary.find(item => item.word === currentWord);
+      
+      if (foundWord) {
+        setMessage(`${currentWord} ditemukan: ${foundWord.meaning}`);
         setScore(prev => prev + currentWord.length * POINTS_PER_CHAR);
-        setFoundWords(prev => [...prev, currentWord]);
+        setFoundWords(prev => [...prev, { word: currentWord, meaning: foundWord.meaning }]);
         
         const newGrid = [...grid];
         selectedCells.forEach(cell => {
@@ -245,7 +261,7 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     
     setCurrentWord('');
     setSelectedCells([]);
-  }, [grid, selectedCells, currentWord]);
+  }, [grid, selectedCells, currentWord, dictionary]);
 
   // Give a hint
   const giveHint = useCallback(() => {
@@ -257,7 +273,7 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     }, HINT_COOLDOWN_MS);
     
     const availableWords = placedWords.filter(
-      item => !foundWords.includes(item.word) && 
+      item => !foundWords.some(fw => fw.word === item.word) && 
       !item.cells.some(cell => grid[cell.row][cell.col].used)
     );
     
@@ -282,7 +298,10 @@ export function useHangulGame({ level }: UseHangulGameProps) {
 
   // Reset the game
   const resetGame = useCallback(() => {
-    const { finalGrid, placedWordsList } = createBoard();
+    const board = createBoard();
+    if (!board) return; // Don't reset if dictionary not loaded yet
+
+    const { finalGrid, placedWordsList } = board;
     setGrid(finalGrid);
     setPlacedWords(placedWordsList);
     setSelectedCells([]);
@@ -300,8 +319,9 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     score,
     foundWords,
     placedWords,
-    message,
+    message: isLoading ? 'Loading vocabulary...' : message,
     hintCooldown,
+    isLoading,
     
     // Actions
     handleMouseDown,
@@ -309,8 +329,5 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     handleMouseUp,
     giveHint,
     resetGame,
-    
-    // Initialize
-    createBoard
   };
 }

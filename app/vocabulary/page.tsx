@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { VocabularySearchDialog } from "@/components/vocabulary/vocabulary-search-dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   getVocabularyCollections 
 } from "@/app/actions/vocabulary-actions"
@@ -58,8 +59,52 @@ export default async function VocabularyPage() {
         </div>
       )}
 
-      {/* Vocabulary Collections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Vocabulary Collections Tabs */}
+      <Tabs defaultValue="word" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="word">Kata</TabsTrigger>
+          <TabsTrigger value="sentence">Kalimat</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="word" className="m-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {success && collections?.filter(collection => 
+              collection.items.some(item => item.type === "WORD")
+            ).map((collection) => (
+              <Link href={`/vocabulary/${collection.id}`} key={collection.id} className="block">
+                <VocabularyCard
+                  title={collection.title}
+                  description={collection.description}
+                  user={collection.user}
+                  items={collection.items.filter(item => item.type === "WORD")}
+                  isPublic={collection.isPublic}
+                />
+              </Link>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="sentence" className="m-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {success && collections?.filter(collection => 
+              collection.items.some(item => item.type === "SENTENCE")
+            ).map((collection) => (
+              <Link href={`/vocabulary/${collection.id}`} key={collection.id} className="block">
+                <VocabularyCard
+                  title={collection.title}
+                  description={collection.description}
+                  user={collection.user}
+                  items={collection.items.filter(item => item.type === "SENTENCE")}
+                  isPublic={collection.isPublic}
+                />
+              </Link>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Legacy Grid (will be removed) */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {success && collections?.map((collection) => (
           <Link href={`/vocabulary/${collection.id}`} key={collection.id} className="block">
             <VocabularyCard
@@ -68,11 +113,10 @@ export default async function VocabularyPage() {
               user={collection.user}
               items={collection.items}
               isPublic={collection.isPublic}
-              
             />
           </Link>
         ))}
-      </div>
+      </div> */}
     </div>
   )
 }

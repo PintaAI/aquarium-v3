@@ -228,6 +228,11 @@ export async function reorderModules(courseId: number, moduleIds: number[]) {
 
 export async function getModule(courseId: number, moduleId: number) {
   try {
+    const user = await currentUser()
+    if (!user) {
+      throw new Error('Unauthorized')
+    }
+    
     // Only select htmlDescription for rendering, not jsonDescription
     const moduleItem = await db.module.findUnique({
       where: {
@@ -241,8 +246,16 @@ export async function getModule(courseId: number, moduleId: number) {
         htmlDescription: true,
         order: true,
         courseId: true,
+        completions: {
+          where: {
+            userId: user.id
+          },
+          select: {
+            isCompleted: true
+          }
+        },
         course: {
-          include: {
+          select: {
             author: {
               select: {
                 id: true,
@@ -250,17 +263,26 @@ export async function getModule(courseId: number, moduleId: number) {
                 image: true
               }
             },
-            modules: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                order: true,
-                courseId: true,
+        modules: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            order: true,
+            courseId: true,
+            completions: {
+              where: {
+                userId: user.id,
+                isCompleted: true
               },
-              orderBy: {
-                order: 'asc'
+              select: {
+                isCompleted: true
               }
+            }
+          },
+          orderBy: {
+            order: 'asc'
+          }
             }
           }
         }
@@ -272,7 +294,10 @@ export async function getModule(courseId: number, moduleId: number) {
       return null;
     }
 
-    return moduleItem;
+    return {
+      ...moduleItem,
+      userCompletions: moduleItem.completions
+    };
   } catch (error) {
     console.error(`Failed to fetch module with id ${moduleId}:`, error);
     throw error;

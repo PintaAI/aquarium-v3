@@ -178,10 +178,16 @@ model VocabularyItem {
   korean       String
   indonesian   String
   isChecked    Boolean              @default(false)
+  type         VocabularyType      @default(WORD)
   collectionId Int
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   collection   VocabularyCollection @relation(fields: [collectionId], references: [id])
+}
+
+enum VocabularyType {
+  WORD
+  SENTENCE
 }
 
 enum UserRoles {

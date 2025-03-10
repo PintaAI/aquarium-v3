@@ -7,6 +7,7 @@ export interface Module {
   htmlDescription: string
   order: number
   courseId: number
+  isCompleted?: boolean
 }
 
 export interface ModuleWithJsonContent extends Module {

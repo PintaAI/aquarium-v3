@@ -26,4 +26,9 @@ export interface Level {
   description: string;
 }
 
+export interface FoundWord {
+  word: string;
+  meaning: string;
+}
+
 export type GameState = 'start' | 'playing';

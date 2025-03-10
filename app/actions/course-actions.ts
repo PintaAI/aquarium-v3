@@ -21,6 +21,9 @@ export interface Course {
     title: string
     description?: string
     order: number
+    completions: Array<{
+      isCompleted: boolean
+    }>
   }>
   createdAt: Date
   updatedAt: Date
@@ -64,7 +67,19 @@ export async function getJoinedCourses() {
           select: {
             id: true,
             title: true,
-            order: true
+            order: true,
+            completions: {
+              where: {
+                userId: user.id,
+                isCompleted: true
+              },
+              select: {
+                isCompleted: true
+              }
+            }
+          },
+          orderBy: {
+            order: 'asc'
           }
         },
         author: {
@@ -192,7 +207,8 @@ export async function getCourse(courseId: number) {
           select: {
             id: true,
             title: true,
-            order: true
+            order: true,
+            completions: true
           }
         },
         author: {
@@ -249,7 +265,16 @@ export async function getLatestJoinedCourses(): Promise<Course[]> {
           select: {
             id: true,
             title: true,
-            order: true
+            order: true,
+            completions: {
+              where: {
+                userId: user.id,
+                isCompleted: true
+              },
+              select: {
+                isCompleted: true
+              }
+            }
           }
         },
         author: {
@@ -275,6 +300,7 @@ export async function getLatestJoinedCourses(): Promise<Course[]> {
 
 export async function getCourses(): Promise<Course[]> {
   try {
+    const user = await currentUser();
     const courses = await db.course.findMany({
       select: {
         id: true,
@@ -291,7 +317,16 @@ export async function getCourses(): Promise<Course[]> {
           select: {
             id: true,
             title: true,
-            order: true
+            order: true,
+            completions: user ? {
+              where: {
+                userId: user.id,
+                isCompleted: true
+              },
+              select: {
+                isCompleted: true
+              }
+            } : undefined
           }
         },
         author: {
@@ -312,6 +347,7 @@ export async function getCourses(): Promise<Course[]> {
 
 export async function getCourseWithModules(courseId: number) {
   try {
+    const user = await currentUser();
     console.log('Fetching course modules...')
     const courseData = await db.course.findUnique({
       where: { id: courseId },
@@ -330,7 +366,16 @@ export async function getCourseWithModules(courseId: number) {
           select: {
             id: true,
             title: true,
-            order: true
+            order: true,
+            completions: user ? {
+              where: {
+                userId: user.id,
+                isCompleted: true
+              },
+              select: {
+                isCompleted: true
+              }
+            } : undefined
           }
         },
         author: {

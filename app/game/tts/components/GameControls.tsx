@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlacedWord } from '../types';
+import { PlacedWord, FoundWord } from '../types';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -8,7 +8,7 @@ import { AlertCircle, RefreshCw, Lightbulb } from "lucide-react";
 
 interface GameControlsProps {
   score: number;
-  foundWords: string[];
+  foundWords: FoundWord[];
   placedWords: PlacedWord[];
   message: string;
   hintCooldown: boolean;
@@ -30,7 +30,7 @@ export function GameControls({
       <div className="flex flex-col sm:flex-row justify-between w-full mb-4 gap-4">
         <Card className="flex-1">
           <CardContent className="p-3 flex flex-wrap items-center gap-4 justify-center sm:justify-start">
-            <div className="font-bold text-lg">Skor: {score}</div>
+            <div className="font-bold text-sm">Skor: {score}</div>
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
             <div>Kata: {foundWords.length}/{placedWords.length}</div>
           </CardContent>

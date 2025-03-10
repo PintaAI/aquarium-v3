@@ -15,6 +15,9 @@ interface Course {
     id: number;
     order: number;
     title: string;
+    completions: Array<{
+      isCompleted: boolean;
+    }>;
   }[];
 }
 
@@ -45,7 +48,8 @@ export function CourseSidebarContent() {
       {joinedCourses.map((course) => {
         const firstModule = course.modules[0];
         const moduleCount = course.modules.length;
-        const progress = Math.floor(Math.random() * 100); // Example progress
+        const completedModules = course.modules.filter(module => module.completions?.length > 0).length;
+        const progress = moduleCount > 0 ? Math.floor((completedModules / moduleCount) * 100) : 0;
 
         return (
           <Link

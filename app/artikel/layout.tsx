@@ -2,16 +2,25 @@
 
 import { ReactNode } from "react";
 import { AppSidebar } from "../../components/app-sidebar";
-
-import {
-  SidebarProvider,
-} from "../../components/ui/sidebar";
+import { SidebarProvider } from "../../components/ui/sidebar";
+import { 
+  Breadcrumb, 
+  BreadcrumbItem, 
+  BreadcrumbLink, 
+  BreadcrumbList, 
+  BreadcrumbPage, 
+  BreadcrumbSeparator 
+} from "@/components/ui/breadcrumb";
+import { useParams } from "next/navigation";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const params = useParams();
+  const id = params?.id as string | undefined;
+
   return (
     <SidebarProvider
       style={
@@ -21,12 +30,32 @@ export default function Layout({ children }: LayoutProps) {
       }
     >
       <AppSidebar />
-        <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          {children}
-        </div>
-      
+      <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4 pb-24">
+        <Breadcrumb className="px-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Beranda</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            {!id ? (
+              <BreadcrumbItem>
+                <BreadcrumbPage>Artikel</BreadcrumbPage>
+              </BreadcrumbItem>
+            ) : (
+              <>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/artikel">Artikel</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Detail</BreadcrumbPage>
+                </BreadcrumbItem>
+              </>
+            )}
+          </BreadcrumbList>
+        </Breadcrumb>
+        {children}
+      </div>
     </SidebarProvider>
   );
 }

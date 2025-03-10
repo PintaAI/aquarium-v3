@@ -35,7 +35,7 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
     title: module.title,
     description: module.description ?? "",
     duration: "Duration placeholder",
-    isCompleted: false,
+    isCompleted: module.completions?.length > 0,
     isLocked: false,
     order: module.order ?? index // Use existing order or fallback to index
   }));

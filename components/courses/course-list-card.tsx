@@ -51,13 +51,19 @@ export function CourseListCard({ course, isAuthor, onDelete }: CourseListCardPro
             </div>
           )}
           <div className="h-28 w-full overflow-hidden">
-            <Image
-              src={course.thumbnail || '/images/course.jpg'}
-              alt={`${course.title} thumbnail`}
-              fill
-              className="object-cover group-hover:scale-120 transition-transform duration-300"
-              priority
-            />
+              <Image
+                src={course.thumbnail || '/images/course.jpg'}
+                alt={`${course.title} thumbnail`}
+                fill
+                className="
+                  object-cover 
+                  group-hover:scale-120 
+                  transition-transform 
+                  duration-300
+                  dark:brightness-70
+                "
+                priority
+              />
             {isAuthor && (
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <Button

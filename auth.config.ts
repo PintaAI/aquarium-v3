@@ -1,6 +1,5 @@
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import Apple from "next-auth/providers/apple";
 import type { NextAuthConfig } from "next-auth";
 import { LoginSchema } from "./schemas";
 import { getUserByEmail } from "./data/user";
@@ -10,10 +9,9 @@ import bcrypt from "bcryptjs";
 export default {
   providers: [
     Google({
-      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    Apple,
     Credentials({
       async authorize(credentials) {
         const validatedFields = LoginSchema.safeParse(credentials);

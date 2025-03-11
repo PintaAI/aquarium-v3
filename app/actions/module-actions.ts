@@ -442,14 +442,13 @@ export async function getPreviousModule(courseId: number, currentModuleId: numbe
   }
 }
 
-export async function completeModule(courseId: number, moduleId: number) {
+export async function completeModule(courseId: number, moduleId: number, completed: boolean = true) {
   try {
     const user = await currentUser()
     if (!user) {
       throw new Error('Unauthorized')
     }
 
-    // Check if the completion record already exists
     const existingCompletion = await db.userModuleCompletion.findUnique({
       where: {
         userId_moduleId: {
@@ -460,22 +459,20 @@ export async function completeModule(courseId: number, moduleId: number) {
     });
 
     if (existingCompletion) {
-      // Update the existing record
       await db.userModuleCompletion.update({
         where: {
           id: existingCompletion.id
         },
         data: {
-          isCompleted: true
+          isCompleted: completed
         }
       });
     } else {
-      // Create a new completion record
       await db.userModuleCompletion.create({
         data: {
           userId: user.id,
           moduleId: moduleId,
-          isCompleted: true
+          isCompleted: completed
         }
       });
     }
@@ -484,7 +481,7 @@ export async function completeModule(courseId: number, moduleId: number) {
     revalidatePath(`/courses/${courseId}/modules/${moduleId}`)
     return { success: true }
   } catch (error) {
-    console.error('Failed to complete module:', error)
-    return { success: false, error: 'Failed to complete module' }
+    console.error('Failed to update module completion:', error)
+    return { success: false, error: 'Failed to update module completion' }
   }
 }

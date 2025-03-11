@@ -16,8 +16,8 @@ export interface Game {
 
 export const games: Game[] = [
   {
-    id: "ujian-sertifikat",
-    title: "Ujian Sertifikat",
+    id: "Soal",
+    title: "Soal",
     description: "Latihan ujian sertifikasi bahasa Korea dengan format standar",
     icon: ScrollText,
     type: "App",
@@ -41,7 +41,7 @@ export const games: Game[] = [
   },
   {
     id: "toro-toro",
-    title: "Toro-Toro",
+    title: "Toro",
     description: "Permainan tebak kata Korea dengan sistem point",
     icon: FaKeyboard,
     route: "/game/toro-toro",

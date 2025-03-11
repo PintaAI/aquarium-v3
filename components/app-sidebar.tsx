@@ -7,8 +7,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { ThemeToggle } from "./theme-toggle"
 import { CourseSidebarContent } from "./sidebar/course-sidebar-content"
-import { GameSidebarContent } from "./sidebar/game-sidebar-content"
-import { ArticleSidebarContent } from "./sidebar/article-sidebar-content"
 import { VocabularySidebarContent } from "./sidebar/vocabulary-sidebar-content"
 import {
   Sidebar,
@@ -87,23 +85,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Menentukan konten sidebar berdasarkan pathname
   const renderSidebarContent = () => {
-    if (pathname.startsWith('/game')) {
-      return <GameSidebarContent />
-    }
+
 
     if (pathname.startsWith('/courses')) {
       return <CourseSidebarContent />
-    }
-
-    if (pathname.startsWith('/artikel')) {
-      return <ArticleSidebarContent />
     }
 
     if (pathname.startsWith('/vocabulary')) {
       return <VocabularySidebarContent />
     }
 
-    // Konten default ketika tidak ada konten spesifik
     return (
       <div className="p-4 text-sm text-muted-foreground">
         Pilih menu untuk melihat konten
@@ -178,7 +169,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarFooter>
       </Sidebar>
 
-      <Sidebar collapsible="none" className="hidden flex-1 md:flex">
+      <Sidebar 
+        collapsible="none" 
+        className={`hidden flex-1 md:flex ${pathname === '/' || pathname.startsWith('/game') || pathname.startsWith('/artikel') ? '!hidden' : ''}`}
+      >
         <SidebarHeader className="border-b">
           <div className="flex items-center justify-between px-1  py-0">
             <div className="flex items-center gap-3">

@@ -30,11 +30,11 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
 
   // Transform modules to match the ModuleList component's expected format
   const formattedModules = course.modules.map((module, index) => ({
-    id: module.id.toString(),
-    courseId: courseId.toString(),
+    id: module.id,
+    courseId: courseId,
     title: module.title,
     description: module.description ?? "",
-    duration: "Duration placeholder",
+    duration: "⇋ 30 menit",
     isCompleted: module.completions?.length > 0,
     isLocked: false,
     order: module.order ?? index // Use existing order or fallback to index
@@ -70,7 +70,7 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
           <div className="sticky top-6">
             <ModuleList 
               modules={formattedModules} 
-              courseId={courseId.toString()}
+              courseId={courseId}
               courseAuthorId={course.author.id}
             />
           </div>

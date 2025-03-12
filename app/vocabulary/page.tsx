@@ -78,6 +78,7 @@ export default async function VocabularyPage() {
                   user={collection.user}
                   items={collection.items.filter(item => item.type === "WORD")}
                   isPublic={collection.isPublic}
+                  icon={collection.icon ?? "FaBook"}
                 />
               </Link>
             ))}
@@ -96,27 +97,13 @@ export default async function VocabularyPage() {
                   user={collection.user}
                   items={collection.items.filter(item => item.type === "SENTENCE")}
                   isPublic={collection.isPublic}
+                  icon={collection.icon ?? "FaBook"}
                 />
               </Link>
             ))}
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Legacy Grid (will be removed) */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {success && collections?.map((collection) => (
-          <Link href={`/vocabulary/${collection.id}`} key={collection.id} className="block">
-            <VocabularyCard
-              title={collection.title}
-              description={collection.description}
-              user={collection.user}
-              items={collection.items}
-              isPublic={collection.isPublic}
-            />
-          </Link>
-        ))}
-      </div> */}
     </div>
   )
 }

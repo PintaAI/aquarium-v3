@@ -165,6 +165,7 @@ model VocabularyCollection {
   id          Int              @id @default(autoincrement())
   title       String
   description String?
+  icon        String?          @default("FaBook")
   isPublic    Boolean          @default(false)
   userId      String?
   createdAt   DateTime         @default(now())

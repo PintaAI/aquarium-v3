@@ -54,6 +54,16 @@ export function ActiveLiveSessionBanner() {
     return () => clearInterval(interval)
   }, [])
 
+  // Polling has been temporarily disabled
+  useEffect(() => {
+    const getInitialSession = async () => {
+      const sessions = await getActiveSessions();
+      setSession(sessions.length > 0 ? sessions[0] : null);
+    };
+    getInitialSession();
+  }, []);
+
+  /* Original polling code:
   useEffect(() => {
     // Track if component is mounted
     let isMounted = true;
@@ -109,7 +119,7 @@ export function ActiveLiveSessionBanner() {
         clearTimeout(timeoutId);
       }
     };
-  }, []);
+  }, []); */
 
   if (!session) return null
 

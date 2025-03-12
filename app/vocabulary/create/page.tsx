@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { IconPicker } from "@/components/ui/icon-picker"
 import { useVocabularyForm } from "./hooks/use-vocabulary-form"
 
 export default function CreateVocabularyPage() {
@@ -17,6 +18,8 @@ export default function CreateVocabularyPage() {
     setTitle,
     description,
     setDescription,
+    icon,
+    setIcon,
     items,
     newKorean,
     setNewKorean,
@@ -29,7 +32,7 @@ export default function CreateVocabularyPage() {
     handleAddItem,
     handleRemoveItem,
     selectedType,
-    setSelectedType,
+    handleTypeChange,
   } = useVocabularyForm()
 
   return (
@@ -58,24 +61,35 @@ export default function CreateVocabularyPage() {
 
         <form onSubmit={formAction} className="space-y-8">
           <div className="space-y-4">
-            <div>
-              <label 
-                htmlFor="title" 
-                className="block text-sm font-medium text-foreground mb-1"
-              >
-                Judul
-              </label>
-              <div className="relative">
-                <Type className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Kosakata Makanan"
-                  required
-                  className="w-full pl-9"
-                />
+            <div className="flex gap-4 items-start">
+              <div className="flex-1">
+                <label 
+                  htmlFor="title" 
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Judul
+                </label>
+                <div className="relative">
+                  <Type className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Contoh: Kosakata Makanan"
+                    required
+                    className="w-full pl-9"
+                  />
+                </div>
+              </div>
+              <div>
+                <label 
+                  htmlFor="icon" 
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Ikon
+                </label>
+                <IconPicker value={icon} onChange={setIcon} />
               </div>
             </div>
 
@@ -119,7 +133,7 @@ export default function CreateVocabularyPage() {
             <Tabs 
               defaultValue="WORD" 
               value={selectedType} 
-              onValueChange={(value) => setSelectedType(value as "WORD" | "SENTENCE")} 
+              onValueChange={(value) => handleTypeChange(value as "WORD" | "SENTENCE")} 
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
@@ -212,7 +226,7 @@ export default function CreateVocabularyPage() {
               <Button
                 type="button"
                 variant="outline"
-              className="w-full sm:w-auto border-input hover:bg-accent"
+                className="w-full sm:w-auto border-input hover:bg-accent"
               >
                 Batal
               </Button>

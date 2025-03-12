@@ -23,7 +23,8 @@ interface VocabularyItem extends CreateVocabularyItem {
 export async function createVocabularyCollection(
   title: string, 
   description: string | undefined,
-  items: CreateVocabularyItem[] = []
+  items: CreateVocabularyItem[] = [],
+  icon: string = "FaBook"
 ) {
   try {
     const user = await currentUser()
@@ -35,7 +36,13 @@ export async function createVocabularyCollection(
     const result = await db.$transaction(async (tx) => {
       // Buat collection dulu
       const collection = await tx.vocabularyCollection.create({
-        data: { title, description, userId: user.id, isPublic }
+        data: { 
+          title, 
+          description, 
+          icon,
+          userId: user.id, 
+          isPublic 
+        }
       })
 
       // Kalau ada items, buat semuanya
@@ -143,7 +150,8 @@ export async function updateVocabularyCollection(
   id: number, 
   title: string, 
   description?: string,
-  items?: CreateVocabularyItem[]
+  items?: CreateVocabularyItem[],
+  icon?: string
 ) {
   try {
     const user = await currentUser()
@@ -161,7 +169,12 @@ export async function updateVocabularyCollection(
       // Update collection
       const updatedCollection = await tx.vocabularyCollection.update({
         where: { id },
-        data: { title, description, isPublic }
+        data: { 
+          title, 
+          description, 
+          isPublic,
+          ...(icon && { icon })
+        }
       })
 
       // Jika items disediakan, update items

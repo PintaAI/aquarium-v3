@@ -1,109 +1,149 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useTransition, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 import { 
   createVocabularyCollection, 
-  updateVocabularyCollection, 
-  deleteVocabularyCollection 
+  deleteVocabularyCollection, 
+  updateVocabularyCollection,
+  getVocabularyCollection
 } from "@/app/actions/vocabulary-actions"
 
-interface VocabularyFormProps {
-  initialData?: {
-    id: number
-    title: string
-    description?: string | null
-    items: {
-      korean: string
-      indonesian: string
-      type: "WORD" | "SENTENCE"
-    }[]
-  }
+interface VocabularyItem {
+  korean: string
+  indonesian: string
+  type?: "WORD" | "SENTENCE"
 }
 
-export function useVocabularyForm(props?: VocabularyFormProps) {
+export const useVocabularyForm = () => {
   const router = useRouter()
-  const [isPending, setIsPending] = useState(false)
-  const [title, setTitle] = useState(props?.initialData?.title ?? "")
-  const [description, setDescription] = useState(props?.initialData?.description ?? "")
-  const [items, setItems] = useState(props?.initialData?.items ?? [])
+  const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
+  
+  // Get collection ID from URL if editing
+  const collectionId = searchParams.get("id")
+  const isEdit = Boolean(collectionId)
+
+  // Form states
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [icon, setIcon] = useState("FaBook")
+  const [items, setItems] = useState<Array<VocabularyItem>>([])
   const [newKorean, setNewKorean] = useState("")
   const [newIndonesian, setNewIndonesian] = useState("")
   const [selectedType, setSelectedType] = useState<"WORD" | "SENTENCE">("WORD")
 
-  const isEdit = !!props?.initialData
-
-  const handleAddItem = () => {
-    if (newKorean && newIndonesian) {
-      setItems([
-        ...items,
-        {
-          korean: newKorean,
-          indonesian: newIndonesian,
-          type: selectedType
+  // Load existing data if editing
+  useEffect(() => {
+    if (isEdit && collectionId) {
+      const loadVocabulary = async () => {
+        const result = await getVocabularyCollection(parseInt(collectionId))
+        if (result.success && result.data) {
+          setTitle(result.data.title)
+          setDescription(result.data.description ?? "")
+          setIcon(result.data.icon ?? "FaBook")
+          setItems(result.data.items)
+          if (result.data.items.length > 0) {
+            setSelectedType(result.data.items[0].type)
+          }
         }
-      ])
-      setNewKorean("")
-      setNewIndonesian("")
+      }
+      loadVocabulary()
     }
+  }, [collectionId, isEdit])
+
+  // Handle type change
+  const handleTypeChange = (newType: "WORD" | "SENTENCE") => {
+    // Update all existing items to new type
+    setItems(items => items.map(item => ({
+      ...item,
+      type: newType
+    })))
+    setSelectedType(newType)
   }
 
+  // Add item handler
+  const handleAddItem = () => {
+    if (!newKorean || !newIndonesian) return
+    setItems([...items, { korean: newKorean, indonesian: newIndonesian, type: selectedType }])
+    setNewKorean("")
+    setNewIndonesian("")
+  }
+
+  // Remove item handler
   const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index))
   }
 
+  // Form submission handler
   const formAction = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isPending) return
-
-    try {
-      setIsPending(true)
-      
-      if (isEdit && props?.initialData?.id) {
-        await updateVocabularyCollection(
-          props.initialData.id,
-          title,
-          description || undefined,
-          items
-        )
-      } else {
-        await createVocabularyCollection(
-          title,
-          description || undefined,
-          items
-        )
-      }
-
-      router.push("/vocabulary")
-      router.refresh()
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsPending(false)
+    if (items.length === 0) {
+      toast.error("Tambahkan minimal satu kosakata")
+      return
     }
+
+    // Ensure all items have the current selected type
+    const updatedItems = items.map(item => ({
+      ...item,
+      type: selectedType
+    }))
+
+    startTransition(async () => {
+      try {
+        if (isEdit && collectionId) {
+          const result = await updateVocabularyCollection(parseInt(collectionId), title, description, updatedItems, icon)
+          if (result.success) {
+            toast.success("Kosakata berhasil diperbarui")
+            router.push("/vocabulary")
+            router.refresh()
+          } else {
+            toast.error(result.error || "Terjadi kesalahan")
+          }
+        } else {
+          const result = await createVocabularyCollection(title, description, updatedItems, icon)
+          if (result.success) {
+            toast.success("Kosakata berhasil ditambahkan")
+            router.push("/vocabulary")
+            router.refresh()
+          } else {
+            toast.error(result.error || "Terjadi kesalahan")
+          }
+        }
+      } catch (error) {
+        toast.error("Terjadi kesalahan")
+      }
+    })
   }
 
+  // Delete handler
   const deleteAction = async () => {
-    if (!props?.initialData?.id || isPending) return
-    if (!confirm("Yakin ingin menghapus kumpulan kosakata ini?")) return
+    if (!collectionId) return
 
-    try {
-      setIsPending(true)
-      await deleteVocabularyCollection(props.initialData.id)
-      router.push("/vocabulary")
-      router.refresh()
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsPending(false)
-    }
+    startTransition(async () => {
+      try {
+        const result = await deleteVocabularyCollection(parseInt(collectionId))
+        if (result.success) {
+          toast.success("Kosakata berhasil dihapus")
+          router.push("/vocabulary")
+          router.refresh()
+        } else {
+          toast.error(result.error || "Terjadi kesalahan")
+        }
+      } catch (error) {
+        toast.error("Terjadi kesalahan")
+      }
+    })
   }
 
   return {
     title,
     setTitle,
-    description, 
+    description,
     setDescription,
+    icon,
+    setIcon,
     items,
     newKorean,
     setNewKorean,
@@ -111,11 +151,11 @@ export function useVocabularyForm(props?: VocabularyFormProps) {
     setNewIndonesian,
     isPending,
     isEdit,
-    selectedType,
-    setSelectedType,
     formAction,
     deleteAction,
     handleAddItem,
     handleRemoveItem,
+    selectedType,
+    handleTypeChange,
   }
 }

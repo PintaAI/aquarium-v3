@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardTitle } from "../ui/card"
 import { Progress } from "../ui/progress"
 import { User } from "@prisma/client"
 import { UserIcon, LockIcon, UnlockIcon } from "lucide-react"
+import { IconRenderer } from "../ui/icon-picker"
 
 interface VocabularyItem {
   isChecked: boolean
@@ -14,6 +15,7 @@ interface VocabularyCardProps {
   user?: Pick<User, "name"> | null
   items: VocabularyItem[]
   isPublic?: boolean
+  icon?: string
 }
 
 export function VocabularyCard({
@@ -21,7 +23,8 @@ export function VocabularyCard({
   description,
   user,
   items,
-  isPublic = false
+  isPublic = false,
+  icon = "FaBook"
 }: VocabularyCardProps) {
   const totalItems = items.length
   const checkedItems = items.filter(item => item.isChecked).length
@@ -36,22 +39,29 @@ export function VocabularyCard({
             {/* Decorative Orbs */}
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
             <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-emerald-500/20 rounded-full blur-2xl" />
+            {/* Icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <IconRenderer 
+                icon={icon} 
+                className="h-12 w-12 text-primary/40 group-hover:text-primary/60 transition-colors -translate-y-7" 
+              />
+            </div>
           </div>
           {/* Progress Bar */}
           <div className="absolute bottom-0 inset-x-0">
             <div className="space-y-1 px-4 py-2 bg-background/50 backdrop-blur-sm">
-              <div className="flex items-center gap-1.5">
-                <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">
-                  {user?.name || 'Anonymous'}
-                </span>
-              </div>
-              <div className="space-y-1">
-                <Progress value={progress} className="h-1.5" />
-                <div className="flex justify-between text-[10px] text-foreground">
-                  <span>{checkedItems} completed</span>
-                  <span>{totalItems} kata</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">
+                    {user?.name || 'Anonymous'}
+                  </span>
                 </div>
+                <span className="text-xs text-foreground">{checkedItems} hafal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Progress value={progress} className="h-1.5 flex-1" />
+                <span className="text-xs text-foreground">{Math.round(progress)}%</span>
               </div>
             </div>
           </div>

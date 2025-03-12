@@ -2,11 +2,12 @@ import { notFound } from "next/navigation";
 import { getModule } from "@/app/actions/module-actions";
 import { ModuleClientContent } from "./module-client";
 
-interface ModulePageProps {
+interface PageProps {
   params: {
     id: string;     // courseId
     moduleId: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 interface ModuleData {
@@ -68,7 +69,7 @@ async function ModuleContent({ courseId, moduleId }: { courseId: number, moduleI
   );
 }
 
-export default async function ModulePage({ params }: ModulePageProps) {
+export default async function ModulePage({ params }: PageProps) {
   const courseId = parseInt(params.id);
   const moduleId = parseInt(params.moduleId);
 

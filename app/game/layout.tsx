@@ -12,14 +12,13 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb"
-import { useParams, usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 
 interface GameLayoutProps {
   children: ReactNode
 }
 
 export default function GameLayout({ children }: GameLayoutProps) {
-  const params = useParams()
   const pathname = usePathname()
   const pathSegments = pathname.split('/').filter(Boolean)
   const isGameDetail = pathSegments.length > 1

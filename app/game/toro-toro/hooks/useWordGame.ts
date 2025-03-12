@@ -4,7 +4,6 @@ import { useCallback, useRef, useState } from "react";
 import { GameDifficulty, GameState, Word } from "../types";
 import {
   INITIAL_LIVES,
-  LEVEL_UP_SCORE,
   SCORE_MULTIPLIER,
   WORD_PAIRS,
   calculateGameParams
@@ -32,7 +31,7 @@ export const useWordGame = () => {
 
   // Start game
   const startGame = useCallback((difficulty: GameDifficulty) => {
-    setState(prev => ({
+    setState(() => ({
       score: 0,
       lives: INITIAL_LIVES,
       gameOver: false,

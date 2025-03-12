@@ -28,16 +28,6 @@ export function useHangulGame({ level }: UseHangulGameProps) {
   const [dictionary, setDictionary] = useState<KoreanWord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load dictionary when component mounts
-  useEffect(() => {
-    setIsLoading(true);
-    getGameWords().then(words => {
-      setDictionary(words);
-      setIsLoading(false);
-      resetGame(); // Reset game after dictionary is loaded
-    });
-  }, []);
-
   // Create game board with pre-placed words
   const createBoard = useCallback(() => {
     if (dictionary.length === 0) return null;
@@ -312,6 +302,22 @@ export function useHangulGame({ level }: UseHangulGameProps) {
     setHintCells([]);
     setHintCooldown(false);
   }, [createBoard]);
+
+  // Load dictionary when component mounts
+  useEffect(() => {
+    setIsLoading(true);
+    getGameWords().then(words => {
+      setDictionary(words);
+      setIsLoading(false);
+    });
+  }, []);
+
+  // Initialize game when dictionary is loaded
+  useEffect(() => {
+    if (!isLoading && dictionary.length > 0) {
+      resetGame();
+    }
+  }, [isLoading, dictionary, resetGame]);
 
   return {
     // State

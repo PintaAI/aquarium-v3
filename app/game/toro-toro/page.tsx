@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { GameStats } from './components/GameStats';
-import { GameControls } from './components/GameControls';
 import { GameArea } from './components/GameArea';
 import { useWordGame } from './hooks/useWordGame';
 import { calculateGameParams } from './constants';
@@ -33,6 +32,7 @@ const WordGame = () => {
     state.gameOver,
     state.paused,
     state.level,
+    state.difficulty,
     actions.spawnWord,
     actions.updateGame,
     refs.frameRef

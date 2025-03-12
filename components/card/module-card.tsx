@@ -22,20 +22,13 @@ interface Module {
   isLocked?: boolean;
 }
 
-interface DeleteModuleResult {
-  success: boolean;
-  error?: string;
-}
-
 interface ModuleAuthorActionsProps {
-  moduleId: number;
-  courseId: number;
   onEdit: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
-  dragHandleProps: any;
+  dragHandleProps: DraggableProvided['dragHandleProps'];
 }
 
-function ModuleAuthorActions({ moduleId, courseId, onEdit, onDelete, dragHandleProps }: ModuleAuthorActionsProps) {
+function ModuleAuthorActions({ onEdit, onDelete, dragHandleProps }: ModuleAuthorActionsProps) {
   return (
     <div 
       className="flex items-center gap-1 mt-2 sm:mt-0"
@@ -180,8 +173,6 @@ export function ModuleCard({ module, index, isAuthor, provided, snapshot }: Modu
             </div>
             {isAuthor && (
               <ModuleAuthorActions
-                moduleId={id}
-                courseId={courseId}
                 onEdit={handleEditClick}
                 onDelete={handleDelete}
                 dragHandleProps={provided.dragHandleProps}

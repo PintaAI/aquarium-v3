@@ -16,8 +16,7 @@ export default function AdvancedTranslateGame() {
   const {
     complete,
     completion,
-    isLoading,
-    error: completionError
+    isLoading
   } = useCompletion({
     api: '/api/translate',
     onError: (error) => {

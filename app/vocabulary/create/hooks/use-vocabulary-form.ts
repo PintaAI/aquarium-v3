@@ -111,7 +111,7 @@ export const useVocabularyForm = () => {
             toast.error(result.error || "Terjadi kesalahan")
           }
         }
-      } catch (error) {
+      } catch {
         toast.error("Terjadi kesalahan")
       }
     })
@@ -131,7 +131,7 @@ export const useVocabularyForm = () => {
         } else {
           toast.error(result.error || "Terjadi kesalahan")
         }
-      } catch (error) {
+      } catch {
         toast.error("Terjadi kesalahan")
       }
     })

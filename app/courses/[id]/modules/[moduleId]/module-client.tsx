@@ -46,7 +46,7 @@ export function ModuleClientContent({ data, formattedModules, initialIsCompleted
   };
 
   return (
-    <div className="w-full mx-auto p-4">
+    <div className="w-full mx-auto max-w-7xl p-4">
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Main Content */}
         <div className="space-y-3 sm:space-y-4 flex-1">

@@ -1,30 +1,43 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { FaRocket, FaBookOpen, FaChalkboardTeacher, FaVideo, FaTachometerAlt } from "react-icons/fa";
+import { FaRocket, FaBookOpen, FaChalkboardTeacher, FaVideo } from "react-icons/fa";
+import { ThemeToggle } from "../theme-toggle";
 
 export const LandingHero = () => {
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className="relative min-h-screen bg-[var(--primary)]">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="container mx-auto px-4 py-20">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
           {/* Left content */}
           <div className="flex-1 text-center lg:text-left">
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-[var(--primary-foreground)] mb-6">
               Learn Korean with{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400"> 
-                Pejuangkorea
+              <span className="flex items-center">
+                <Image 
+                  src="/images/logoo.png"
+                  alt="Pejuangkorea Logo"
+                  width={90}
+                  height={90}
+                  className="mr-0"
+                />
+                <span className="bg-gradient-to-r from-[#0b7761] to-[#13c79d] text-transparent bg-clip-text"> 
+                  Pejuangkorea
+                </span>
               </span>
             </h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-2xl">
-              Master Korean language through interactive lessons, personalized 
-              learning paths, and real-world practice sessions.
+            <p className="text-lg text-[var(--primary-foreground)] mb-8 max-w-2xl">
+              Kuasai bahasa Korea melalui pelajaran interaktif, jalur 
+              pembelajaran yang dipersonalisasi, dan sesi latihan dunia nyata.
             </p>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                 <Button size="lg" className="flex items-center gap-2" asChild>
                   <Link href="/auth/login">
                     <FaRocket className="w-4 h-4" />
-                    Get Started Free
+                    Daftar di sini
                   </Link>
                 </Button>
                 <Button 
@@ -44,10 +57,6 @@ export const LandingHero = () => {
                   className="flex items-center gap-2"
                   asChild
                 >
-                  <Link href="/dashboard">
-                    <FaTachometerAlt className="w-4 h-4" />
-                    Dashboard
-                  </Link>
                 </Button>
                 <Button 
                   size="lg"

@@ -111,7 +111,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SplashScreen />
+          
             {children}
             <MobileNavbar />
           </ThemeProvider>

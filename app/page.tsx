@@ -33,7 +33,7 @@ export default async function HomePage() {
     >
       <AppSidebar />
       <SidebarInset className="flex min-h-screen">
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto ">
           <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-2 pb-24">
             <div className="space-y-4">
               <header className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3 pb-2">

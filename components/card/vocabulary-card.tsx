@@ -43,7 +43,7 @@ export function VocabularyCard({
             <div className="absolute inset-0 flex items-center justify-center">
               <IconRenderer 
                 icon={icon} 
-                className="h-12 w-12 text-primary/40 group-hover:text-primary/60 transition-colors -translate-y-7" 
+                className="h-12 w-12 text-primary/40 group-hover:text-primary/60 transition-colors -translate-y-6" 
               />
             </div>
           </div>

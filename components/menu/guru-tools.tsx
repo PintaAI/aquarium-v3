@@ -59,7 +59,7 @@ export function GuruTools({ role }: GuruToolsProps) {
                 className="flex flex-col items-center py-2 px-1 rounded transition-all duration-200 hover:bg-primary/10 hover:scale-105 hover:shadow-sm hover:text-primary group"
               >
                 <tool.icon className="h-4 w-4 mb-1 text-muted-foreground group-hover:text-primary group-hover:-translate-y-2 transition-all duration-200" />
-                <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors duration-200">{tool.title}</span>
+                <span className="hidden sm:block text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors duration-200">{tool.title}</span>
               </Link>
             </TooltipTrigger>
             <TooltipContent>

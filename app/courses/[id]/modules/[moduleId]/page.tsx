@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
+import { use } from "react";
 import { getModule } from "@/app/actions/module-actions";
 import { ModuleClientContent } from "./module-client";
 
-interface PageProps {
-  params: {
+type PageProps = {
+  params?: Promise<{
     id: string;     // courseId
     moduleId: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
+  }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 interface ModuleData {
   id: number;
@@ -69,7 +70,17 @@ async function ModuleContent({ courseId, moduleId }: { courseId: number, moduleI
   );
 }
 
-export default async function ModulePage({ params }: PageProps) {
+export default function ModulePage(props: PageProps) {
+  if (!props.params) {
+    notFound();
+  }
+  
+  const params = use(props.params);
+  
+  if (!params.id || !params.moduleId) {
+    notFound();
+  }
+  
   const courseId = parseInt(params.id);
   const moduleId = parseInt(params.moduleId);
 

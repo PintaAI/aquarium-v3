@@ -18,15 +18,22 @@ interface CourseModuleSidebarContentProps {
 }
 
 export function CourseModuleSidebarContent({ 
-  modules,
+  modules: initialModules,
   courseId,
   courseAuthorId 
 }: CourseModuleSidebarContentProps) {
+  // Convert string IDs to numbers for ModuleList
+  const modules = initialModules.map(module => ({
+    ...module,
+    id: parseInt(module.id),
+    courseId: parseInt(module.courseId)
+  }));
+
   return (
     <div className="p-4">
       <ModuleList 
         modules={modules}
-        courseId={courseId}
+        courseId={parseInt(courseId)}
         courseAuthorId={courseAuthorId}
       />
     </div>

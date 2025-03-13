@@ -6,7 +6,7 @@ import {
   DrawerTrigger,
   DrawerTitle
 } from "@/components/ui/drawer"
-import { AuthCard } from "@/components/auth/auth-card"
+import AuthCard from "@/components/auth/auth-card"
 import { AuthButton } from "@/components/auth/auth-button"
 import { useSession } from "next-auth/react"
 

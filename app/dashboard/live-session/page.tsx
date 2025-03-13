@@ -4,6 +4,7 @@ import { LiveSessionList } from "@/components/live-session/live-session-list"
 import { CreateLiveSessionForm } from "@/components/live-session/create-live-session-form"
 import { db } from "@/lib/db"
 import { Metadata } from "next"
+import { UserRoles } from "@prisma/client"
 
 export const metadata: Metadata = {
   title: "Live Teaching",
@@ -11,15 +12,24 @@ export const metadata: Metadata = {
 }
 
 export default async function LiveSessionPage() {
-  const user = await currentUser()
+  const userData = await currentUser()
 
-  if (!user) {
+  if (!userData) {
     redirect("/auth/login")
+  }
+  
+  // Ensure user has the required role property for the LiveSessionList component
+  const user = {
+    id: userData.id,
+    role: (userData.role as UserRoles) || UserRoles.MURID,
+    name: userData.name,
+    email: userData.email,
+    image: userData.image
   }
 
   // Construct query based on user role
   const sessions = await db.liveSession.findMany({
-    where: user.role === "ADMIN" ? undefined : {
+    where: user.role === UserRoles.ADMIN ? undefined : {
       OR: [
         { isActive: true },
         { creatorId: user.id },
@@ -63,7 +73,7 @@ export default async function LiveSessionPage() {
   })
 
   // Get courses for create form (only for GURU and ADMIN)
-  const courses = (user.role === "GURU" || user.role === "ADMIN") ? 
+  const courses = (user.role === UserRoles.GURU || user.role === UserRoles.ADMIN) ? 
     await db.course.findMany({
       select: {
         id: true,
@@ -81,12 +91,12 @@ export default async function LiveSessionPage() {
           <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight">Live Sessions</h1>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
-            {user.role === "ADMIN" ? "Manage all live teaching sessions" :
-             user.role === "GURU" ? "Create and manage your live teaching sessions" :
+            {user.role === UserRoles.ADMIN ? "Manage all live teaching sessions" :
+             user.role === UserRoles.GURU ? "Create and manage your live teaching sessions" :
              "Join live teaching sessions"}
           </p>
         </div>
-          {(user.role === "GURU" || user.role === "ADMIN") && (
+          {(user.role === UserRoles.GURU || user.role === UserRoles.ADMIN) && (
             <div className="shrink-0">
               <CreateLiveSessionForm courses={courses} />
             </div>

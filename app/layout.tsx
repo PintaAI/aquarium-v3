@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/provider/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { MobileNavbar } from "@/components/ui/mobile-navbar";
+import { SplashScreen } from "@/components/splash-screen";
 
 const atma = localFont({
   src: [
@@ -71,7 +72,34 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="apple-touch-icon" href="/images/circle-logo.png" />
+        
+        {/* iOS Splash Screens */}
+        <link rel="apple-touch-startup-image" href="/images/circle-logo.png" />
+        
+        {/* iPhone */}
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="/images/splash_screens/iPhone_16_Pro_Max_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/images/splash_screens/iPhone_16_Pro_Max_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="/images/splash_screens/iPhone_16_Pro_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/images/splash_screens/iPhone_16_Pro_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="/images/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/images/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="/images/splash_screens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/images/splash_screens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="/images/splash_screens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/images/splash_screens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="/images/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/images/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/images/splash_screens/iPhone_11__iPhone_XR_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/images/splash_screens/iPhone_11__iPhone_XR_portrait.png" />
+        
+        {/* iPad */}
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/images/splash_screens/10.9__iPad_Air_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/images/splash_screens/10.9__iPad_Air_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/images/splash_screens/11__iPad_Pro__10.5__iPad_Pro_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/images/splash_screens/11__iPad_Pro__10.5__iPad_Pro_portrait.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/images/splash_screens/12.9__iPad_Pro_landscape.png" />
+        <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/images/splash_screens/12.9__iPad_Pro_portrait.png" />
       </head>
       <body
         className={`${atma.variable} ${jua.variable} antialiased`}
@@ -83,8 +111,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <SplashScreen />
             {children}
-           <MobileNavbar />
+            <MobileNavbar />
           </ThemeProvider>
         </SessionProvider>
       </body>

@@ -9,19 +9,20 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     background_color: '#ffffff', // Light mode background
     theme_color: '#095443', // Primary brand color
+    orientation: 'any',
     icons: [
       {
-        src: '/logo.png',
+        src: '/images/circle-logo.png',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/logo.png',
+        src: '/images/circle-logo.png',
         sizes: '512x512',
         type: 'image/png',
       },
       {
-        src: '/logo.png',
+        src: '/images/circle-logo.png',
         sizes: '384x384',
         type: 'image/png',
         purpose: 'maskable'

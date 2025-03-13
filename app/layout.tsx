@@ -52,7 +52,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Pejuangkorea",
   description: "Korean Language Learning Platform",
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

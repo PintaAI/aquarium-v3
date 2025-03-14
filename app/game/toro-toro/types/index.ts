@@ -5,6 +5,7 @@ export interface Word {
   x: number;
   y: number;
   highlighted: boolean;
+  shake?: boolean;
 }
 
 export interface WordPair {

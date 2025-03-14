@@ -172,7 +172,28 @@ export const useWordGame = () => {
         setState(prev => {
           const wordComplete = newInput.length === targetWord.length;
           const newScore = prev.score + (wordComplete ? targetWord.length * SCORE_MULTIPLIER : 0);
-          const newLevel = Math.floor(newScore / 300) + 1; // Level up every 300 points
+          const newLevel = Math.floor(newScore / 300) + 1;
+
+          // Add shake animation
+          const updatedWords = prev.activeWords.map((word, idx) => {
+            if (idx === prev.targetWordIndex) {
+              return { ...word, shake: true };
+            }
+            return word;
+          });
+
+          // Remove shake after animation
+          setTimeout(() => {
+            setState(current => ({
+              ...current,
+              activeWords: current.activeWords.map((word, idx) => {
+                if (idx === prev.targetWordIndex) {
+                  return { ...word, shake: false };
+                }
+                return word;
+              })
+            }));
+          }, 200);
 
           return {
             ...prev,
@@ -182,7 +203,7 @@ export const useWordGame = () => {
             level: newLevel,
             activeWords: wordComplete
               ? prev.activeWords.filter((_, idx) => idx !== prev.targetWordIndex)
-              : prev.activeWords
+              : updatedWords
           };
         });
       }

@@ -11,7 +11,7 @@ export const FallingWord = ({ word, currentInput }: FallingWordProps) => (
     key={word.id}
     className={`absolute px-4 py-2 rounded-lg text-center transition-colors ${
       word.highlighted ? 'bg-accent text-accent-foreground' : 'bg-secondary text-white dark:text-card-foreground'
-    } border-2 ${word.highlighted ? 'border-accent' : 'border-border'}`}
+    } border-2 ${word.highlighted ? 'border-accent' : 'border-border'} ${word.shake ? 'shake' : ''}`}
     style={{
       left: `${word.x}px`,
       top: `${word.y}px`,

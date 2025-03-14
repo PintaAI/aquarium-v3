@@ -6,20 +6,45 @@ import { BellRing, BellOff } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { subscribeToPush, unsubscribeFromPush, type WebPushSubscription } from "@/app/actions/push-notifications"
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4)
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/')
+
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
+
 export function NotificationToggle() {
   const [isSubscribed, setIsSubscribed] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
-    if (!("Notification" in window)) {
-      return
-    }
-    
-    navigator.serviceWorker.ready.then(registration => {
-      registration.pushManager.getSubscription().then(subscription => {
+    const initializeNotifications = async () => {
+      if (!("Notification" in window)) {
+        return
+      }
+
+      try {
+        // Ensure service worker is registered
+        await navigator.serviceWorker.register('/sw.js')
+        
+        // Wait for service worker to be ready
+        const registration = await navigator.serviceWorker.ready
+        const subscription = await registration.pushManager.getSubscription()
         setIsSubscribed(!!subscription)
-      })
-    })
+      } catch (error) {
+        console.error('Failed to initialize notifications:', error)
+      }
+    }
+
+    initializeNotifications()
   }, [])
 
   const handleToggle = async () => {
@@ -58,9 +83,14 @@ export function NotificationToggle() {
       } else {
         const permission = await Notification.requestPermission()
         if (permission === "granted") {
+          const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+          if (!vapidPublicKey) {
+            throw new Error('VAPID public key not found')
+          }
+
           const pushSubscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
           })
           
           const subscriptionJson = pushSubscription.toJSON()

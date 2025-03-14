@@ -19,7 +19,6 @@ import {
   GridLayout,
   LayoutContextProvider,
   ParticipantTile,
-  RoomAudioRenderer,
   Chat,
   ControlBar,
 } from '@livekit/components-react';
@@ -70,6 +69,13 @@ export function CustomVideoConference({
   const focusTrack = usePinnedTracks(layoutContext)?.[0];
   const carouselTracks = tracks.filter((track) => !isEqualTrackRef(track, focusTrack));
 
+  const screenShareTrackIds = React.useMemo(
+    () => screenShareTracks
+      .map((ref) => `${ref.publication.trackSid}_${ref.publication.isSubscribed}`)
+      .join(),
+    [screenShareTracks]
+  );
+
   React.useEffect(() => {
     if (
       screenShareTracks.some((track) => track.publication.isSubscribed) &&
@@ -98,13 +104,7 @@ export function CustomVideoConference({
         layoutContext.pin.dispatch?.({ msg: 'set_pin', trackReference: updatedFocusTrack });
       }
     }
-  }, [
-    screenShareTracks
-      .map((ref) => `${ref.publication.trackSid}_${ref.publication.isSubscribed}`)
-      .join(),
-    focusTrack?.publication?.trackSid,
-    tracks,
-  ]);
+  }, [screenShareTrackIds, focusTrack, screenShareTracks, layoutContext.pin, tracks]);
 
   return (
     <div className="lk-video-conference" data-theme="default" {...props}>

@@ -28,18 +28,12 @@ export const SCORE_MULTIPLIER = 10;
 export const LEVEL_UP_SCORE = 500;
 export const MIN_SPAWN_INTERVAL = 1000;
 
-export const WORD_PAIRS: WordPair[] = [
-  { korean: '사과', english: 'apple' },
-  { korean: '학교', english: 'apple' },
-  { korean: '책', english: 'apple' },
-  { korean: '친구', english: 'apple' },
-  { korean: '물', english: 'apple' },
-  { korean: '집', english: 'apple' },
-  { korean: '자동차', english: 'apple' },
-  { korean: '컴퓨터', english: 'apple' },
-  { korean: '전화', english: 'apple' },
-  { korean: '음식', english: 'apple' },
-];
+// This will be populated dynamically from the database
+export let WORD_PAIRS: WordPair[] = [];
+
+export const updateWordPairs = (newPairs: WordPair[]) => {
+  WORD_PAIRS = newPairs;
+};
 
 export const calculateGameParams = (level: number, difficulty: keyof typeof LEVELS = 'MEDIUM') => {
   const preset = LEVELS[difficulty];

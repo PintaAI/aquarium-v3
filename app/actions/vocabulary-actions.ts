@@ -393,6 +393,51 @@ export async function getRandomVocabularies() {
   }
 }
 
+export async function getGameVocabularies(collectionId?: number) {
+  try {
+    const user = await currentUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    const items = collectionId 
+      ? await db.vocabularyItem.findMany({
+          where: {
+            collectionId,
+            type: 'WORD',
+            collection: {
+              OR: [
+                { userId: user.id },
+                { isPublic: true }
+              ]
+            }
+          },
+          select: {
+            korean: true,
+            indonesian: true
+          }
+        })
+      : await db.$queryRaw<VocabularyItem[]>`
+          SELECT v.korean, v.indonesian 
+          FROM "VocabularyItem" v
+          JOIN "VocabularyCollection" c ON v."collectionId" = c.id
+          WHERE v.type = 'WORD'
+          AND (c."userId" = ${user.id} OR c."isPublic" = true)
+          ORDER BY RANDOM()
+          LIMIT 100
+        `;
+    
+    // Map database fields to game format
+    const wordPairs = items.map(item => ({
+      korean: item.korean,
+      english: item.indonesian // Game uses 'english' field but we'll map Indonesian text to it
+    }))
+
+    return { success: true, data: wordPairs }
+  } catch (error) {
+    console.error("[GET_RANDOM_VOCABULARIES]", error)
+    return { success: false, error: "Gagal mengambil kosakata acak" }
+  }
+}
+
 export async function toggleVocabularyItemCheck(id: number) {
   try {
     const user = await currentUser()

@@ -1,13 +1,35 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getGameVocabularies } from '@/app/actions/vocabulary-actions';
 import { Input } from "@/components/ui/input";
 import { GameStats } from './components/GameStats';
 import { GameArea } from './components/GameArea';
 import { useWordGame } from './hooks/useWordGame';
-import { calculateGameParams } from './constants';
+import { calculateGameParams, updateWordPairs } from './constants';
+import { CollectionSelector } from './components/CollectionSelector';
 
 const WordGame = () => {
+  const [selectedCollection, setSelectedCollection] = useState<number | undefined>();
+
+  // Load vocabulary when collection changes
+  useEffect(() => {
+    const loadVocabulary = async () => {
+      try {
+        const result = await getGameVocabularies(selectedCollection);
+        if (result.success && result.data) {
+          updateWordPairs(result.data);
+        } else {
+          console.error('Failed to load vocabulary:', result.error);
+        }
+      } catch (error) {
+        console.error('Error loading vocabulary:', error);
+      }
+    };
+    
+    loadVocabulary();
+  }, [selectedCollection]);
+
   const {
     state,
     refs,
@@ -47,6 +69,12 @@ const WordGame = () => {
           level={state.level}
         />
       </div>
+
+      {!state.gameStarted ? (
+        <div className="w-full p-4 bg-card text-card-foreground rounded-lg border shadow-lg">
+          <CollectionSelector onSelect={setSelectedCollection} />
+        </div>
+      ) : null}
 
       <GameArea
         gameAreaRef={refs.gameAreaRef}

@@ -83,18 +83,12 @@ export default async function LiveSessionPage(props: LiveSessionPageProps) {
     }
     
     return (
-      <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">{sessionWithAccess.name}</h1>
-          <p className="text-muted-foreground mt-1">
-            Course: {sessionWithAccess.course.title}
-          </p>
-        </div>
-        <LiveKitRoomWrapper
-          roomId={sessionWithAccess.id}
-          userName={user.name || user.id}
-          userId={user.id}
-        />
+      <div className="h-screen pb-6 md:pb-0">
+      <LiveKitRoomWrapper
+        roomId={sessionWithAccess.id}
+        userName={user.name || user.id}
+        userId={user.id}
+      />
       </div>
     )
   } catch (error) {

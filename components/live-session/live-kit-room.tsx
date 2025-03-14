@@ -1,6 +1,7 @@
 "use client"
 
-import { LiveKitRoom, VideoConference, RoomAudioRenderer } from "@livekit/components-react"
+import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react"
+import { CustomVideoConference } from "./custom-video-conference"
 import "@livekit/components-styles"
 import { ReactNode } from "react"
 import { useRouter } from "next/navigation"
@@ -9,7 +10,7 @@ import { useLiveKitToken } from "@/hooks/use-live-kit-token"
 import { LiveKitRoomError } from "./live-kit-room-error"
 import { LiveKitRoomLoading } from "./live-kit-room-loading"
 
-const ROOM_HEIGHT = "1000px"
+
 const LIVEKIT_THEME = "default"
 
 interface LiveKitRoomProps {
@@ -42,13 +43,13 @@ export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProp
       audio={false}
       video={false}
       data-lk-theme={LIVEKIT_THEME}
-      style={{ height: ROOM_HEIGHT }}
+      style={{ height: "100vh", width: "100%" }}
       onDisconnected={async () => {
         await handleCreatorDisconnection(roomId, userId)
         router.push("/")
       }}
     >
-      <VideoConference />
+      <CustomVideoConference />
       <RoomAudioRenderer />
     </LiveKitRoom>
   )

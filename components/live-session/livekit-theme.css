@@ -1,0 +1,64 @@
+[data-theme='default'] {
+  /* Map global.css variables to LiveKit variables */
+  color-scheme: light dark;
+  
+  /* Background colors */
+  --bg: var(--background);
+  --bg2: var(--card);
+  --bg3: var(--popover);
+  --bg4: var(--muted);
+  --bg5: var(--accent);
+  
+  /* Foreground colors */
+  --fg: var(--foreground);
+  --fg2: var(--card-foreground);
+  --fg3: var(--popover-foreground);
+  --fg4: var(--muted-foreground);
+  --fg5: var(--accent-foreground);
+  
+  /* Border colors */
+  --border-color: var(--border);
+  
+  /* Accent colors */
+  --accent-fg: var(--accent-foreground);
+  --accent-bg: var(--accent);
+  --accent2: var(--primary);
+  --accent3: var(--secondary);
+  --accent4: var(--muted);
+  
+  /* Danger colors */
+  --danger-fg: var(--destructive-foreground);
+  --danger: var(--destructive);
+  --danger2: var(--destructive);
+  --danger3: var(--destructive);
+  --danger4: var(--destructive);
+  
+  /* Success colors */
+  --success-fg: var(--primary-foreground);
+  --success: var(--primary);
+  --success2: var(--primary);
+  --success3: var(--primary);
+  --success4: var(--primary);
+  
+  /* Control colors */
+  --control-fg: var(--foreground);
+  --control-bg: var(--background);
+  --control-hover-bg: var(--secondary);
+  --control-active-bg: var(--primary);
+  --control-active-hover-bg: var(--accent);
+  
+  /* Connection colors */
+  --connection-excellent: var(--primary);
+  --connection-good: var(--secondary);
+  --connection-poor: var(--destructive);
+  
+  /* Font styles */
+  --font-family: var(--font-sans);
+  --border-radius: var(--radius);
+  --box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+  --drop-shadow: 0px 0px 24px rgba(0, 0, 0, 0.1);
+}
+
+.dark [data-theme='default'] {
+  --drop-shadow: rgba(255, 255, 255, 0.2) 0px 0px 24px;
+}

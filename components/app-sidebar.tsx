@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Book, GamepadIcon, Newspaper,  BookOpen, ChevronsLeft } from "lucide-react"
+import { Book, GamepadIcon, Newspaper, BookOpen, ChevronsLeft, PencilRuler } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -48,6 +48,12 @@ const data = {
       icon: BookOpen,
       isActive: false,
     },
+    {
+      title: "Soal",
+      url: "/soal",
+      icon: PencilRuler,
+      isActive: false,
+    },
   ],
 }
 
@@ -58,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Set sidebar closed by default for game and artikel routes only on initial load
   React.useEffect(() => {
-    if (!initialPathLoaded && (pathname === '/' || pathname.startsWith('/game') || pathname.startsWith('/artikel'))) {
+    if (!initialPathLoaded && (pathname === '/' || pathname.startsWith('/game') || pathname.startsWith('/artikel') || pathname.startsWith('/soal'))) {
       setOpen(false)
       setInitialPathLoaded(true)
     }
@@ -66,7 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Reset initialPathLoaded when route changes to non-game/artikel
   React.useEffect(() => {
-    if (!pathname.startsWith('/game') && !pathname.startsWith('/artikel')) {
+    if (!pathname.startsWith('/game') && !pathname.startsWith('/artikel') && !pathname.startsWith('/soal')) {
       setInitialPathLoaded(false)
     }
   }, [pathname])
@@ -171,7 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <Sidebar 
         collapsible="none" 
-        className={`hidden flex-1 md:flex ${pathname === '/' || pathname.startsWith('/game') || pathname.startsWith('/artikel') ? '!hidden' : ''}`}
+        className={`hidden flex-1 md:flex ${pathname === '/' || pathname.startsWith('/game') || pathname.startsWith('/artikel') || pathname.startsWith('/soal') ? '!hidden' : ''}`}
       >
         <SidebarHeader className="border-b">
           <div className="flex items-center justify-between px-1  py-0">

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Trash2, X } from "lucide-react"
+import { Book, FileText, HelpCircle, ListPlus, PencilLine, Plus, Trash2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"
@@ -93,8 +93,9 @@ export default function CreateSoalPage() {
             <div>
               <label 
                 htmlFor="nama" 
-                className="block text-sm font-medium text-foreground mb-1"
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
               >
+                <Book className="w-4 h-4" />
                 Nama Koleksi
               </label>
               <Input
@@ -110,8 +111,9 @@ export default function CreateSoalPage() {
             <div>
               <label 
                 htmlFor="deskripsi" 
-                className="block text-sm font-medium text-foreground mb-1"
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
               >
+                <FileText className="w-4 h-4" />
                 Deskripsi (Opsional)
               </label>
               <Textarea
@@ -130,6 +132,7 @@ export default function CreateSoalPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <ListPlus className="w-5 h-5" />
                 Daftar Soal
                 <span className="text-sm font-normal text-muted-foreground">
                   ({soals.length} soal)
@@ -138,7 +141,7 @@ export default function CreateSoalPage() {
             </div>
 
             {/* Actions untuk menambah soal */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center max-w-4xl gap-2">
               <AddSoalDialog 
                 currentPertanyaan={currentPertanyaan}
                 setCurrentPertanyaan={setCurrentPertanyaan}
@@ -187,7 +190,10 @@ export default function CreateSoalPage() {
                             >
                               {difficultyLabels[soal.difficulty as keyof typeof difficultyLabels]}
                             </Badge>
-                            <p className="font-medium">{soal.pertanyaan}</p>
+                <p className="font-medium flex items-center gap-2">
+                  <PencilLine className="w-4 h-4" />
+                  {soal.pertanyaan}
+                </p>
                           </div>
                           {soal.attachmentUrl && (
                             <div className="mt-3">
@@ -221,7 +227,8 @@ export default function CreateSoalPage() {
                         </Button>
                       </div>
                       {soal.explanation && (
-                        <p className="text-sm text-muted-foreground italic border-l-2 border-border pl-3 mt-2">
+                        <p className="text-sm text-muted-foreground italic border-l-2 border-border pl-3 mt-2 flex items-start gap-2">
+                          <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                           {soal.explanation}
                         </p>
                       )}

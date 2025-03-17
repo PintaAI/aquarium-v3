@@ -61,7 +61,10 @@ const nextConfig: NextConfig = {
     ]
   },
   experimental: {
-    webVitalsAttribution: ['CLS', 'LCP']
+    webVitalsAttribution: ['CLS', 'LCP'],
+    serverActions: {
+      bodySizeLimit: '10mb'
+    }
   }
 }
 

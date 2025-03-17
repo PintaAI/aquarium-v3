@@ -51,8 +51,8 @@ export function QuizTest({ collectionId }: QuizTestProps) {
         if (result.success && result.data) {
           const soals = result.data.soals.map(soal => ({
             ...soal,
-            attachmentType: soal.attachmentType === "IMAGE" || soal.attachmentType === "AUDIO" 
-              ? soal.attachmentType 
+            attachmentType: soal.attachmentType?.toUpperCase() === "IMAGE" || soal.attachmentType?.toUpperCase() === "AUDIO" 
+              ? soal.attachmentType.toUpperCase()
               : null
           }))
           setQuestions(soals)
@@ -152,7 +152,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
 
             {questions[currentQuestion].attachmentUrl && (
               <div className="mb-4">
-                {questions[currentQuestion].attachmentType === "IMAGE" ? (
+                {questions[currentQuestion].attachmentType === "IMAGE" || questions[currentQuestion].attachmentType?.toUpperCase() === "IMAGE" ? (
                   <div className="relative h-[200px] w-full rounded-lg overflow-hidden">
                     <Image
                       src={questions[currentQuestion].attachmentUrl}
@@ -161,7 +161,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
                       className="object-contain"
                     />
                   </div>
-                ) : questions[currentQuestion].attachmentType === "AUDIO" ? (
+                ) : questions[currentQuestion].attachmentType === "AUDIO" || questions[currentQuestion].attachmentType?.toUpperCase() === "AUDIO" ? (
                   <audio
                     src={questions[currentQuestion].attachmentUrl}
                     controls

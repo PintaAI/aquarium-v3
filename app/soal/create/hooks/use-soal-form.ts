@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Difficulty } from "@prisma/client"
 import { createKoleksiSoal, getKoleksiSoal, updateKoleksiSoal, deleteKoleksiSoal } from "@/app/actions/soal-actions"
 import { uploadImage } from "@/app/actions/upload-image"
+import { uploadAudio } from "@/app/actions/upload-audio"
 
 interface Opsi {
   opsiText: string
@@ -78,7 +79,10 @@ export const useSoalForm = () => {
       const formData = new FormData()
       formData.append("file", file)
       
-      const url = await uploadImage(formData)
+      const url = currentAttachmentType === "AUDIO" 
+        ? await uploadAudio(formData)
+        : await uploadImage(formData)
+        
       setCurrentAttachmentUrl(url)
       toast.success("File berhasil diunggah")
     } catch (error) {

@@ -121,6 +121,9 @@ export const useWordGame = () => {
       if (bottomWords.length > 0) {
         const newLives = prev.lives - bottomWords.length;
         const gameOver = newLives <= 0;
+        
+        // Reset input when word hits bottom
+        resetInput();
 
         return {
           ...prev,

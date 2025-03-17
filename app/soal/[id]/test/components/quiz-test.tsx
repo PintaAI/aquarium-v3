@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 
 interface Opsi {
   id: number
@@ -9,6 +10,18 @@ interface Opsi {
   soalId: number
   opsiText: string
   isCorrect: boolean
+}
+
+interface KoleksiSoal {
+  id: number
+  nama: string
+  deskripsi?: string | null
+  soals: {
+    author: {
+      name: string | null
+      role: string
+    }
+  }[]
 }
 
 interface Question {
@@ -32,6 +45,12 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { getKoleksiSoal } from "@/app/actions/soal-actions"
 
+interface UserAnswer {
+  questionId: number
+  selectedOption: number
+  isCorrect: boolean
+}
+
 interface QuizTestProps {
   collectionId: number
 }
@@ -42,7 +61,12 @@ export function QuizTest({ collectionId }: QuizTestProps) {
   const [showResult, setShowResult] = useState(false)
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
+  const [koleksi, setKoleksi] = useState<KoleksiSoal | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([])
+  const [reviewMode, setReviewMode] = useState(false)
+  const [reviewIndex, setReviewIndex] = useState(0)
+  const { data: session } = useSession()
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -56,6 +80,12 @@ export function QuizTest({ collectionId }: QuizTestProps) {
               : null
           }))
           setQuestions(soals)
+          setKoleksi({
+            id: result.data.id,
+            nama: result.data.nama,
+            deskripsi: result.data.deskripsi,
+            soals: result.data.soals
+          })
         }
         setIsLoading(false)
       } catch (error) {
@@ -69,9 +99,16 @@ export function QuizTest({ collectionId }: QuizTestProps) {
 
   const handleAnswerClick = (selectedIndex: number) => {
     setSelectedOption(selectedIndex)
+    const isCorrect = questions[currentQuestion].opsis[selectedIndex].isCorrect
+    
+    setUserAnswers([...userAnswers, {
+      questionId: questions[currentQuestion].id,
+      selectedOption: selectedIndex,
+      isCorrect
+    }])
     
     setTimeout(() => {
-      if (questions[currentQuestion].opsis[selectedIndex].isCorrect) {
+      if (isCorrect) {
         setScore(score + 1)
       }
       
@@ -83,6 +120,14 @@ export function QuizTest({ collectionId }: QuizTestProps) {
         setShowResult(true)
       }
     }, 750)
+  }
+
+  const navigateReview = (direction: 'prev' | 'next') => {
+    if (direction === 'prev' && reviewIndex > 0) {
+      setReviewIndex(reviewIndex - 1)
+    } else if (direction === 'next' && reviewIndex < userAnswers.length - 1) {
+      setReviewIndex(reviewIndex + 1)
+    }
   }
 
   const determineLevel = () => {
@@ -97,6 +142,9 @@ export function QuizTest({ collectionId }: QuizTestProps) {
     setScore(0)
     setShowResult(false)
     setSelectedOption(null)
+    setUserAnswers([])
+    setReviewMode(false)
+    setReviewIndex(0)
   }
 
   if (isLoading) {
@@ -116,29 +164,153 @@ export function QuizTest({ collectionId }: QuizTestProps) {
   }
 
   return (
-    <Card className="w-full max-w-2xl p-6">
-      {showResult ? (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4 text-foreground">Hasil</h2>
-          <p className="text-lg mb-2 text-foreground">
-            Skor: {score} / {questions.length}
-          </p>
-          <div className="mb-6 p-4 bg-muted rounded-lg">
-            <p className="text-xl font-semibold text-foreground">Hasil Penilaian:</p>
-            <p className="text-2xl font-bold text-primary mt-2">{determineLevel()}</p>
+    <Card className="w-full max-w-2xl p-6 space-y-6">
+      {koleksi && (
+        <div>
+          <h1 className="text-xl font-bold text-foreground">{koleksi.nama}</h1>
+          <div className="text-sm text-muted-foreground space-y-1">
+            
+            <p>by, {koleksi.soals[0]?.author?.name || "Unknown"}</p>
           </div>
-          <Button
-            onClick={restartQuiz}
-            className="px-6 py-2"
-          >
-            Coba Lagi
-          </Button>
+        </div>
+      )}
+      {showResult ? (
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4 text-foreground">Hasil</h2>
+            <p className="text-base mb-2 text-muted-foreground">
+              Nama: {session?.user?.name || "Anonymous"}
+            </p>
+            <p className="text-lg mb-2 text-foreground">
+              Skor: {score} / {questions.length}
+            </p>
+            <div className="mb-6 p-4 bg-muted rounded-lg">
+              <p className="text-xl font-semibold text-foreground">Hasil Penilaian:</p>
+              <p className="text-2xl font-bold text-primary mt-2">{determineLevel()}</p>
+            </div>
+            {!reviewMode && (
+              <Button
+                onClick={() => setReviewMode(true)}
+                className="px-6 py-2 mb-4"
+              >
+                Review Jawaban
+              </Button>
+            )}
+            <Button
+              onClick={restartQuiz}
+              className="px-6 py-2 ml-4"
+              variant={reviewMode ? "secondary" : "default"}
+            >
+              Coba Lagi
+            </Button>
+          </div>
+
+          {reviewMode && (
+            <div className="mt-8 text-left">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">
+                  Review Soal {reviewIndex + 1}/{userAnswers.length}
+                </h3>
+                <div className="space-x-2">
+                  <Button
+                    onClick={() => navigateReview('prev')}
+                    disabled={reviewIndex === 0}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={() => navigateReview('next')}
+                    disabled={reviewIndex === userAnswers.length - 1}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="font-medium mb-4">{questions[reviewIndex].pertanyaan}</p>
+                
+                {questions[reviewIndex].attachmentUrl && (
+                  <div className="mb-4">
+                  {questions[reviewIndex].attachmentType === "IMAGE" || questions[reviewIndex].attachmentType?.toUpperCase() === "IMAGE" ? (
+                      <div className="relative h-[300px] w-full rounded-lg overflow-hidden">
+                        <Image
+                          src={questions[reviewIndex].attachmentUrl}
+                          alt="Question attachment"
+                          fill
+                          className="object-contain border-2 border-muted rounded-lg"
+                          loading="lazy"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      </div>
+                    ) : questions[reviewIndex].attachmentType === "AUDIO" || questions[reviewIndex].attachmentType?.toUpperCase() === "AUDIO" ? (
+                      <audio
+                        src={questions[reviewIndex].attachmentUrl}
+                        controls
+                        className="w-full"
+                      />
+                    ) : null}
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  {questions[reviewIndex].opsis.map((option: Opsi, index: number) => {
+                    const isSelected = userAnswers[reviewIndex].selectedOption === index;
+                    const isCorrect = option.isCorrect;
+                    let buttonClass = "w-full p-3 text-left rounded-md transition-colors flex items-center gap-3 ";
+                    
+                    if (isSelected) {
+                      buttonClass += isCorrect ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground";
+                    } else if (isCorrect) {
+                      buttonClass += "bg-primary/20 text-primary";
+                    } else {
+                      buttonClass += "bg-muted text-foreground";
+                    }
+
+                    return (
+                      <div key={index} className={buttonClass}>
+                        <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${
+                          isSelected
+                            ? isCorrect
+                              ? "border-primary-foreground"
+                              : "border-destructive-foreground"
+                            : isCorrect
+                              ? "border-primary"
+                              : "border-foreground"
+                        }`}>
+                          {index + 1}
+                        </div>
+                        {option.opsiText}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {questions[reviewIndex].explanation && !userAnswers[reviewIndex].isCorrect && (
+                  <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                    <p className="font-semibold mb-2">Penjelasan:</p>
+                    <p className="text-muted-foreground">{questions[reviewIndex].explanation}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <>
+          <div className="w-full bg-muted rounded-full h-1.5 mb-6">
+            <div
+              className="bg-primary h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+            />
+          </div>
           <div className="flex justify-between items-center mb-6">
             <span className="text-sm font-medium text-muted-foreground">
-              Pertanyaan {currentQuestion + 1}/{questions.length}
+              Soal {currentQuestion + 1}/{questions.length}
             </span>
             <span className="text-sm font-medium text-muted-foreground">
               Skor: {score}
@@ -153,14 +325,16 @@ export function QuizTest({ collectionId }: QuizTestProps) {
             {questions[currentQuestion].attachmentUrl && (
               <div className="mb-4">
                 {questions[currentQuestion].attachmentType === "IMAGE" || questions[currentQuestion].attachmentType?.toUpperCase() === "IMAGE" ? (
-                  <div className="relative h-[200px] w-full rounded-lg overflow-hidden">
-                    <Image
-                      src={questions[currentQuestion].attachmentUrl}
-                      alt="Question attachment"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
+                      <div className="relative h-[300px] w-full rounded-lg overflow-hidden">
+                        <Image
+                          src={questions[currentQuestion].attachmentUrl}
+                          alt="Question attachment"
+                          fill
+                          className="object-contain border-2 border-muted rounded-lg"
+                          loading="lazy"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      </div>
                 ) : questions[currentQuestion].attachmentType === "AUDIO" || questions[currentQuestion].attachmentType?.toUpperCase() === "AUDIO" ? (
                   <audio
                     src={questions[currentQuestion].attachmentUrl}
@@ -175,7 +349,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
               {questions[currentQuestion].opsis.map((option: Opsi, index: number) => (
                 <button
                   key={index}
-                  className={`w-full p-3 text-left rounded-md transition-colors ${
+                  className={`w-full p-3 text-left rounded-md transition-colors flex items-center gap-3 ${
                     selectedOption === index
                       ? option.isCorrect
                         ? "bg-primary text-primary-foreground"
@@ -185,17 +359,19 @@ export function QuizTest({ collectionId }: QuizTestProps) {
                   onClick={() => handleAnswerClick(index)}
                   disabled={selectedOption !== null}
                 >
+                  <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${
+                    selectedOption === index
+                      ? option.isCorrect
+                        ? "border-primary-foreground"
+                        : "border-destructive-foreground" 
+                      : "border-foreground"
+                  }`}>
+                    {index + 1}
+                  </div>
                   {option.opsiText}
                 </button>
               ))}
             </div>
-          </div>
-          
-          <div className="w-full bg-muted rounded-full h-1.5">
-            <div
-              className="bg-primary h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
-            />
           </div>
         </>
       )}

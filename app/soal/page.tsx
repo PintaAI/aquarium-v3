@@ -1,5 +1,6 @@
 "use client"
 
+import { UseCurrentUser } from "@/hooks/use-current-user"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { useEffect, useState } from "react"
@@ -67,6 +68,8 @@ export default function SoalPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const currentUser = UseCurrentUser()
+  const isGuru = currentUser?.role === "GURU"
 
   const loadCollections = async () => {
     try {
@@ -102,12 +105,14 @@ export default function SoalPage() {
       <div className="container max-w-5xl mx-auto p-4 md:p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-foreground">Koleksi Soal</h1>
-          <Link href="/soal/create">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Koleksi
-            </Button>
-          </Link>
+          {isGuru && (
+            <Link href="/soal/create">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Tambah Koleksi
+              </Button>
+            </Link>
+          )}
         </div>
 
         {collections.length === 0 ? (
@@ -115,12 +120,14 @@ export default function SoalPage() {
             <p className="text-muted-foreground mb-4">
               Belum ada koleksi soal yang dibuat
             </p>
-            <Link href="/soal/create">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Buat Koleksi Pertama
-              </Button>
-            </Link>
+            {isGuru && (
+              <Link href="/soal/create">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Buat Koleksi Pertama
+                </Button>
+              </Link>
+            )}
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

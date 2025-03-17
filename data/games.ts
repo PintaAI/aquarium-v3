@@ -21,7 +21,7 @@ export const games: Game[] = [
     description: "Latihan ujian sertifikasi bahasa Korea dengan format standar",
     icon: ScrollText,
     type: "App",
-    route: "/game/ujian-sertifikat"
+    route: "/soal"
   },
   {
     id: "TTS",

@@ -35,6 +35,8 @@ export function SoalCard({
 }: SoalCardProps) {
   const currentUser = UseCurrentUser()
   const isAuthor = currentUser?.id === user?.id
+  const isGuru = currentUser?.role === "GURU"
+  const canManage = isGuru || isAuthor
   const totalSoals = soals.length
   const difficultyCount = {
     BEGINNER: soals.filter(s => s.difficulty === "BEGINNER").length,
@@ -99,7 +101,7 @@ export function SoalCard({
               {totalSoals} soal
             </span>
           </div>
-          {isAuthor && (
+          {canManage && (
             <div className="flex gap-1">
               <Button
                 variant="ghost"

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Book, FileText, HelpCircle, ListPlus, PencilLine, Plus, Trash2, X } from "lucide-react"
+import { Book, FileText, HelpCircle, ListPlus, PencilLine, Trash2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"

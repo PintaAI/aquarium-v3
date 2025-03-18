@@ -3,16 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { getGameVocabularies } from '@/app/actions/vocabulary-actions';
 import { Input } from "@/components/ui/input";
-import { GameStats } from './components/GameStats';
 import { GameArea } from './components/GameArea';
 import { useWordGame } from './hooks/useWordGame';
 import { calculateGameParams, updateWordPairs } from './constants';
-import { CollectionSelector } from './components/CollectionSelector';
-
 const WordGame = () => {
+  const [gameHeight, setGameHeight] = useState('h-[calc(100vh-12rem)]');
   const [selectedCollection, setSelectedCollection] = useState<number | undefined>();
 
-  // Load vocabulary when collection changes
   useEffect(() => {
     const loadVocabulary = async () => {
       try {
@@ -61,22 +58,27 @@ const WordGame = () => {
   ]);
   
   return (
-    <div className="flex flex-col rounded-2xl items-center w-full max-w-3xl mx-auto min-h-screen">
-      <div className="w-full p-4 mb-4 bg-card text-card-foreground rounded-lg border shadow-lg">
-        <GameStats
-          score={state.score}
-          lives={state.lives}
-          level={state.level}
-        />
+    <div className="flex flex-col rounded-2xl items-center w-full max-w-3xl mx-auto gap-4">
+      {/* Height Controls */}
+      <div className="w-full flex justify-end gap-2">
+        <button 
+          onClick={() => setGameHeight('h-[400px]')} 
+          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">
+          Small
+        </button>
+        <button 
+          onClick={() => setGameHeight('h-[600px]')} 
+          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">
+          Medium
+        </button>
+        <button 
+          onClick={() => setGameHeight('h-[calc(100vh-12rem)]')} 
+          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">
+          Full
+        </button>
       </div>
-
-      {!state.gameStarted ? (
-        <div className="w-full p-4 bg-card text-card-foreground rounded-lg border shadow-lg">
-          <CollectionSelector onSelect={setSelectedCollection} />
-        </div>
-      ) : null}
-
       <GameArea
+        height={gameHeight}
         gameAreaRef={refs.gameAreaRef}
         activeWords={state.activeWords}
         currentInput={state.currentInput}
@@ -89,9 +91,18 @@ const WordGame = () => {
         onFocus={() => refs.inputRef.current?.focus()}
         paused={state.paused}
         onTogglePause={actions.togglePause}
+        onSelectCollection={setSelectedCollection}
+        lives={state.lives}
+        level={state.level}
       />
       
-      <div className="w-full mt-4">
+      <div className="w-full mt-4 relative">
+        {state.targetWordIndex !== null && state.activeWords[state.targetWordIndex] && (
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-center text-card-foreground">
+            <span className="font-bold">Current word:</span> <span className="korean">{state.activeWords[state.targetWordIndex].korean}</span> → 
+            <span className="font-bold text-primary">{state.activeWords[state.targetWordIndex].english}</span>
+          </div>
+        )}
         <Input
           ref={refs.inputRef}
           type="text"
@@ -103,13 +114,6 @@ const WordGame = () => {
           disabled={!state.gameStarted || state.gameOver || state.paused}
           autoComplete="off"
         />
-        
-        {state.targetWordIndex !== null && state.activeWords[state.targetWordIndex] && (
-          <div className="mt-2 text-center text-card-foreground">
-            <span className="font-bold">Current word:</span> <span className="korean">{state.activeWords[state.targetWordIndex].korean}</span> → 
-            <span className="font-bold text-primary">{state.activeWords[state.targetWordIndex].english}</span>
-          </div>
-        )}
       </div>
       
     </div>

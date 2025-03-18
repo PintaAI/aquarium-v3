@@ -38,7 +38,7 @@ export default function GameLayout({ children }: GameLayoutProps) {
     >
       <AppSidebar />
       <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4 pb-24">
-        <Breadcrumb className="px-4 mt-1">
+        <Breadcrumb className="px-4 mt-2">
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink href="/">Beranda</BreadcrumbLink>

@@ -45,7 +45,7 @@ export default function HangeulGame() {
 
   return (
     <div className="flex flex-col items-center p-4 w-full h-full">
-      <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-t-blue-500">
+      <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-b-0 border-t-blue-500">
         <CardHeader className="flex-shrink-0 space-y-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function HangeulGame() {
             {!gameState.gameOver ? (
               <div className="flex flex-col h-full justify-between">
                 {gameState.currentChar && (
-                  <div className="flex flex-col border items-center justify-center flex-grow h-full mb-4 relative">
+                  <div className="flex flex-col items-center justify-center flex-grow h-full mb-4 relative">
                     {/* Character Display */}
                     <div className="flex-grow flex items-center justify-center w-full h-full">
                       <CharacterDisplay 

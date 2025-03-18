@@ -3,13 +3,22 @@
 @plugin "tailwindcss-animate";
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%, 100% { 
+    transform: translate(0, 0);
+    filter: blur(0);
+  }
+  25% { 
+    transform: translate(0, -6px);
+    filter: blur(1px);
+  }
+  75% { 
+    transform: translate(0, 6px);
+    filter: blur(1px);
+  }
 }
 
 .shake {
-  animation: shake 0.2s ease-in-out;
+  animation: shake 0.15s ease-in-out;
 }
 @plugin "@tailwindcss/typography";
 

@@ -1,17 +1,15 @@
 "use client"
 
-import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react"
-import { CustomVideoConference } from "./custom-video-conference"
-import "@livekit/components-styles"
-import { ReactNode } from "react"
+import { LiveKitRoom } from "@livekit/components-react"
+import { LiveSessionUI } from "./live-session-ui"
+import { ReactNode, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { handleCreatorDisconnection } from "@/lib/live-kit-utils"
 import { useLiveKitToken } from "@/hooks/use-live-kit-token"
 import { LiveKitRoomError } from "./live-kit-room-error"
 import { LiveKitRoomLoading } from "./live-kit-room-loading"
+import { getLiveSessionWithAccess } from "@/app/actions/live-session-actions"
 
-
-const LIVEKIT_THEME = "default"
 
 interface LiveKitRoomProps {
   roomId: string
@@ -21,10 +19,29 @@ interface LiveKitRoomProps {
 }
 
 export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProps) {
-  const { token, error, isLoading } = useLiveKitToken(roomId, userName)
+  const { token, error, isLoading: tokenLoading } = useLiveKitToken(roomId, userName)
   const router = useRouter()
+  const [session, setSession] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const data = await getLiveSessionWithAccess(roomId)
+        console.log('Session data:', data)
+        setSession(data)
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+        router.push("/dashboard/live-session") // Redirect to sessions list if access denied
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchSession()
+  }, [roomId])
+
+  if (isLoading || tokenLoading) {
     return <LiveKitRoomLoading />
   }
 
@@ -42,15 +59,13 @@ export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProp
       token={token}
       audio={false}
       video={false}
-      data-lk-theme={LIVEKIT_THEME}
       style={{ height: "100vh", width: "100%" }}
       onDisconnected={async () => {
         await handleCreatorDisconnection(roomId, userId)
         router.push("/")
       }}
     >
-      <CustomVideoConference />
-      <RoomAudioRenderer />
+      <LiveSessionUI session={session} />
     </LiveKitRoom>
   )
 }

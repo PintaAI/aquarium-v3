@@ -22,7 +22,7 @@ export function MobileNavbar() {
   }
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0  bg-background z-50">
       <div className="grid grid-cols-5 gap-1 p-2">
         <Link 
           href="/" 

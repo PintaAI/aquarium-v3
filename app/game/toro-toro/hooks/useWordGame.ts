@@ -140,9 +140,8 @@ export const useWordGame = () => {
     });
 
     frameRef.current = requestAnimationFrame(updateGame);
-  }, [state.gameOver, state.gameStarted, state.paused, state.level, state.difficulty]);
+  }, [state.gameOver, state.gameStarted, state.paused, state.level, state.difficulty, resetInput]);
 
-  // Handle keyboard input
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (state.gameOver || !state.gameStarted || state.paused) return;
 
@@ -213,7 +212,6 @@ export const useWordGame = () => {
     }
   }, [state, resetInput]);
 
-  // Handle input change
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (state.gameOver || !state.gameStarted || state.paused) return;
 

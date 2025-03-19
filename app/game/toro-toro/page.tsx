@@ -7,7 +7,7 @@ import { GameArea } from './components/GameArea';
 import { useWordGame } from './hooks/useWordGame';
 import { calculateGameParams, updateWordPairs } from './constants';
 const WordGame = () => {
-  const [gameHeight, setGameHeight] = useState('h-[calc(100vh-12rem)]');
+  const [gameHeight] = useState('h-[calc(100vh-12rem)]');
   const [selectedCollection, setSelectedCollection] = useState<number | undefined>();
 
   useEffect(() => {
@@ -59,24 +59,7 @@ const WordGame = () => {
   
   return (
     <div className="flex flex-col rounded-2xl items-center w-full max-w-3xl mx-auto gap-4">
-      {/* Height Controls */}
-      <div className="w-full flex justify-end gap-2">
-        <button 
-          onClick={() => setGameHeight('h-[400px]')} 
-          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">
-          Small
-        </button>
-        <button 
-          onClick={() => setGameHeight('h-[600px]')} 
-          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">
-          Medium
-        </button>
-        <button 
-          onClick={() => setGameHeight('h-[calc(100vh-12rem)]')} 
-          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">
-          Full
-        </button>
-      </div>
+
       <GameArea
         height={gameHeight}
         gameAreaRef={refs.gameAreaRef}

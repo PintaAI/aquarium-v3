@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Loader2, Send, Edit2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from 'next/image';
 
 interface ReceivedChatMessage {
   message: string
@@ -25,17 +26,19 @@ interface ReceivedChatMessage {
   }
 }
 
+interface ChatMessage {
+  message: string;
+  editTimestamp?: number;
+  id: string;
+  timestamp: number;
+}
+
 interface UseChatHook {
-  send: (message: string) => Promise<any>
+  send: (message: string) => Promise<ChatMessage>
   update: (
     message: string,
-    originalMessageOrId: string | any,
-  ) => Promise<{
-    readonly message: string
-    readonly editTimestamp: number
-    readonly id: string
-    readonly timestamp: number
-  }>
+    originalMessageOrId: string
+  ) => Promise<Required<ChatMessage>>
   chatMessages: ReceivedChatMessage[]
   isSending: boolean
 }
@@ -61,7 +64,13 @@ export interface LiveSessionUIProps extends React.HTMLAttributes<HTMLDivElement>
   chatHook?: UseChatHook;
 }
 
-function LiveStreamChat({ chatHook, session }: { chatHook: UseChatHook; session?: LiveSessionUIProps['session'] }) {
+function LiveStreamChat({ 
+  chatHook, 
+  session 
+}: { 
+  chatHook: UseChatHook; 
+  session?: LiveSessionUIProps['session'] 
+}) {
   const { send, update, chatMessages, isSending } = chatHook
   const [message, setMessage] = React.useState("")
   const [editingMessage, setEditingMessage] = React.useState<ReceivedChatMessage | null>(null)
@@ -276,10 +285,12 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
                     <div className="flex items-center gap-3 mt-4">
                       <div className="h-10 w-10 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center">
                         {props.session.creator.image ? (
-                          <img 
+                          <Image 
                             src={props.session.creator.image} 
                             alt={props.session.creator.name}
                             className="w-full h-full object-cover"
+                            width={40}
+                            height={40}
                           />
                         ) : (
                           <span className="text-zinc-400 text-lg">

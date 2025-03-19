@@ -99,7 +99,8 @@ export async function getLiveSessionWithAccess(sessionId: string) {
       creator: {
         select: {
           id: true,
-          name: true
+          name: true,
+          image: true
         }
       },
       course: {
@@ -109,11 +110,10 @@ export async function getLiveSessionWithAccess(sessionId: string) {
         }
       },
       participants: {
-        where: {
-          id: user.id
-        },
         select: {
-          id: true
+          id: true,
+          name: true,
+          image: true
         }
       }
     }

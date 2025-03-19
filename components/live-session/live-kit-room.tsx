@@ -1,6 +1,6 @@
 "use client"
 
-import { LiveKitRoom } from "@livekit/components-react"
+import { LiveKitRoom, useChat } from "@livekit/components-react"
 import { LiveSessionUI } from "./live-session-ui"
 import { ReactNode, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -10,12 +10,16 @@ import { LiveKitRoomError } from "./live-kit-room-error"
 import { LiveKitRoomLoading } from "./live-kit-room-loading"
 import { getLiveSessionWithAccess } from "@/app/actions/live-session-actions"
 
-
 interface LiveKitRoomProps {
   roomId: string
   userName: string
   userId: string
   children?: ReactNode
+}
+
+function SessionUI({ session }: { session: any }) {
+  const chat = useChat()
+  return <LiveSessionUI session={session} chatHook={chat} />
 }
 
 export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProps) {
@@ -28,7 +32,6 @@ export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProp
     const fetchSession = async () => {
       try {
         const data = await getLiveSessionWithAccess(roomId)
-        console.log('Session data:', data)
         setSession(data)
       } catch (error) {
         console.error("Failed to fetch session:", error)
@@ -65,7 +68,7 @@ export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProp
         router.push("/")
       }}
     >
-      <LiveSessionUI session={session} />
+      <SessionUI session={session} />
     </LiveKitRoom>
   )
 }

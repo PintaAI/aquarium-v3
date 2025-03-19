@@ -52,6 +52,7 @@ export default async function LiveSessionPage() {
         select: {
           id: true,
           title: true,
+          description: true,
         }
       },
       participants: {

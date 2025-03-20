@@ -31,7 +31,7 @@ export function VocabularyCollection() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[230px] lg:h-[530px] w-full rounded-md pr-4">
+        <ScrollArea className="h-[230px] lg:h-[580px] w-full rounded-md pr-4">
           <div className="space-y-3">
             {recentVocabulary.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[210px] text-center space-y-4 bg-muted-foreground/10 rounded-lg">

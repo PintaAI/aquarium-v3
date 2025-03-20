@@ -1,27 +1,26 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getLatestVocabularyCollections } from "@/app/actions/vocabulary-actions"
 import { VocabularyCard } from "@/components/card/vocabulary-card"
 import { ChevronRight, Plus } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
 
-interface VocabularyCollection {
-  id: number
-  title: string
-  createdAt: Date
-  description: string | null
-}
+import { RecentVocabulary, getRecentVocabulary } from "@/lib/recent-vocabulary"
 
-export async function VocabularyCollection() {
-  const { data: collections } = await getLatestVocabularyCollections()
+export function VocabularyCollection() {
+  const [recentVocabulary, setRecentVocabulary] = useState<RecentVocabulary[]>([])
 
-  if (!collections) return null
+  useEffect(() => {
+    setRecentVocabulary(getRecentVocabulary())
+  }, [])
 
   return (
     <Card className="border-none shadow-md">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold">Kosa Kata</CardTitle>
+          <CardTitle className="text-lg font-bold">Kosa Kata Terakhir</CardTitle>
           <Link
             href="/vocabulary"
             className="text-sm font-medium text-muted-foreground hover:text-primary/80 transition-colors flex items-center"
@@ -32,11 +31,11 @@ export async function VocabularyCollection() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[230px] w-full rounded-md pr-4">
+        <ScrollArea className="h-[230px] lg:h-[530px] w-full rounded-md pr-4">
           <div className="space-y-3">
-            {collections.length === 0 ? (
+            {recentVocabulary.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[210px] text-center space-y-4 bg-muted-foreground/10 rounded-lg">
-                <p className="text-sm text-muted-foreground">Anda belum memiliki koleksi kosa kata.</p>
+                <p className="text-sm text-muted-foreground">Anda belum mengakses kosa kata apa pun.</p>
                 <Link
                   href="/vocabulary/create"
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors"
@@ -46,14 +45,14 @@ export async function VocabularyCollection() {
                 </Link>
               </div>
             ) : (
-              collections.map((collection) => (
-                <Link key={collection.id} href={`/vocabulary/${collection.id}`} className="block">
+              recentVocabulary.map((vocabulary) => (
+                <Link key={vocabulary.id} href={`/vocabulary/${vocabulary.id}`} className="block">
                   <VocabularyCard
-                    title={collection.title}
-                    description={collection.description}
-                    user={collection.user}
-                    items={collection.items}
-                    isPublic={collection.isPublic}
+                    title={vocabulary.title}
+                    description={vocabulary.description}
+                    user={vocabulary.user}
+                    items={vocabulary.items}
+                    isPublic={vocabulary.isPublic}
                   />
                 </Link>
               ))

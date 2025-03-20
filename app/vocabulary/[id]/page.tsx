@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { TrackVocabularyView } from "@/components/vocabulary/track-vocabulary-view";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VocabularyTable } from "@/components/vocabulary/vocabulary-table";
 import { getVocabularyCollection } from "@/app/actions/vocabulary-actions";
@@ -42,15 +43,16 @@ export default async function VocabularyDetailPage(
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 md:px-8">
-      <Card>
-        <div className="relative h-32 w-full overflow-hidden rounded-t-lg sm:h-40">
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-primary/20 to-emerald-500/20">
-            {/* Decorative Orbs */}
-            <div className="absolute -top-4 -right-4 w-16 h-16 sm:w-24 sm:h-24 bg-primary/20 rounded-full blur-2xl" />
-            <div className="absolute -bottom-4 -left-4 w-14 h-14 sm:w-20 sm:h-20 bg-emerald-500/20 rounded-full blur-2xl" />
-          </div>
+    <TrackVocabularyView vocabulary={collection}>
+      <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 md:px-8">
+        <Card>
+          <div className="relative h-32 w-full overflow-hidden rounded-t-lg sm:h-40">
+            {/* Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-primary/20 to-emerald-500/20">
+              {/* Decorative Orbs */}
+              <div className="absolute -top-4 -right-4 w-16 h-16 sm:w-24 sm:h-24 bg-primary/20 rounded-full blur-2xl" />
+              <div className="absolute -bottom-4 -left-4 w-14 h-14 sm:w-20 sm:h-20 bg-emerald-500/20 rounded-full blur-2xl" />
+            </div>
 
           {/* Top Row: Word Count and Privacy */}
           <div className="absolute top-2 inset-x-2 flex flex-wrap justify-between items-center sm:inset-x-4">
@@ -118,6 +120,7 @@ export default async function VocabularyDetailPage(
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TrackVocabularyView>
   );
 }

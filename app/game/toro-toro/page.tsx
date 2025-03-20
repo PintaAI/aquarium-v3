@@ -7,7 +7,7 @@ import { GameArea } from './components/GameArea';
 import { useWordGame } from './hooks/useWordGame';
 import { calculateGameParams, updateWordPairs } from './constants';
 const WordGame = () => {
-  const [gameHeight] = useState('h-[calc(100vh-12rem)]');
+  const [gameHeight] = useState('md:h-[calc(100vh-12rem)] h-[calc(100vh-30rem)] ');
   const [selectedCollection, setSelectedCollection] = useState<number | undefined>();
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const WordGame = () => {
   ]);
   
   return (
-    <div className="flex flex-col rounded-2xl items-center w-full max-w-3xl mx-auto gap-4">
+    <div className="flex flex-col rounded-2xl items-center w-full max-w-3xl mx-auto gap-4 overflow-hidden md:overflow-auto">
 
       <GameArea
         height={gameHeight}

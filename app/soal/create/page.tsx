@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
@@ -41,7 +42,7 @@ export default function CreateSoalPage() {
     deleteAction,
     handleRemoveSoal,
     handleCopiedSoals,
-    // Form state for adding soal
+    // Form state for adding/editing soal
     currentPertanyaan,
     setCurrentPertanyaan,
     currentAttachmentUrl,
@@ -61,8 +62,11 @@ export default function CreateSoalPage() {
     handleRemoveOpsi,
     handleToggleCorrect,
     handleAddSoal,
-    handleFileUpload
+    handleFileUpload,
+    handleEditSoal
   } = useSoalForm()
+
+  const [editingSoalIndex, setEditingSoalIndex] = useState<number | null>(null)
 
   return (
     <div className="container max-w-5xl mx-auto p-4 md:p-6 min-h-[calc(100vh-4rem)]">
@@ -142,7 +146,9 @@ export default function CreateSoalPage() {
 
             {/* Actions untuk menambah soal */}
             <div className="flex flex-wrap items-center max-w-4xl gap-2">
-              <AddSoalDialog 
+              <AddSoalDialog
+                isEditing={false}
+                editingSoalIndex={null}
                 currentPertanyaan={currentPertanyaan}
                 setCurrentPertanyaan={setCurrentPertanyaan}
                 currentAttachmentUrl={currentAttachmentUrl}
@@ -163,6 +169,7 @@ export default function CreateSoalPage() {
                 handleToggleCorrect={handleToggleCorrect}
                 handleAddSoal={handleAddSoal}
                 handleFileUpload={handleFileUpload}
+                handleEditSoal={handleEditSoal}
               />
               {isEdit && (
                 <CopySoalDialog 
@@ -190,10 +197,34 @@ export default function CreateSoalPage() {
                             >
                               {difficultyLabels[soal.difficulty as keyof typeof difficultyLabels]}
                             </Badge>
-                <p className="font-medium flex items-center gap-2">
-                  <PencilLine className="w-4 h-4" />
-                  {soal.pertanyaan}
-                </p>
+                            <div className="font-medium flex items-center gap-2">
+                              <AddSoalDialog
+                                isEditing={true}
+                                editingSoalIndex={index}
+                                currentPertanyaan={soal.pertanyaan}
+                                setCurrentPertanyaan={setCurrentPertanyaan}
+                                currentAttachmentUrl={soal.attachmentUrl || ''}
+                                setCurrentAttachmentUrl={setCurrentAttachmentUrl}
+                                currentAttachmentType={soal.attachmentType}
+                                setCurrentAttachmentType={setCurrentAttachmentType}
+                                currentDifficulty={soal.difficulty}
+                                setCurrentDifficulty={setCurrentDifficulty}
+                                currentExplanation={soal.explanation || ''}
+                                setCurrentExplanation={setCurrentExplanation}
+                                currentOpsis={soal.opsis}
+                                setCurrentOpsis={setCurrentOpsis}
+                                newOpsiText={newOpsiText}
+                                setNewOpsiText={setNewOpsiText}
+                                isUploading={isUploading}
+                                handleAddOpsi={handleAddOpsi}
+                                handleRemoveOpsi={handleRemoveOpsi}
+                                handleToggleCorrect={handleToggleCorrect}
+                                handleAddSoal={handleAddSoal}
+                                handleFileUpload={handleFileUpload}
+                                handleEditSoal={handleEditSoal}
+                              />
+                              <span>{soal.pertanyaan}</span>
+                            </div>
                           </div>
                           {soal.attachmentUrl && (
                             <div className="mt-3">

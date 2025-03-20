@@ -71,8 +71,8 @@ export const useSoalForm = () => {
   }, [koleksiId, isEdit])
 
   // Handle file upload
-  const handleFileUpload = async (file: File) => {
-    if (!file) return
+  const handleFileUpload = async (file: File): Promise<string> => {
+    if (!file) return ''
 
     setIsUploading(true)
     try {
@@ -85,9 +85,11 @@ export const useSoalForm = () => {
         
       setCurrentAttachmentUrl(url)
       toast.success("File berhasil diunggah")
+      return url
     } catch (error) {
       toast.error("Gagal mengunggah file")
       console.error(error)
+      return ''
     } finally {
       setIsUploading(false)
     }
@@ -113,8 +115,8 @@ export const useSoalForm = () => {
     })))
   }
 
-  // Add soal handler
-  const handleAddSoal = () => {
+  // Add or edit soal handler
+  const handleAddSoal = (editIndex?: number) => {
     if (!currentPertanyaan || currentOpsis.length === 0 || !currentDifficulty) {
       toast.error("Pertanyaan, tingkat kesulitan, dan minimal satu opsi harus diisi")
       return
@@ -134,7 +136,15 @@ export const useSoalForm = () => {
       opsis: currentOpsis
     }
 
-    setSoals([...soals, newSoal])
+    if (typeof editIndex === 'number') {
+      // Edit existing soal
+      setSoals(soals.map((soal, index) => 
+        index === editIndex ? newSoal : soal
+      ))
+    } else {
+      // Add new soal
+      setSoals([...soals, newSoal])
+    }
     
     // Reset current soal form
     setCurrentPertanyaan("")
@@ -229,6 +239,21 @@ export const useSoalForm = () => {
     }
   }
 
+  // Edit soal handler
+  const handleEditSoal = (index: number) => {
+    if (!currentPertanyaan || currentOpsis.length === 0 || !currentDifficulty) {
+      toast.error("Pertanyaan, tingkat kesulitan, dan minimal satu opsi harus diisi")
+      return
+    }
+
+    if (!currentOpsis.some(opsi => opsi.isCorrect)) {
+      toast.error("Pilih minimal satu jawaban yang benar")
+      return
+    }
+
+    handleAddSoal(index)
+  }
+
   return {
     nama,
     setNama,
@@ -260,6 +285,7 @@ export const useSoalForm = () => {
     handleToggleCorrect,
     handleAddSoal,
     handleRemoveSoal,
-    handleFileUpload
+    handleFileUpload,
+    handleEditSoal
   }
 }

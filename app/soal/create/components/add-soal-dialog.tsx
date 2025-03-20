@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Difficulty } from "@prisma/client"
-import { Plus, Upload, X, FileText, Image as ImageIcon, Volume2, Medal, HelpCircle, Loader2 } from "lucide-react"
+import { Plus, Upload, X, FileText, Image as ImageIcon, Volume2, Medal, HelpCircle, Loader2, PencilLine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,6 +26,8 @@ import Image from "next/image"
 
 // Props for the dialog component
 interface AddSoalDialogProps {
+  isEditing?: boolean
+  editingSoalIndex?: number | null
   currentPertanyaan: string
   setCurrentPertanyaan: (value: string) => void
   currentAttachmentUrl: string
@@ -45,10 +47,13 @@ interface AddSoalDialogProps {
   handleRemoveOpsi: (index: number) => void
   handleToggleCorrect: (index: number) => void
   handleAddSoal: () => void
-  handleFileUpload: (file: File) => void
+  handleFileUpload: (file: File) => Promise<string>
+  handleEditSoal: (index: number) => void
 }
 
 export function AddSoalDialog({
+  isEditing,
+  editingSoalIndex,
   currentPertanyaan,
   setCurrentPertanyaan,
   currentAttachmentUrl,
@@ -64,46 +69,118 @@ export function AddSoalDialog({
   newOpsiText,
   setNewOpsiText,
   isUploading,
-  handleAddOpsi,
-  handleRemoveOpsi,
-  handleToggleCorrect,
+  handleAddOpsi: parentHandleAddOpsi,
+  handleRemoveOpsi: parentHandleRemoveOpsi,
+  handleToggleCorrect: parentHandleToggleCorrect,
   handleAddSoal,
-  handleFileUpload
+  handleFileUpload,
+  handleEditSoal
 }: AddSoalDialogProps) {
   const [open, setOpen] = useState(false)
+  // Local state for editing
+  const [editState, setEditState] = useState({
+    pertanyaan: currentPertanyaan,
+    attachmentUrl: currentAttachmentUrl,
+    attachmentType: currentAttachmentType,
+    difficulty: currentDifficulty,
+    explanation: currentExplanation,
+    opsis: currentOpsis,
+  })
+  
+  // Handlers for local state
+  const handleAddOpsi = () => {
+    if (!newOpsiText) return
+    setEditState(prev => ({
+      ...prev,
+      opsis: [...prev.opsis, { opsiText: newOpsiText, isCorrect: false }]
+    }))
+    setNewOpsiText("")
+  }
+
+  const handleRemoveOpsi = (index: number) => {
+    setEditState(prev => ({
+      ...prev,
+      opsis: prev.opsis.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleToggleCorrect = (index: number) => {
+    setEditState(prev => ({
+      ...prev,
+      opsis: prev.opsis.map((opsi, i) => ({
+        ...opsi,
+        isCorrect: i === index
+      }))
+    }))
+  }
+
+  // Handle dialog open/close and edit mode initialization
+  useEffect(() => {
+    if (open) {
+      if (isEditing) {
+        // If editing, set the initial edit state
+        setEditState({
+          pertanyaan: currentPertanyaan,
+          attachmentUrl: currentAttachmentUrl,
+          attachmentType: currentAttachmentType,
+          difficulty: currentDifficulty,
+          explanation: currentExplanation,
+          opsis: [...currentOpsis],
+        })
+      } else {
+        // If adding new, reset edit state
+        setEditState({
+          pertanyaan: '',
+          attachmentUrl: '',
+          attachmentType: undefined,
+          difficulty: undefined,
+          explanation: '',
+          opsis: [],
+        })
+      }
+    }
+  }, [isEditing, open, currentPertanyaan, currentAttachmentUrl, currentAttachmentType, currentDifficulty, currentExplanation, currentOpsis])
 
   const handleSubmit = () => {
-    if (currentPertanyaan && currentOpsis.length > 0 && currentDifficulty) {
-      // First add the soal to ensure data is saved before form is reset
+    // Update parent state with local state
+    if (isEditing && typeof editingSoalIndex === 'number') {
+      setCurrentPertanyaan(editState.pertanyaan)
+      setCurrentAttachmentUrl(editState.attachmentUrl)
+      setCurrentAttachmentType(editState.attachmentType)
+      setCurrentDifficulty(editState.difficulty)
+      setCurrentExplanation(editState.explanation)
+      setCurrentOpsis(editState.opsis)
+      handleEditSoal(editingSoalIndex)
+    } else {
       handleAddSoal()
-      
-      // Now close the dialog (form fields will be reset by the onOpenChange handler)
-      setOpen(false)
     }
+    setOpen(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={(open) => {
-      if (!open) { // Dialog is closing, reset form fields
-        setCurrentPertanyaan("")
-        setCurrentAttachmentUrl("")
-        setCurrentAttachmentType(undefined)
-        setCurrentDifficulty(undefined)
-        setCurrentExplanation("")
-        setCurrentOpsis([])
-        setNewOpsiText("")
-      }
-      setOpen(open)
-    }}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full bg-accent/10 border-dashed border-2">
-          <Plus className="h-4 w-4 mr-2" />
-          Tambah Soal Baru
-        </Button>
+        {isEditing ? (
+          <span className="cursor-pointer hover:text-primary transition-colors">
+            <PencilLine className="h-4 w-4" />
+          </span>
+        ) : (
+          <Button variant="outline" className="w-full bg-accent/10 border-dashed border-2">
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Soal Baru
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="!max-w-4xl max-h-[90vh] sm:!max-w-3xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Tambah Soal Baru</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {isEditing ? 'Edit Soal' : 'Tambah Soal Baru'}
+          </DialogTitle>
+          {isEditing && (
+            <div className="text-sm text-muted-foreground mt-2">
+              {editState.pertanyaan}
+            </div>
+          )}
         </DialogHeader>
         <ScrollArea className="h-[calc(90vh-8rem)] p-4">
           <div>
@@ -114,8 +191,10 @@ export function AddSoalDialog({
                   Pertanyaan
                 </Label>
                 <Textarea
-                  value={currentPertanyaan}
-                  onChange={(e) => setCurrentPertanyaan(e.target.value)}
+                  value={isEditing ? editState.pertanyaan : currentPertanyaan}
+                  onChange={(e) => isEditing 
+                    ? setEditState(prev => ({ ...prev, pertanyaan: e.target.value }))
+                    : setCurrentPertanyaan(e.target.value)}
                   placeholder="Tuliskan pertanyaan disini"
                   rows={2}
                 />
@@ -128,8 +207,10 @@ export function AddSoalDialog({
                     Lampiran
                   </Label>
                   <Select
-                    value={currentAttachmentType || ""}
-                    onValueChange={(value: "IMAGE" | "AUDIO") => setCurrentAttachmentType(value)}
+                    value={isEditing ? editState.attachmentType || "" : currentAttachmentType || ""}
+                    onValueChange={(value: "IMAGE" | "AUDIO") => isEditing
+                      ? setEditState(prev => ({ ...prev, attachmentType: value }))
+                      : setCurrentAttachmentType(value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih tipe lampiran" />
@@ -150,13 +231,13 @@ export function AddSoalDialog({
                     </SelectContent>
                   </Select>
 
-                  {currentAttachmentType && (
+                  {(isEditing ? editState.attachmentType : currentAttachmentType) && (
                     <>
-                      {currentAttachmentUrl && (
+                      {(isEditing ? editState.attachmentUrl : currentAttachmentUrl) && (
                         <div className="rounded-md overflow-hidden bg-accent/20 p-2">
-                          {currentAttachmentType === "IMAGE" ? (
+                          {(isEditing ? editState.attachmentType : currentAttachmentType) === "IMAGE" ? (
                             <Image
-                              src={currentAttachmentUrl}
+                              src={isEditing ? editState.attachmentUrl : currentAttachmentUrl}
                               alt="Preview"
                               width={200}
                               height={200}
@@ -164,7 +245,7 @@ export function AddSoalDialog({
                             />
                           ) : (
                             <audio
-                              src={currentAttachmentUrl}
+                              src={isEditing ? editState.attachmentUrl : currentAttachmentUrl}
                               controls
                               className="w-full max-w-[300px]"
                             />
@@ -174,11 +255,23 @@ export function AddSoalDialog({
                       <div className="flex items-center gap-2">
                         <Input
                           type="file"
-                          accept={currentAttachmentType === "IMAGE" ? "image/*" : "audio/*"}
+                          accept={(isEditing ? editState.attachmentType : currentAttachmentType) === "IMAGE" ? "image/*" : "audio/*"}
                           onChange={(e) => {
                             const file = e.target.files?.[0]
                             if (file) {
-                              handleFileUpload(file)
+                              if (isEditing) {
+                                handleFileUpload(file).then(url => {
+                                  setEditState(prev => ({
+                                    ...prev,
+                                    attachmentUrl: url,
+                                    attachmentType: prev.attachmentType || currentAttachmentType
+                                  }))
+                                })
+                              } else {
+                                handleFileUpload(file).then(url => {
+                                  setCurrentAttachmentUrl(url)
+                                })
+                              }
                             }
                           }}
                           disabled={isUploading}
@@ -200,8 +293,10 @@ export function AddSoalDialog({
                     Tingkat Kesulitan
                   </Label>
                   <Select
-                    value={currentDifficulty || ""}
-                    onValueChange={(value: Difficulty) => setCurrentDifficulty(value)}
+                    value={isEditing ? editState.difficulty || "" : currentDifficulty || ""}
+                    onValueChange={(value: Difficulty) => isEditing
+                      ? setEditState(prev => ({ ...prev, difficulty: value }))
+                      : setCurrentDifficulty(value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih tingkat kesulitan" />
@@ -229,8 +324,10 @@ export function AddSoalDialog({
                   Penjelasan (Opsional)
                 </Label>
                 <Textarea
-                  value={currentExplanation}
-                  onChange={(e) => setCurrentExplanation(e.target.value)}
+                  value={isEditing ? editState.explanation : currentExplanation}
+                  onChange={(e) => isEditing
+                    ? setEditState(prev => ({ ...prev, explanation: e.target.value }))
+                    : setCurrentExplanation(e.target.value)}
                   placeholder="Penjelasan jawaban yang benar"
                   rows={2}
                 />
@@ -250,13 +347,13 @@ export function AddSoalDialog({
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault()
-                        handleAddOpsi()
+                        isEditing ? handleAddOpsi() : parentHandleAddOpsi()
                       }
                     }}
                   />
                   <Button
                     type="button"
-                    onClick={handleAddOpsi}
+                    onClick={isEditing ? handleAddOpsi : parentHandleAddOpsi}
                     variant="secondary"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -265,14 +362,14 @@ export function AddSoalDialog({
                 </div>
 
                 <div className="space-y-2">
-                  {currentOpsis.map((opsi, index) => (
+                  {(isEditing ? editState.opsis : currentOpsis).map((opsi, index) => (
                     <div
                       key={index}
                       className="flex items-center gap-2 p-2 bg-accent/20 hover:bg-accent/30 rounded-lg transition-colors"
                     >
                       <Button
                         type="button"
-                        onClick={() => handleToggleCorrect(index)}
+                        onClick={() => isEditing ? handleToggleCorrect(index) : parentHandleToggleCorrect(index)}
                         variant={opsi.isCorrect ? "default" : "outline"}
                         size="sm"
                       >
@@ -281,7 +378,7 @@ export function AddSoalDialog({
                       <span className="flex-1">{opsi.opsiText}</span>
                       <Button
                         type="button"
-                        onClick={() => handleRemoveOpsi(index)}
+                        onClick={() => isEditing ? handleRemoveOpsi(index) : parentHandleRemoveOpsi(index)}
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
@@ -305,9 +402,11 @@ export function AddSoalDialog({
                 <Button
                   type="submit"
                   onClick={handleSubmit}
-                  disabled={!currentPertanyaan || currentOpsis.length === 0 || !currentDifficulty}
+                  disabled={isEditing 
+                    ? !editState.pertanyaan || editState.opsis.length === 0 || !editState.difficulty
+                    : !currentPertanyaan || currentOpsis.length === 0 || !currentDifficulty}
                 >
-                  Tambah Soal
+                  {isEditing ? 'Simpan Perubahan' : 'Tambah Soal'}
                 </Button>
               </div>
             </div>

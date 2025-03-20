@@ -44,8 +44,7 @@ export const CollectionSelector = ({ onSelect }: CollectionSelectorProps) => {
   return (
     <div className="w-full space-y-4">
       <div className="flex flex-col items-center space-y-2">
-        <h2 className="text-xl font-bold">Choose Vocabulary Set</h2>
-        <p className="text-sm text-muted-foreground">Select a specific collection or use random words</p>
+        <p className="text-sm text-muted-foreground">Pilih kosa kata untuk bermain</p>
       </div>
       
       <Select value={selected} onValueChange={handleSelect}>

@@ -16,18 +16,7 @@ interface GameOverlayProps {
   onSelectCollection: (collectionId?: number) => void;
 }
 
-const Instructions = () => (
-  <div className="mb-6 bg-card/80 p-4 rounded-lg">
-    <h3 className="text-lg font-bold mb-2 text-card-foreground">Instructions:</h3>
-    <ul className="list-disc pl-5 space-y-1 text-card-foreground/80">
-      <li>Type the English translations of the falling Korean words</li>
-      <li>Start typing to select a word - it will highlight in yellow</li>
-      <li>Complete the word before it reaches the bottom</li>
-      <li>Press ESC to deselect a word</li>
-      <li>You lose a life for each word that reaches the bottom</li>
-    </ul>
-  </div>
-);
+
 
 const GameOverlay = ({ score, onStart, difficulty, onChangeDifficulty, onSelectCollection, isGameOver }: GameOverlayProps & { isGameOver: boolean }) => (
   <div className="absolute inset-0 flex items-center justify-center bg-background/95 text-foreground">
@@ -39,8 +28,8 @@ const GameOverlay = ({ score, onStart, difficulty, onChangeDifficulty, onSelectC
         </>
       ) : (
         <>
-          <h2 className="text-3xl mb-4">Korean Word Challenge</h2>
-          <Instructions />
+          <h2 className="text-3xl mb-4">TORO-TORO</h2>
+          
         </>
       )}
       

@@ -75,11 +75,11 @@ function LiveStreamChat({
   const [message, setMessage] = React.useState("")
   const [editingMessage, setEditingMessage] = React.useState<ReceivedChatMessage | null>(null)
   const scrollAreaRef = React.useRef<HTMLDivElement>(null)
+  const bottomRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current
-      scrollContainer.scrollTop = scrollContainer.scrollHeight
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages])
 
@@ -112,9 +112,9 @@ function LiveStreamChat({
   }
 
   return (
-    <Card className="w-full h-[350px] md:h-[calc(100vh-970px)] flex flex-col border-0 bg-black/20 rounded-lg">
+    <Card className="w-full h-[300px] md:h-[calc(100vh-970px)] flex flex-col border-0 bg-white/80 dark:bg-black/20 rounded-lg">
       <CardContent className="flex-grow p-0">
-        <ScrollArea className="h-[350px] md:h-[calc(100vh-970px)] p-4" ref={scrollAreaRef}>
+        <ScrollArea className="h-[300px] md:h-[calc(100vh-970px)] p-4" ref={scrollAreaRef}>
           {chatMessages.length === 0 ? (
             <div className="flex items-center justify-center h-full text-muted-foreground mt-2">Belum Ada pertanyaan</div>
           ) : (
@@ -152,6 +152,7 @@ function LiveStreamChat({
                   </Button>
                 </div>
               ))}
+              <div ref={bottomRef} />
             </div>
           )}
         </ScrollArea>
@@ -190,7 +191,7 @@ function ControlButton({ onClick, active, icon, title }: {
     <button
       onClick={onClick}
       className={`p-3 rounded-full transition-colors ${
-        active ? 'bg-red-500 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700/80'
+        active ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700/80'
       }`}
       title={title}
     >
@@ -199,7 +200,7 @@ function ControlButton({ onClick, active, icon, title }: {
   );
 }
 
-export function LiveSessionUI(props: LiveSessionUIProps) {
+export function LiveSessionUI({ chatHook, session, ...rest }: LiveSessionUIProps) {
   const { localParticipant } = useLocalParticipant();
   const room = useRoomContext();
   const router = useRouter();
@@ -209,16 +210,16 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
   ]);
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background pb-32" {...props}>
-      <div className="max-w-[1280px] w-full mx-auto px-2 py-4">
+    <div className="flex flex-col min-h-screen w-full bg-background pb-32" {...rest}>
+      <div className="max-w-[1280px] w-full mx-auto px-2 py-3">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-4">
           <div>
             {/* Video Player */}
-            <div className="aspect-video bg-zinc-900 rounded-lg overflow-hidden relative flex items-center justify-center">
+<div className="aspect-video bg-gray-200 dark:bg-zinc-900 rounded-lg overflow-hidden relative flex items-center justify-center">
               {screenShareTracks.length === 0 ? (
                 <div className="text-center">
                   <div className="inline-block w-8 h-8 border-4 border-zinc-600 border-t-zinc-400 rounded-full animate-spin mb-4"></div>
-                  <p className="text-zinc-400 text-lg">Menunggu Guru memulai live streaming...</p>
+<p className="text-gray-600 dark:text-zinc-400 text-lg">Menunggu Guru memulai live streaming...</p>
                 </div>
               ) : (
                 screenShareTracks.map((track) => {
@@ -245,7 +246,9 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
                                 width: '100%',
                                 height: '100%',
                                 objectFit: 'contain'
-                              }
+                              },
+                              playsInline: true,
+                              webkitPlaysinline: "true"
                             }
                           }
                         }}
@@ -261,18 +264,18 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   {/* Course Info */}
-                  {props.session?.course && (
+                  {session?.course && (
                     <div>
-                      <h2 className="text-xl font-semibold text-zinc-100">{props.session.course.title}</h2>
-                      {props.session.course.description && (
-                        <p className="text-sm text-zinc-400 mt-1">{props.session.course.description}</p>
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-100">{session.course.title}</h2>
+                      {session.course.description && (
+                        <p className="text-sm text-zinc-400 mt-1">{session.course.description}</p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-sm text-zinc-400">Live Session</span>
                         <span className="text-sm text-zinc-400">•</span>
                         <span className="text-sm text-zinc-400">
-                          {props.session?.participants?.length 
-                            ? `${props.session.participants.length} ${props.session.participants.length === 1 ? 'Participant' : 'Participants'}`
+                          {session?.participants?.length 
+                            ? `${session.participants.length} ${session.participants.length === 1 ? 'Participant' : 'Participants'}`
                             : "No participants yet"
                           }
                         </span>
@@ -281,25 +284,25 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
                   )}
 
                   {/* Teacher Info */}
-                  {props.session?.creator && (
+                  {session?.creator && (
                     <div className="flex items-center gap-3 mt-4">
                       <div className="h-10 w-10 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center">
-                        {props.session.creator.image ? (
+                        {session.creator.image ? (
                           <Image 
-                            src={props.session.creator.image} 
-                            alt={props.session.creator.name}
+                            src={session.creator.image} 
+                            alt={session.creator.name}
                             className="w-full h-full object-cover"
                             width={40}
                             height={40}
                           />
                         ) : (
-                          <span className="text-zinc-400 text-lg">
-                            {props.session.creator.name.charAt(0)}
+                          <span className="text-gray-900 dark:text-zinc-100 text-lg">
+                            {session.creator.name.charAt(0)}
                           </span>
                         )}
                       </div>
                       <div>
-                        <p className="text-zinc-100 font-medium">{props.session.creator.name}</p>
+<p className="text-gray-900 dark:text-zinc-100 font-medium">{session.creator.name}</p>
                         <p className="text-sm text-zinc-400">Teacher</p>
                       </div>
                     </div>
@@ -308,7 +311,7 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
 
                 {/* Control buttons */}
                 <div className="flex gap-2 ml-4">
-                  {props.session?.creator.id === localParticipant.identity && (
+                  {session?.creator.id === localParticipant.identity && (
                     <>
                       <ControlButton
                         onClick={async () => {
@@ -323,7 +326,7 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
                       <ControlButton
                         onClick={() => localParticipant.setScreenShareEnabled(!localParticipant.isScreenShareEnabled)}
                         active={localParticipant.isScreenShareEnabled}
-                    icon={<MdOutlineScreenShare size={18} />}
+                        icon={<MdOutlineScreenShare size={18} />}
                         title="Share screen"
                       />
                     </>
@@ -342,14 +345,13 @@ export function LiveSessionUI(props: LiveSessionUIProps) {
           </div>
 
           {/* Chat Section */}
-          {props.chatHook && props.session && (
+          {chatHook && session && (
             <div>
-              <LiveStreamChat chatHook={props.chatHook} session={props.session} />
+              <LiveStreamChat chatHook={chatHook} session={session} />
             </div>
           )}
         </div>
       </div>
-
 
     </div>
   );

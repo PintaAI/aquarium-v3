@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { Pencil, Clock}de-react"
+import { Pencil, Clock } from "lucide-react"
 import { JSONContent } from 'novel'
-
+import Editor, { defaultEditorContent } from '../editor/editor'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
@@ -40,20 +41,18 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-  yit fi c|ioorhlDdl) ubmi{eve t:oRrPlt.ForaEvse <HTMLFoimElnfiel> {
-  e v.vDfal
-   
-    (!ie||!jDei ||!htmlDeci){
-      t aet.erion('Plgaee fill )n allrqid feld')
-   ru
- 
+    
+    if (!title || !jsonDescription || !htmlDescription) {
+      toast.error('Please fill in all required fields')
+      return
+    }
 
-Pndng(tru)
+    setPending(true)
 
-  ry {
-        try artceDat: ArtclDa{      const articleData: ArticleData = {
-    title,
-        deicrppon,
+    try {
+      const articleData: ArticleData = {
+        title,
+        description,
         jsonDescription: JSON.stringify(jsonDescription),
         htmlDescription,
       }

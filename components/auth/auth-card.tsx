@@ -211,8 +211,8 @@ const AuthCard = () => {
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={UserRoles.GURU}>Guru</SelectItem>
-                      <SelectItem value={UserRoles.MURID}>Murid</SelectItem>
+                      <SelectItem className='hidden' value={UserRoles.GURU}>Guru</SelectItem>
+                      <SelectItem  value={UserRoles.MURID}>Murid</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -254,6 +254,48 @@ export const useSoalForm = () => {
     handleAddSoal(index)
   }
 
+  // Edit soal handler with direct values
+  const handleEditSoalWithValues = (
+    index: number,
+    pertanyaan: string,
+    attachmentUrl: string,
+    attachmentType: "IMAGE" | "AUDIO" | undefined,
+    difficulty: Difficulty | undefined,
+    explanation: string,
+    opsis: Opsi[]
+  ) => {
+    if (!pertanyaan || opsis.length === 0 || !difficulty) {
+      toast.error("Pertanyaan, tingkat kesulitan, dan minimal satu opsi harus diisi")
+      return
+    }
+
+    if (!opsis.some(opsi => opsi.isCorrect)) {
+      toast.error("Pilih minimal satu jawaban yang benar")
+      return
+    }
+
+    const newSoal: Soal = {
+      pertanyaan,
+      attachmentUrl: attachmentUrl || undefined,
+      attachmentType,
+      difficulty,
+      explanation: explanation || undefined,
+      opsis
+    }
+
+    setSoals(soals.map((soal, i) => 
+      i === index ? newSoal : soal
+    ))
+    
+    // Update current state to match the edited soal
+    setCurrentPertanyaan(pertanyaan)
+    setCurrentAttachmentUrl(attachmentUrl)
+    setCurrentAttachmentType(attachmentType)
+    setCurrentDifficulty(difficulty)
+    setCurrentExplanation(explanation)
+    setCurrentOpsis(opsis)
+  }
+
   return {
     nama,
     setNama,
@@ -286,6 +328,7 @@ export const useSoalForm = () => {
     handleAddSoal,
     handleRemoveSoal,
     handleFileUpload,
-    handleEditSoal
+    handleEditSoal,
+    handleEditSoalWithValues
   }
 }

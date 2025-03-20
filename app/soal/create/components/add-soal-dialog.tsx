@@ -49,6 +49,15 @@ interface AddSoalDialogProps {
   handleAddSoal: () => void
   handleFileUpload: (file: File) => Promise<string>
   handleEditSoal: (index: number) => void
+  handleEditSoalWithValues?: (
+    index: number,
+    pertanyaan: string,
+    attachmentUrl: string,
+    attachmentType: "IMAGE" | "AUDIO" | undefined,
+    difficulty: Difficulty | undefined,
+    explanation: string,
+    opsis: { opsiText: string; isCorrect: boolean }[]
+  ) => void
 }
 
 export function AddSoalDialog({
@@ -74,7 +83,8 @@ export function AddSoalDialog({
   handleToggleCorrect: parentHandleToggleCorrect,
   handleAddSoal,
   handleFileUpload,
-  handleEditSoal
+  handleEditSoal,
+  handleEditSoalWithValues
 }: AddSoalDialogProps) {
   const [open, setOpen] = useState(false)
   // Local state for editing
@@ -144,13 +154,27 @@ export function AddSoalDialog({
   const handleSubmit = () => {
     // Update parent state with local state
     if (isEditing && typeof editingSoalIndex === 'number') {
-      setCurrentPertanyaan(editState.pertanyaan)
-      setCurrentAttachmentUrl(editState.attachmentUrl)
-      setCurrentAttachmentType(editState.attachmentType)
-      setCurrentDifficulty(editState.difficulty)
-      setCurrentExplanation(editState.explanation)
-      setCurrentOpsis(editState.opsis)
-      handleEditSoal(editingSoalIndex)
+      if (handleEditSoalWithValues) {
+        // Use the direct values approach to avoid state update timing issues
+        handleEditSoalWithValues(
+          editingSoalIndex,
+          editState.pertanyaan,
+          editState.attachmentUrl,
+          editState.attachmentType,
+          editState.difficulty,
+          editState.explanation,
+          editState.opsis
+        )
+      } else {
+        // Fallback to old approach if handleEditSoalWithValues is not provided
+        setCurrentPertanyaan(editState.pertanyaan)
+        setCurrentAttachmentUrl(editState.attachmentUrl)
+        setCurrentAttachmentType(editState.attachmentType)
+        setCurrentDifficulty(editState.difficulty)
+        setCurrentExplanation(editState.explanation)
+        setCurrentOpsis(editState.opsis)
+        handleEditSoal(editingSoalIndex)
+      }
     } else {
       handleAddSoal()
     }

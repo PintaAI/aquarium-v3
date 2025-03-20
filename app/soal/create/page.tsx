@@ -63,7 +63,8 @@ export default function CreateSoalPage() {
     handleToggleCorrect,
     handleAddSoal,
     handleFileUpload,
-    handleEditSoal
+    handleEditSoal,
+    handleEditSoalWithValues
   } = useSoalForm()
 
   return (
@@ -167,7 +168,9 @@ export default function CreateSoalPage() {
                 handleToggleCorrect={handleToggleCorrect}
                 handleAddSoal={handleAddSoal}
                 handleFileUpload={handleFileUpload}
-                handleEditSoal={handleEditSoal}
+                                handleEditSoal={handleEditSoal}
+                               
+                                handleEditSoalWithValues={handleEditSoalWithValues}
               />
               {isEdit && (
                 <CopySoalDialog 
@@ -220,6 +223,7 @@ export default function CreateSoalPage() {
                                 handleAddSoal={handleAddSoal}
                                 handleFileUpload={handleFileUpload}
                                 handleEditSoal={handleEditSoal}
+                                handleEditSoalWithValues={handleEditSoalWithValues}
                               />
                               <span>{soal.pertanyaan}</span>
                             </div>

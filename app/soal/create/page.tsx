@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
@@ -65,8 +65,6 @@ export default function CreateSoalPage() {
     handleFileUpload,
     handleEditSoal
   } = useSoalForm()
-
-  const [editingSoalIndex, setEditingSoalIndex] = useState<number | null>(null)
 
   return (
     <div className="container max-w-5xl mx-auto p-4 md:p-6 min-h-[calc(100vh-4rem)]">

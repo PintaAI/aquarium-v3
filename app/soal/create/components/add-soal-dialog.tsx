@@ -346,8 +346,12 @@ export function AddSoalDialog({
                     className="flex-1"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault()
-                        isEditing ? handleAddOpsi() : parentHandleAddOpsi()
+                        e.preventDefault();
+                        if (isEditing) {
+                          handleAddOpsi();
+                        } else {
+                          parentHandleAddOpsi();
+                        }
                       }
                     }}
                   />

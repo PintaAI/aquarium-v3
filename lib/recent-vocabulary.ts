@@ -1,12 +1,28 @@
 const STORAGE_KEY = 'recentVocabulary'
 const MAX_RECENT_ITEMS = 5
 
+interface VocabularyUser {
+  name: string | null
+  role?: string
+}
+
+interface VocabularyItem {
+  id: number
+  korean: string
+  indonesian: string
+  isChecked: boolean
+  type?: string
+  collectionId?: number
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export interface RecentVocabulary {
   id: number
   title: string
   description: string | null
-  user: any
-  items: any[]
+  user: VocabularyUser | null
+  items: VocabularyItem[]
   isPublic: boolean
   lastAccessed: Date
 }

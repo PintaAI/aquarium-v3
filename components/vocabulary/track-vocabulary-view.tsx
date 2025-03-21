@@ -3,15 +3,10 @@
 import { useEffect } from "react"
 import { addToRecentVocabulary } from "@/lib/recent-vocabulary"
 
+import { RecentVocabulary } from "@/lib/recent-vocabulary"
+
 interface TrackVocabularyViewProps {
-  vocabulary: {
-    id: number
-    title: string
-    description: string | null
-    user: any
-    items: any[]
-    isPublic: boolean
-  }
+  vocabulary: Omit<RecentVocabulary, 'lastAccessed'>
   children: React.ReactNode
 }
 

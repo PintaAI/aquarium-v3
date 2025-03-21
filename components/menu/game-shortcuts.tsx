@@ -22,7 +22,7 @@ export function GameShortcuts() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {games.map((game, index) => (
+          {games.map((game) => (
             <div
               key={game.id}
             >

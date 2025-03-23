@@ -53,7 +53,9 @@ export default function Layout({ children }: LayoutProps) {
             )}
           </BreadcrumbList>
         </Breadcrumb>
-        {children}
+        <div className="max-w-7xl mx-auto w-full">
+          {children}
+        </div>
       </div>
     </SidebarProvider>
   );

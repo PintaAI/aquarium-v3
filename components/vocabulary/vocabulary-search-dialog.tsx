@@ -54,7 +54,7 @@ export function VocabularySearchDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2 w-full justify-start">
           <SearchIcon className="h-4 w-4" />
           Cari Kosakata
         </Button>

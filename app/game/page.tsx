@@ -4,7 +4,7 @@ import Link from "next/link"
 
 export default function GamesPage() {
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-6 sm:py-8">
+    <div className="container mx-auto max-w-7xl px-4 py-6 sm:py-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {games.map((game) => {
           const Icon = game.icon

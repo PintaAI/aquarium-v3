@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Loading() {
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto p-6 space-y-8 max-w-7xl">
       {/* Header Skeleton */}
       <header className="text-center space-y-4">
         <Skeleton className="h-10 w-[300px] mx-auto" />

@@ -9,8 +9,7 @@ export default async function ArtikelPage() {
   ])
 
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-6">Articles</h1>
+    <div className="container mx-auto py-6 max-w-7xl">
       <ArticleList 
         initialArticles={articles}
         isGuru={user?.role === 'GURU'} 

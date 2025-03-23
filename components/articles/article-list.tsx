@@ -90,13 +90,14 @@ export function ArticleList({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {isGuru && (
-        <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Daftar Artikel</h2>
+        {isGuru && (
           <Link href="/artikel/create">
             <Button>Buat Artikel</Button>
           </Link>
-        </div>
-      )}
+        )}
+      </div>
 
       {withScroll ? (
         <ScrollArea className="h-[610px] pr-4 -mr-4">

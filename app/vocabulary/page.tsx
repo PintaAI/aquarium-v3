@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { VocabularySearchDialog } from "@/components/vocabulary/vocabulary-search-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { 
   getVocabularyCollections 
 } from "@/app/actions/vocabulary-actions"
@@ -10,6 +11,8 @@ import Link from "next/link"
 import { 
   FolderIcon,
   PlusIcon,
+  BookText,
+  MessageSquareText
 } from "lucide-react"
 import { VocabularyCard } from "@/components/card/vocabulary-card"
 
@@ -23,9 +26,11 @@ export default async function VocabularyPage() {
   const { success, data: collections, error } = await getVocabularyCollections()
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <VocabularySearchDialog />
+    <div className="container mx-auto px-4 py-2">
+      <div className="flex justify-between items-center gap-4 mb-6">
+        <div className="flex-1">
+          <VocabularySearchDialog />
+        </div>
         <Button asChild>
           <Link href="/vocabulary/create" className="flex items-center gap-1.5">
             <PlusIcon className="h-4 w-4" />
@@ -61,13 +66,22 @@ export default async function VocabularyPage() {
 
       {/* Vocabulary Collections Tabs */}
       <Tabs defaultValue="word" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="word">Kata</TabsTrigger>
-          <TabsTrigger value="sentence">Kalimat</TabsTrigger>
-        </TabsList>
+        <div className="flex justify-center mb-6">
+          <TabsList>
+            <TabsTrigger value="word" className="gap-2">
+              <BookText className="h-4 w-4" />
+              Kata
+            </TabsTrigger>
+            <TabsTrigger value="sentence" className="gap-2">
+              <MessageSquareText className="h-4 w-4" />
+              Kalimat
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="word" className="m-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ScrollArea className="h-[600px] md:h-[980px] pr-4 -mr-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {success && collections?.filter(collection => 
               collection.items.some(item => item.type === "WORD")
             ).map((collection) => (
@@ -82,11 +96,13 @@ export default async function VocabularyPage() {
                 />
               </Link>
             ))}
-          </div>
+            </div>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="sentence" className="m-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ScrollArea className="h-[600px] md:h-[980px] pr-4 -mr-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {success && collections?.filter(collection => 
               collection.items.some(item => item.type === "SENTENCE")
             ).map((collection) => (
@@ -101,7 +117,8 @@ export default async function VocabularyPage() {
                 />
               </Link>
             ))}
-          </div>
+            </div>
+          </ScrollArea>
         </TabsContent>
       </Tabs>
     </div>

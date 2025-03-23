@@ -29,6 +29,7 @@ model User {
   joinedCourses         Course[]               @relation("CourseMembers")
   joinedLiveSessions    LiveSession[]          @relation("LiveSessionParticipants")
   soals                 Soal[]                 @relation("SoalAuthor")
+  drawings              ExcalidrawDrawing[]
 }
 
 model Course {
@@ -185,6 +186,20 @@ model VocabularyItem {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   collection   VocabularyCollection @relation(fields: [collectionId], references: [id])
+}
+
+model ExcalidrawDrawing {
+  id          String   @id @default(cuid())
+  name        String
+  elements    String   @db.Text    // Serialized Excalidraw elements
+  appState    String?  @db.Text    // Serialized Excalidraw app state
+  files       String?  @db.Text    // Serialized files data
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 enum VocabularyType {

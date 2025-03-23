@@ -1,28 +1,60 @@
 "use client";
 
-import { Excalidraw } from "@excalidraw/excalidraw";
-import { useTheme } from "next-themes";
-// Import our fixed CSS instead of the package CSS
+import { Excalidraw, Footer } from "@excalidraw/excalidraw";
+import { useEffect } from "react";
+import { ExcalidrawControls } from "./components/excalidraw-controls";
+import { useExcalidraw } from "./hooks/use-excalidraw";
+import { useDrawingStorage } from "./hooks/use-drawing-storage";
+import type { ExcalidrawWrapperProps, ExcalidrawTheme } from "./types";
 import "@/public/css/index.css";
 
-interface ExcalidrawWrapperProps {
-  height?: string | number;
-  width?: string | number;
-  className?: string;
-}
-
-const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({ 
+const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
   height,
   width,
-  className
+  className,
+  defaultDrawingId
 }) => {
-  const { theme } = useTheme();
+  const { excalidrawAPI, setExcalidrawAPI, theme } = useExcalidraw({
+    defaultDrawingId
+  });
+
+  const {
+    drawingName,
+    setDrawingName,
+    isSaving,
+    drawings,
+    handleSave,
+    loadDrawingById
+  } = useDrawingStorage({ excalidrawAPI });
+
+  // Load drawing if ID is provided
+  useEffect(() => {
+    if (defaultDrawingId && defaultDrawingId !== "_new") {
+      loadDrawingById(defaultDrawingId);
+    }
+  }, [defaultDrawingId, loadDrawingById]);
 
   return (
-    <div className={`custom-styles h-full w-full ${className || ''}`}>
-      <div className="h-full w-full" style={{ height, width }}>
-        <Excalidraw theme={theme === "dark" ? "dark" : "light"} />
-      </div>
+    <div 
+      className={`custom-styles h-full w-full ${className || ''}`}
+      style={{ height: height || '100%', width: width || '100%' }}
+    >
+      <Excalidraw
+        excalidrawAPI={(api) => setExcalidrawAPI(api)}
+        theme={theme as ExcalidrawTheme}
+      >
+        <Footer>
+          <ExcalidrawControls
+            drawingName={drawingName}
+            setDrawingName={setDrawingName}
+            isSaving={isSaving}
+            drawings={drawings}
+            onSave={handleSave}
+            onDrawingSelect={loadDrawingById}
+            selectedDrawingId={defaultDrawingId}
+          />
+        </Footer>
+      </Excalidraw>
     </div>
   );
 };

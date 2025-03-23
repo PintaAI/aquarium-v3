@@ -18,14 +18,13 @@ export function useExcalidraw() {
           currentItemStrokeColor: "#000000",
           viewBackgroundColor: "#ffffff",
           currentItemBackgroundColor: "transparent",
-          currentItemFillStyle: "hatch",
+          currentItemFillStyle: "hachure",
           currentItemStrokeWidth: 1,
           currentItemStrokeStyle: "solid",
           currentItemRoughness: 1,
           currentItemOpacity: 100,
           currentItemFontSize: 20,
-          currentItemLinearStrokeSharpness: "round",
-          collaborators: [],
+          collaborators: new Map(),
         }
       });
     };

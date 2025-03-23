@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { saveDrawing, loadDrawing, getUserDrawings } from "@/app/actions/drawing-actions";
-import { convertFilesToStorage, convertStorageToFiles } from "../utils/file-handlers";
+import { convertFilesToStorage } from "../utils/file-handlers";
 import type { DrawingListItem, ExcalidrawAPI } from "../types";
 
 interface UseDrawingStorageProps {
@@ -97,17 +97,18 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
         
         if (drawing.files) {
           try {
-            const storedFiles = JSON.parse(drawing.files);
-            const files = convertStorageToFiles(storedFiles);
+            // Parse files but don't use them for now
+            // const storedFiles = JSON.parse(drawing.files);
+            // const files = convertStorageToFiles(storedFiles);
             
+            // Update scene with elements and appState only
             excalidrawAPI.updateScene({
               elements,
               appState: {
                 ...excalidrawAPI.getAppState(),
                 ...savedAppState,
                 collaborators: []
-              },
-              files
+              }
             });
           } catch (e) {
             console.error("Error parsing files:", e);

@@ -1,4 +1,4 @@
-import type { FilesMap, StorageFilesMap } from "../types";
+import type { FilesMap, StorageFilesMap, BinaryFiles } from "../types";
 
 /**
  * Converts a Blob to a base64 dataURL string
@@ -53,7 +53,7 @@ export function dataURLtoBlob(dataURL: string): Blob {
 /**
  * Converts Excalidraw's files to a format suitable for storage
  */
-export async function convertFilesToStorage(files: FilesMap): Promise<StorageFilesMap> {
+export async function convertFilesToStorage(files: FilesMap | BinaryFiles): Promise<StorageFilesMap> {
   const filesForStorage: StorageFilesMap = {};
   
   for (const [fileId, file] of Object.entries(files)) {
@@ -68,6 +68,19 @@ export async function convertFilesToStorage(files: FilesMap): Promise<StorageFil
         };
       } catch (error) {
         console.error(`Failed to convert file ${fileId}:`, error);
+      }
+    } 
+    // Handle BinaryFileData
+    else if ('dataURL' in file && 'mimeType' in file) {
+      try {
+        filesForStorage[fileId] = {
+          dataURL: file.dataURL,
+          // Use fileId as name if not available
+          name: 'name' in file ? file.name : fileId,
+          mimeType: file.mimeType
+        };
+      } catch (error) {
+        console.error(`Failed to convert binary file ${fileId}:`, error);
       }
     }
   }

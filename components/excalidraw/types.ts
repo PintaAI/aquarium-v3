@@ -13,8 +13,21 @@ export interface FileData {
   mimeType: string;
 }
 
+// BinaryFileData from Excalidraw library
+export interface BinaryFileData {
+  dataURL: string;
+  mimeType: string;
+  id?: string;
+  created?: number;
+}
+
 export interface FilesMap {
   [key: string]: FileData | File;
+}
+
+// BinaryFiles from Excalidraw library
+export interface BinaryFiles {
+  [key: string]: BinaryFileData;
 }
 
 export interface StorageFilesMap {

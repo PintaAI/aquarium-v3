@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { ExcalidrawControls } from "./components/excalidraw-controls";
 import { useExcalidraw } from "./hooks/use-excalidraw";
 import { useDrawingStorage } from "./hooks/use-drawing-storage";
-import type { ExcalidrawWrapperProps, ExcalidrawTheme } from "./types";
+import type { ExcalidrawWrapperProps, Theme } from "./types";
 import "@/public/css/index.css";
 
 const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
@@ -14,9 +14,7 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
   className,
   defaultDrawingId
 }) => {
-  const { excalidrawAPI, setExcalidrawAPI, theme } = useExcalidraw({
-    defaultDrawingId
-  });
+  const { excalidrawAPI, setExcalidrawAPI, theme } = useExcalidraw();
 
   const {
     drawingName,
@@ -41,7 +39,7 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
     >
       <Excalidraw
         excalidrawAPI={(api) => setExcalidrawAPI(api)}
-        theme={theme as ExcalidrawTheme}
+        theme={theme as Theme}
       >
         <Footer>
           <ExcalidrawControls

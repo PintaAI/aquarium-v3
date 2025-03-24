@@ -232,7 +232,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
               </div>
 
               <div className="p-4 bg-muted rounded-lg">
-                <p className="font-medium mb-4">{questions[reviewIndex].pertanyaan}</p>
+                <p className="font-medium mb-4">{reviewIndex + 1}. {questions[reviewIndex].pertanyaan}</p>
                 
                 {questions[reviewIndex].attachmentUrl && (
                   <div className="mb-4">
@@ -319,7 +319,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
           
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-4 text-foreground">
-              {questions[currentQuestion].pertanyaan}
+              {currentQuestion + 1}. {questions[currentQuestion].pertanyaan}
             </h2>
 
             {questions[currentQuestion].attachmentUrl && (

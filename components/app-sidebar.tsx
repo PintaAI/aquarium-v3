@@ -25,21 +25,9 @@ import { NavUser } from "./nav-user"
 const data = {
   navMain: [
     {
-      title: "Kursus mu",
+      title: "Materi",
       url: "/courses",
       icon: Book,
-      isActive: false,
-    },
-    {
-      title: "Game",
-      url: "/game",
-      icon: GamepadIcon,
-      isActive: false,
-    },
-    {
-      title: "Artikel",
-      url: "/artikel",
-      icon: Newspaper,
       isActive: false,
     },
     {
@@ -54,6 +42,19 @@ const data = {
       icon: PencilRuler,
       isActive: false,
     },
+    {
+      title: "App",
+      url: "/game",
+      icon: GamepadIcon,
+      isActive: false,
+    },
+    {
+      title: "Artikel",
+      url: "/artikel",
+      icon: Newspaper,
+      isActive: false,
+    },
+
   ],
 }
 

@@ -1,47 +1,40 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Loading() {
   return (
-    <div className="container mx-auto p-6 space-y-8 max-w-7xl">
-      {/* Header Skeleton */}
-      <header className="text-center space-y-4">
-        <Skeleton className="h-10 w-[300px] mx-auto" />
-        <Skeleton className="h-4 w-[600px] mx-auto" />
-      </header>
-
-      {/* Search Skeleton */}
-      <div className="max-w-md mx-auto">
-        <Skeleton className="h-10 w-full" />
+    <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4 pb-24">
+      {/* Breadcrumb Skeleton */}
+      <div className="px-4">
+        <Skeleton className="h-5 w-[200px]" />
       </div>
+      <div className="container mx-auto py-6 max-w-7xl">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-44" /> {/* "Daftar Artikel" */}
+          </div>
 
-      {/* Articles Grid Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <Card key={i} className="overflow-hidden">
-            <CardContent className="p-6">
-              {/* Thumbnail Skeleton */}
-              <Skeleton className="w-full h-48 mb-4" />
-              
-              {/* Title Skeleton */}
-              <Skeleton className="h-6 w-3/4 mb-2" />
-              
-              {/* Description Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
+          {/* Articles List */}
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-lg border p-2">
+                <Skeleton className="mt-1 h-10 w-10 rounded-full shrink-0" /> {/* Avatar */}
+                <div className="space-y-1 flex-1 min-w-0">
+                  <Skeleton className="h-5 w-3/4" /> {/* Title */}
+                  <Skeleton className="h-4 w-full hidden sm:block" /> {/* Description */}
+                  <div className="flex items-center gap-2 pt-1 sm:pt-2">
+                    <Skeleton className="h-3 w-20" /> {/* Author name */}
+                    <span className="text-xs text-muted-foreground/60">•</span>
+                    <Skeleton className="h-3 w-24" /> {/* Time */}
+                  </div>
+                </div>
+                <div className="shrink-0 rounded-md border bg-muted/30 w-16 h-16 sm:w-20 sm:h-20" /> {/* Image */}
               </div>
-
-              {/* Meta Info Skeleton */}
-              <div className="flex items-center gap-4 mt-4">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )

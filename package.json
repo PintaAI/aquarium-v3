@@ -43,6 +43,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/canvas-confetti": "^1.9.0",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "ai": "^4.1.54",
     "bcryptjs": "^3.0.2",
     "canvas-confetti": "^1.9.3",

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/provider/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { MobileNavbar } from "@/components/ui/mobile-navbar";
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 
 const atma = localFont({
@@ -116,6 +117,7 @@ export default function RootLayout({
             {children}
             <MobileNavbar />
             <Analytics />
+            <SpeedInsights />
           </ThemeProvider>
         </SessionProvider>
       </body>

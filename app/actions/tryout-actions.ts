@@ -239,6 +239,35 @@ export async function deleteTryout(tryoutId: number) {
   revalidatePath("/tryout")
 }
 
+export async function getUpcomingTryout() {
+  const user = await currentUser()
+
+  if (!user?.id || !user?.role) {
+    throw new Error("Unauthorized")
+  }
+
+  const tryouts = await getTryoutForUser(user.id)
+  
+  const now = new Date()
+  // Find active or upcoming tryout
+  const activeTryout = tryouts
+    .filter(tryout => {
+      const startTime = new Date(tryout.startTime)
+      const endTime = new Date(tryout.endTime)
+      return now >= startTime && now <= endTime // Active
+    })
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())[0]
+
+  if (activeTryout) return activeTryout
+
+  // If no active tryout, find upcoming one
+  const upcomingTryout = tryouts
+    .filter(tryout => new Date(tryout.startTime) > now)
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0]
+
+  return upcomingTryout || null
+}
+
 export async function getTryoutForUser(userId: string | undefined) {
   const user = await currentUser()
 

@@ -5,9 +5,8 @@ import { notFound } from "next/navigation"
 import { Metadata } from 'next'
 
 interface ArticlePageProps {
-  params: {
-    id: string
-  }
+  params: { id: string }
+  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export async function generateMetadata(

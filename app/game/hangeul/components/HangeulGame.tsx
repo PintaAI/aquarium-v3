@@ -12,10 +12,12 @@ import { FeedbackDisplay } from './FeedbackDisplay';
 import { CharacterInfo } from './CharacterInfo';
 import { GameSettings } from './GameSettings';
 import { GameResults } from './GameResults';
+import { StartScreen } from './StartScreen';
 
 export default function HangeulGame() {
-  // State for character info dialog
+  // State for character info dialog and game start
   const [showCharacterInfo, setShowCharacterInfo] = useState(false);
+  const [isGameStarted, setIsGameStarted] = useState(false);
   
   // Initialize game with default settings
   const {
@@ -25,6 +27,12 @@ export default function HangeulGame() {
     startGame,
     settings,
   } = useHangulGame();
+
+  // Handler for starting the game
+  const handleGameStart = useCallback(() => {
+    setIsGameStarted(true);
+    startGame();
+  }, [startGame]);
 
   // Callback to update settings
   const handleSettingsChange = useCallback((newSettings: {
@@ -45,7 +53,14 @@ export default function HangeulGame() {
 
   return (
     <div className="flex flex-col items-center p-4 w-full h-full">
-      <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-b-0 border-t-blue-500">
+      {!isGameStarted ? (
+        <StartScreen
+          onStart={handleGameStart}
+          onSettingsChange={handleSettingsChange}
+          currentSettings={settings}
+        />
+      ) : (
+        <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-b-0 border-t-blue-500">
         <CardHeader className="flex-shrink-0 space-y-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -169,15 +184,18 @@ export default function HangeulGame() {
                 totalQuestions={settings.totalQuestions}
                 correctAnswers={gameState.correctAnswers}
                 incorrectAnswers={gameState.incorrectAnswers}
-                onRestart={startGame}
+                onRestart={() => {
+                  setIsGameStarted(false);
+                }}
               />
             )}
           </AnimatePresence>
         </CardContent>
-      </Card>
+        </Card>
+      )}
       
       {/* Character Info Dialog */}
-      {gameState.currentChar && (
+      {isGameStarted && gameState.currentChar && (
         <CharacterInfo 
           character={gameState.currentChar}
           isOpen={showCharacterInfo}

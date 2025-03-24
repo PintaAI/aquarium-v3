@@ -154,60 +154,106 @@ export function LiveSessionList({ sessions, user }: LiveSessionListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {sessions.map(session => (
         <div
           key={session.id}
-          className="bg-card border rounded-lg p-4 hover:shadow-md transition-all"
+          className="group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-200 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1"
         >
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex flex-col gap-1">
-                <h3 className="text-lg font-medium">
-                  {session.name}
-                  {session.isActive && (
-                    <span className="ml-2 text-sm px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full">
-                      Live
-                    </span>
-                  )}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Course: {session.course.title}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Created by: {session.creator.name || 'Unknown Teacher'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Scheduled: {formatDistanceToNow(new Date(session.scheduledStart), { addSuffix: true })}
-                </p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{session._count.participants} participants</span>
-                  {session.creator.id === user.id && (
-                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs">
-                      You&apos;re the host
-                    </span>
-                  )}
-                  {session.participants.some(p => p.id === user.id) && !session.isActive && (
-                    <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-full text-xs">
-                      Joined
-                    </span>
-                  )}
-                </div>
+          {/* Gradient Background with Pattern */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5">
+              {/* Decorative Elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl transform rotate-45" />
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
+              {session.isActive && (
+                <div className="absolute inset-0 bg-emerald-500/5 animate-pulse duration-1000" />
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="relative p-5">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="text-lg font-bold truncate group-hover:text-primary transition-colors pr-2">
+                {session.name}
+              </h3>
+              {session.isActive && (
+                <span className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-sm font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live
+                </span>
+              )}
+            </div>
+
+            {/* Info Box */}
+            <div className="space-y-2 bg-muted/30 backdrop-blur-sm rounded-lg p-3 mb-4">
+              <div className="flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4 text-primary/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path>
+                </svg>
+                <span className="truncate">{session.course.title}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4 text-primary/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="8" r="4"></circle>
+                  <path d="M18 21v-2a4 4 0 00-4-4H10a4 4 0 00-4 4v2"></path>
+                </svg>
+                <span className="truncate">{session.creator.name || 'Unknown Teacher'}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4 text-primary/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>{formatDistanceToNow(new Date(session.scheduledStart), { addSuffix: true })}</span>
               </div>
             </div>
-            <div className="flex gap-2">
+
+            {/* Status Bar */}
+            <div className="flex flex-wrap items-center gap-2 text-sm mb-4">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-muted rounded-full text-xs font-medium">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                {session._count.participants} participants
+              </span>
+              {session.creator.id === user.id && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                  </svg>
+                  Host
+                </span>
+              )}
+              {session.participants.some(p => p.id === user.id) && !session.isActive && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-muted text-muted-foreground rounded-full text-xs font-medium">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                  Joined
+                </span>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2">
               {(() => {
                 // Is user the creator?
                 if (session.creator.id === user.id) {
                   return (
-                    <div className="flex gap-2">
+                    <>
                       {/* Manage Button - Always available */}
                       <Button
                         onClick={() => handleEnterSession(session.id, session)}
                         variant="secondary"
                         disabled={joiningSessionId === session.id}
+                        className="flex-1 shadow-sm hover:shadow-md"
                       >
-                        {session.isActive ? "Manage Live Session" : "Manage Session"}
+                        {session.isActive ? "Manage Live" : "Manage"}
                       </Button>
                       
                       {/* Conditional buttons based on session state */}
@@ -217,8 +263,9 @@ export function LiveSessionList({ sessions, user }: LiveSessionListProps) {
                           onClick={() => handleEndSession(session.id)}
                           variant="destructive"
                           disabled={endingSessionId === session.id}
+                          className="flex-1 shadow-sm hover:shadow-md"
                         >
-                          {endingSessionId === session.id ? "Ending..." : "End Session"}
+                          {endingSessionId === session.id ? "Ending..." : "End"}
                         </Button>
                       ) : (
                         /* Inactive session - show Start and Delete buttons */
@@ -227,19 +274,21 @@ export function LiveSessionList({ sessions, user }: LiveSessionListProps) {
                             onClick={() => handleStartSession(session.id)}
                             variant="default"
                             disabled={startingSessionId === session.id}
+                            className="flex-1 shadow-sm hover:shadow-md"
                           >
-                            {startingSessionId === session.id ? "Starting..." : "Start Session"}
+                            {startingSessionId === session.id ? "Starting..." : "Start"}
                           </Button>
                           <Button
                             onClick={() => handleDeleteSession(session.id)}
                             variant="destructive"
                             disabled={deletingSessionId === session.id}
+                            className="flex-1 shadow-sm hover:shadow-md"
                           >
-                            {deletingSessionId === session.id ? "Deleting..." : "Delete"}
+                            {deletingSessionId === session.id ? "..." : "Delete"}
                           </Button>
                         </>
                       )}
-                    </div>
+                    </>
                   )
                 }
                 
@@ -250,8 +299,9 @@ export function LiveSessionList({ sessions, user }: LiveSessionListProps) {
                       onClick={() => handleEnterSession(session.id, session)}
                       variant="default"
                       disabled={joiningSessionId === session.id}
+                      className="w-full shadow-sm hover:shadow-md"
                     >
-                      {joiningSessionId === session.id ? "Joining..." : "Join Live Now"}
+                      {joiningSessionId === session.id ? "Joining..." : "Join Live"}
                     </Button>
                   )
                 }
@@ -259,7 +309,7 @@ export function LiveSessionList({ sessions, user }: LiveSessionListProps) {
                 // Has user already joined?
                 if (session.participants.some(p => p.id === user.id)) {
                   return (
-                    <Button variant="outline" disabled>
+                    <Button variant="outline" disabled className="w-full opacity-60">
                       Waiting for Start
                     </Button>
                   )
@@ -271,8 +321,9 @@ export function LiveSessionList({ sessions, user }: LiveSessionListProps) {
                     onClick={() => handleJoin(session.id)}
                     variant="outline"
                     disabled={joiningSessionId === session.id}
+                    className="w-full shadow-sm hover:shadow-md"
                   >
-                    {joiningSessionId === session.id ? "Joining..." : "Join Session"}
+                    {joiningSessionId === session.id ? "Joining..." : "Join"}
                   </Button>
                 )
               })()}

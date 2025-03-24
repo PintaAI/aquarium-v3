@@ -364,6 +364,81 @@ export async function deleteLiveSession(liveSessionId: string) {
   }
 }
 
+export async function getAllLiveSessions() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    throw new Error("Unauthorized")
+  }
+
+  return db.liveSession.findMany({
+    where: user.role === "ADMIN" ? undefined : {
+      OR: [
+        { isActive: true },
+        { creatorId: user.id },
+        {
+          participants: {
+            some: { id: user.id }
+          }
+        }
+      ]
+    },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        }
+      },
+      course: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+        }
+      },
+      participants: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        }
+      },
+      _count: {
+        select: {
+          participants: true
+        }
+      }
+    },
+    orderBy: {
+      scheduledStart: "desc"
+    }
+  })
+}
+
+export async function getCoursesForLiveSession() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    throw new Error("Unauthorized")
+  }
+
+  if (user.role !== "GURU" && user.role !== "ADMIN") {
+    return []
+  }
+
+  return db.course.findMany({
+    select: {
+      id: true,
+      title: true,
+    },
+    orderBy: {
+      title: 'asc'
+    }
+  })
+}
+
 export async function endLiveSession(liveSessionId: string) {
   const user = await getCurrentUser()
 

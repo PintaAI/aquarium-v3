@@ -2,7 +2,7 @@ import { currentUser } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { LiveSessionList } from "@/components/live-session/live-session-list"
 import { CreateLiveSessionForm } from "@/components/live-session/create-live-session-form"
-import { db } from "@/lib/db"
+import { getAllLiveSessions, getCoursesForLiveSession } from "@/app/actions/live-session-actions"
 import { Metadata } from "next"
 import { UserRoles } from "@prisma/client"
 
@@ -27,71 +27,19 @@ export default async function LiveSessionPage() {
     image: userData.image
   }
 
-  // Construct query based on user role
-  const sessions = await db.liveSession.findMany({
-    where: user.role === UserRoles.ADMIN ? undefined : {
-      OR: [
-        { isActive: true },
-        { creatorId: user.id },
-        {
-          participants: {
-            some: { id: user.id }
-          }
-        }
-      ]
-    },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-        }
-      },
-      course: {
-        select: {
-          id: true,
-          title: true,
-          description: true,
-        }
-      },
-      participants: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-        }
-      },
-      _count: {
-        select: {
-          participants: true
-        }
-      }
-    },
-    orderBy: {
-      scheduledStart: "desc" as const
-    }
-  })
+  // Get sessions using server action
+  const sessions = await getAllLiveSessions()
 
-  // Get courses for create form (only for GURU and ADMIN)
-  const courses = (user.role === UserRoles.GURU || user.role === UserRoles.ADMIN) ? 
-    await db.course.findMany({
-      select: {
-        id: true,
-        title: true,
-      },
-      orderBy: {
-        title: 'asc'
-      }
-    }) : []
+  // Get courses for create form using server action
+  const courses = await getCoursesForLiveSession()
 
   return (
-    <div className="min-h-screen  py-8 space-y-8">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-background rounded-lg border p-6 shadow-sm">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">Live Sessions</h1>
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
+    <div className="min-h-screen py-4 sm:py-8 space-y-4 sm:space-y-8">
+      <div className="container max-w-7xl mx-auto px-3 sm:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 bg-background rounded-lg border p-4 sm:p-6 shadow-sm">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Live Sessions</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-[42ch] sm:max-w-md">
             {user.role === UserRoles.ADMIN ? "Manage all live teaching sessions" :
              user.role === UserRoles.GURU ? "Create and manage your live teaching sessions" :
              "Join live teaching sessions"}
@@ -104,9 +52,9 @@ export default async function LiveSessionPage() {
           )}
         </div>
       </div>
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container max-w-7xl mx-auto px-3 sm:px-6">
         <div className="bg-background rounded-lg border shadow-sm">
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <LiveSessionList sessions={sessions} user={user} />
           </div>
         </div>

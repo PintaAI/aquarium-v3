@@ -5,13 +5,16 @@ import { notFound } from "next/navigation"
 import { Metadata } from 'next'
 
 interface ArticlePageProps {
-  params: { id: string }
-  searchParams?: { [key: string]: string | string[] | undefined }
+  params: Promise<{
+    id: string;
+  }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata(
-  { params }: ArticlePageProps
+  props: ArticlePageProps
 ): Promise<Metadata> {
+  const params = await props.params;
   const article = await getArticle(parseInt(params.id))
   
   if (!article) {
@@ -38,7 +41,8 @@ export async function generateMetadata(
   }
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage(props: ArticlePageProps) {
+  const params = await props.params;
   const article = await getArticle(parseInt(params.id))
 
   if (!article) {

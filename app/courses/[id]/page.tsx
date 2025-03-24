@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { currentUser } from "@/lib/auth";
+import { CourseAccessTracker } from "@/components/courses/course-access-tracker";
 
 interface CourseIdPageProps {
   params: Promise<{
@@ -41,41 +42,43 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
   }));
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-7xl">
-      <Button asChild variant="ghost" className="mb-6 text-primary hover:text-primary/90">
-        <Link href="/courses" className="flex items-center">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Courses
-        </Link>
-      </Button>
+    <CourseAccessTracker course={course}>
+      <div className="container mx-auto px-4 py-12 max-w-7xl">
+        <Button asChild variant="ghost" className="mb-6 text-primary hover:text-primary/90">
+          <Link href="/courses" className="flex items-center">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Courses
+          </Link>
+        </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <CourseHeader
-            id={course.id}
-            title={course.title}
-            thumbnail={course.thumbnail}
-            author={course.author}
-            level={course.level}
-            moduleCount={course.modules.length}
-            isJoined={isJoined}
-          />
-          
-          <div className="mt-6">
-            <ContentBody htmlDescription={course.htmlDescription ?? course.description ?? ""} />
-          </div>
-        </div>
-
-        <div className="lg:col-span-1">
-          <div className="sticky top-6">
-            <ModuleList 
-              modules={formattedModules} 
-              courseId={courseId}
-              courseAuthorId={course.author.id}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <CourseHeader
+              id={course.id}
+              title={course.title}
+              thumbnail={course.thumbnail}
+              author={course.author}
+              level={course.level}
+              moduleCount={course.modules.length}
+              isJoined={isJoined}
             />
+            
+            <div className="mt-6">
+              <ContentBody htmlDescription={course.htmlDescription ?? course.description ?? ""} />
+            </div>
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <ModuleList 
+                modules={formattedModules} 
+                courseId={courseId}
+                courseAuthorId={course.author.id}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </CourseAccessTracker>
   );
 }

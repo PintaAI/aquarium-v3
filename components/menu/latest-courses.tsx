@@ -1,12 +1,50 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { CourseListCard } from "@/components/courses/course-list-card";
 import { getLatestJoinedCourses } from "@/app/actions/course-actions";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Course } from "@/app/actions/course-actions";
+import { RecentCourse, getRecentCourses } from "@/lib/recent-courses";
 
-export async function LatestCourses() {
-  const courses = await getLatestJoinedCourses(); // Already returns latest 3 joined courses
+export function LatestCourses() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [recentCourses, setRecentCourses] = useState<RecentCourse[]>([]);
+
+  useEffect(() => {
+    // Get recently accessed courses from localStorage
+    setRecentCourses(getRecentCourses());
+
+    // Fetch joined courses from server
+    getLatestJoinedCourses().then((latestCourses) => {
+      setCourses(latestCourses);
+    });
+  }, []);
+
+  // Combine and deduplicate courses, prioritizing recently accessed
+  // Combine and sort courses by last access/update time
+  const combinedCourses = [...recentCourses];
+  
+  // Add joined courses that aren't in recent list
+  courses.forEach(course => {
+    if (!combinedCourses.some(c => c.id === course.id)) {
+      combinedCourses.push({
+        ...course,
+        lastAccessed: new Date(course.updatedAt)
+      });
+    }
+  });
+
+  // Sort by lastAccessed date
+  combinedCourses.sort((a, b) => {
+    return new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime();
+  });
+
+  // Limit to 3 items
+  const displayCourses = combinedCourses.slice(0, 4);
 
   return (
     <Card className="border-none shadow-sm">
@@ -25,7 +63,7 @@ export async function LatestCourses() {
       <CardContent>
         <ScrollArea className="h-[240px] w-full rounded-md">
           <div className="flex flex-row space-x-4 min-w-full p-1">
-            {courses.length === 0 ? (
+            {displayCourses.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[150px] w-full text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
                   Kamu belum bergabung dengan kursus apapun
@@ -38,7 +76,7 @@ export async function LatestCourses() {
                 </Link>
               </div>
             ) : (
-              courses.map((course) => (
+              displayCourses.map((course) => (
                 <div key={course.id} className="w-[295px] flex-none">
                   <CourseListCard
                     course={course}

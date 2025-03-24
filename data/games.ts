@@ -16,9 +16,17 @@ export interface Game {
 
 export const games: Game[] = [
   {
+    id: "tryout",
+    title: "Tryout",
+    description: "Ujian percobaan dengan sistem real-time dan leaderboard",
+    icon: GraduationCap,
+    route: "/tryout",
+    type: "App"
+  },
+  {
     id: "Soal",
     title: "Soal",
-    description: "Latihan ujian sertifikasi bahasa Korea dengan format standar",
+    description: "Latihan ujian bahasa Korea dengan format standar",
     icon: ScrollText,
     type: "App",
     route: "/soal"
@@ -26,7 +34,7 @@ export const games: Game[] = [
   {
     id: "TTS",
     title: "TTS",
-    description: "Latihan soal bahasa Korea harian untuk meningkatkan kemampuan",
+    description: "Carilah kata-kata dalam papan permainan TTS",
     icon: VscTable,
     route: "/game/tts",
     type: "App"
@@ -34,7 +42,7 @@ export const games: Game[] = [
   {
     id: "hangeul",
     title: "HanRush",
-    description: "Pelajari dasar-dasar huruf Korea (Hangeul) dengan cara yang menyenangkan",
+    description: "Pelajari dasar-dasar huruf Korea (Hangeul)",
     icon: TbAlphabetKorean,
     route: "/game/hangeul",
     type: "Game"

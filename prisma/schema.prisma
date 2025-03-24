@@ -30,6 +30,7 @@ model User {
   joinedLiveSessions    LiveSession[]          @relation("LiveSessionParticipants")
   soals                 Soal[]                 @relation("SoalAuthor")
   drawings              ExcalidrawDrawing[]
+  tryoutParticipations  TryoutParticipant[]
 }
 
 model Course {
@@ -237,6 +238,7 @@ model KoleksiSoal {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   soals      Soal[]
+  tryouts    Tryout[]
 }
 
 model Soal {
@@ -264,4 +266,32 @@ model Opsi {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   soal       Soal     @relation(fields: [soalId], references: [id])
+}
+
+model Tryout {
+  id            Int                @id @default(autoincrement())
+  nama          String
+  startTime     DateTime
+  endTime       DateTime
+  koleksiSoalId Int
+  isActive      Boolean            @default(false) 
+  guruId        String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  koleksiSoal   KoleksiSoal        @relation(fields: [koleksiSoalId], references: [id])
+  participants  TryoutParticipant[]
+}
+
+model TryoutParticipant {
+  id          Int       @id @default(autoincrement())
+  tryoutId    Int
+  userId      String
+  score       Int       @default(0)
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tryout      Tryout    @relation(fields: [tryoutId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([tryoutId, userId])
 }

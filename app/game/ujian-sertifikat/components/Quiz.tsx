@@ -5,24 +5,35 @@ export function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [score, setScore] = useState(0)
   const [showResult, setShowResult] = useState(false)
-  const [selectedOption, setSelectedOption] = useState<number | null>(null)
+  const [answers, setAnswers] = useState<(number | null)[]>(new Array(questions.length).fill(null))
 
   const handleAnswerClick = (selectedIndex: number) => {
-    setSelectedOption(selectedIndex)
-    
-    setTimeout(() => {
-      if (selectedIndex === questions[currentQuestion].correctAnswer) {
-        setScore(score + 1)
+    const newAnswers = [...answers]
+    newAnswers[currentQuestion] = selectedIndex
+    setAnswers(newAnswers)
+  }
+
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1)
+    }
+  }
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1)
+    }
+  }
+
+  const handleSubmit = () => {
+    let totalScore = 0
+    answers.forEach((answer, index) => {
+      if (answer !== null && answer === questions[index].correctAnswer) {
+        totalScore += 1
       }
-      
-      const nextQuestion = currentQuestion + 1
-      if (nextQuestion < questions.length) {
-        setCurrentQuestion(nextQuestion)
-        setSelectedOption(null)
-      } else {
-        setShowResult(true)
-      }
-    }, 750)
+    })
+    setScore(totalScore)
+    setShowResult(true)
   }
 
   const determineLevel = () => {
@@ -36,7 +47,7 @@ export function Quiz() {
     setCurrentQuestion(0)
     setScore(0)
     setShowResult(false)
-    setSelectedOption(null)
+    setAnswers(new Array(questions.length).fill(null))
   }
 
   return (
@@ -79,26 +90,54 @@ export function Quiz() {
                 <button
                   key={index}
                   className={`w-full p-3 text-left rounded-md transition-colors ${
-                    selectedOption === index
-                      ? index === questions[currentQuestion].correctAnswer
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-destructive text-destructive-foreground"
+                    answers[currentQuestion] === index
+                      ? "bg-primary text-primary-foreground"
                       : "bg-muted hover:bg-accent text-foreground"
                   }`}
                   onClick={() => handleAnswerClick(index)}
-                  disabled={selectedOption !== null}
                 >
                   {option}
                 </button>
               ))}
             </div>
+
+            <div className="mt-6 space-y-4">
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentQuestion === 0}
+                  className="px-4 py-2 bg-muted text-foreground rounded-md hover:bg-accent disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={currentQuestion === questions.length - 1}
+                  className="px-4 py-2 bg-muted text-foreground rounded-md hover:bg-accent disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+              
+              <button
+                onClick={handleSubmit}
+                className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Submit Quiz
+              </button>
+            </div>
           </div>
           
-          <div className="w-full bg-muted rounded-full h-1.5">
-            <div
-              className="bg-primary h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
-            />
+          <div className="mt-6">
+            <div className="w-full bg-muted rounded-full h-1.5">
+              <div
+                className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+              />
+            </div>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Answered: {answers.filter(a => a !== null).length} of {questions.length}
+            </div>
           </div>
         </>
       )}

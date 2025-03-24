@@ -2,15 +2,44 @@ import { getArticle } from "@/app/actions/article-actions"
 import { currentUser } from "@/lib/auth"
 import { ArticleView } from "@/components/articles/article-view"
 import { notFound } from "next/navigation"
+import { Metadata } from 'next'
 
 interface ArticlePageProps {
-  params: Promise<{
+  params: {
     id: string
-  }>
+  }
 }
 
-export default async function ArticlePage(props: ArticlePageProps) {
-  const params = await props.params;
+export async function generateMetadata(
+  { params }: ArticlePageProps
+): Promise<Metadata> {
+  const article = await getArticle(parseInt(params.id))
+  
+  if (!article) {
+    return {
+      title: 'Article Not Found',
+      description: 'The requested article could not be found',
+    }
+  }
+
+  const truncatedDescription = article.description?.substring(0, 160) || article.title // Use description or fallback to title
+
+  return {
+    title: `${article.title} - Aquarium`,
+    description: truncatedDescription,
+    openGraph: {
+      title: article.title,
+      description: truncatedDescription,
+      type: 'article',
+      publishedTime: article.createdAt.toISOString(),
+      modifiedTime: article.updatedAt.toISOString(),
+      authors: article.author.name ? [article.author.name] : undefined,
+      locale: 'id_ID',
+    },
+  }
+}
+
+export default async function ArticlePage({ params }: ArticlePageProps) {
   const article = await getArticle(parseInt(params.id))
 
   if (!article) {

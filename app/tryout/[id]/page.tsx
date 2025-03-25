@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { currentUser } from "@/lib/auth"
 import { getTryout, joinTryout } from "@/app/actions/tryout-actions"
 import { db } from "@/lib/db"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { TryoutQuiz } from "@/components/tryout/TryoutQuiz"
 import { formatDate } from "@/lib/utils"
 import Link from "next/link"
@@ -31,8 +31,14 @@ export default async function TryoutPage(props: Props) {
   const params = await props.params;
   const user = await currentUser()
   if (!user) return null
-
+  
   const tryoutId = parseInt(params.id)
+  
+  // Redirect guru/admin to leaderboard immediately
+  if (user?.role === "GURU" || user?.role === "ADMIN") {
+    redirect(`/tryout/${tryoutId}/leaderboard`)
+  }
+
   const tryout = await getTryout(tryoutId)
   if (!tryout) notFound()
 
@@ -78,19 +84,6 @@ export default async function TryoutPage(props: Props) {
           </div>
         </div>
 
-        {user.role === "GURU" ? (
-          <div className="flex flex-col space-y-4">
-            <div className="p-4 bg-muted rounded-lg">
-              <h2 className="font-semibold mb-2">Participants</h2>
-              <p className="text-2xl font-bold">{tryout.participants.length}</p>
-            </div>
-            {status === 'ended' && (
-              <Link href={`/tryout/${tryoutId}/leaderboard`}>
-                <Button className="w-full">View Results</Button>
-              </Link>
-            )}
-          </div>
-        ) : (
           <div>
             {(() => {
               if (status === 'upcoming') {
@@ -154,7 +147,6 @@ export default async function TryoutPage(props: Props) {
               )
             })()}
           </div>
-        )}
       </div>
     </div>
   )

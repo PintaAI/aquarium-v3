@@ -290,22 +290,7 @@ export async function getTryoutForUser(userId: string | undefined) {
   }
 
   const participatingTryouts = await db.tryout.findMany({
-    where: {
-      OR: [
-        {
-          participants: {
-            some: {
-              userId
-            }
-          }
-        },
-        {
-          endTime: {
-            gte: new Date()
-          }
-        }
-      ]
-    },
+    where: {}, // Show all tryouts regardless of participation or end time
     include: {
       koleksiSoal: true,
       participants: {

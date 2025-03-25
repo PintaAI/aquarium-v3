@@ -27,9 +27,11 @@ interface VocabularyTableProps {
 
 export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
   const [isMeaningHidden, setIsMeaningHidden] = useState(true);
+  const [revealedItems, setRevealedItems] = useState<Record<number, boolean>>({});
   const [isRandomOrder, setIsRandomOrder] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [fontSize, setFontSize] = useState(16);
+  const [showKoreanFirst, setShowKoreanFirst] = useState(true);
   const [orderedItems, setOrderedItems] = useState(initialItems);
 
   // Keep track of checked state without reordering
@@ -101,6 +103,14 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
           >
             <ShuffleIcon className="h-4 w-4" />
           </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowKoreanFirst(prev => !prev)}
+            className={!showKoreanFirst ? "bg-primary/10" : ""}
+          >
+            {showKoreanFirst ? "한→ID" : "ID→한"}
+          </Button>
         </div>
         
         <div className="flex items-center gap-3">
@@ -115,8 +125,12 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[50px]"></TableHead>
-            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base">Korea</TableHead>
-            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base">Indonesia</TableHead>
+            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base">
+              {showKoreanFirst ? "Korea" : "Indonesia"}
+            </TableHead>
+            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base">
+              {showKoreanFirst ? "Indonesia" : "Korea"}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -133,26 +147,25 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
               </TableCell>
               <TableCell 
                 style={{ fontSize: `${fontSize}px` }}
-                className={`font-medium text-emerald-600 dark:text-emerald-400 ${
-                  checkedStates[item.id] ? "line-through" : ""
-                }`}
+                className={`font-medium ${
+                  showKoreanFirst ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'
+                } ${checkedStates[item.id] ? "line-through" : ""}`}
               >
-                {item.korean}
+                {showKoreanFirst ? item.korean : item.indonesian}
               </TableCell>
               <TableCell 
+                onClick={() => setRevealedItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
                 style={{ fontSize: `${fontSize}px` }}
                 className={`${
-                  isMeaningHidden 
-                    ? "text-muted-foreground" 
-                    : "text-blue-600 dark:text-blue-400"
-                } ${
-                  checkedStates[item.id] ? "line-through" : ""
-                }`}
+                  isMeaningHidden && !revealedItems[item.id]
+                    ? "text-muted-foreground cursor-pointer hover:bg-muted/50" 
+                    : showKoreanFirst ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'
+                } ${checkedStates[item.id] ? "line-through" : ""}`}
               >
-                {isMeaningHidden ? (
+                {isMeaningHidden && !revealedItems[item.id] ? (
                   <span className="italic">• • •</span>
                 ) : (
-                  item.indonesian
+                  showKoreanFirst ? item.indonesian : item.korean
                 )}
               </TableCell>
             </TableRow>
@@ -179,13 +192,16 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
         <Button 
           variant="secondary" 
           size="sm"
-          onClick={() => setIsMeaningHidden(!isMeaningHidden)}
+          onClick={() => {
+            setIsMeaningHidden(!isMeaningHidden);
+            setRevealedItems({}); // Reset individual reveals when toggling global visibility
+          }}
           className="shadow-lg flex items-center gap-2 rounded-full"
         >
           {isMeaningHidden ? (
             <>
               <EyeIcon className="h-4 w-4" />
-              <span>Lihat Arti</span>
+              <span>Lihat {showKoreanFirst ? "Arti" : "한국어"}</span>
             </>
           ) : (
             <>

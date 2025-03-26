@@ -1,32 +1,34 @@
 import { getAllTryouts, getTryoutForUser } from "@/app/actions/tryout-actions"
 import { TryoutList } from "@/components/tryout/TryoutList"
 import { currentUser } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { CreateTryoutDialog } from "@/components/tryout/create-tryout-dialog"
+import { db } from "@/lib/db"
 
 export default async function TryoutPage() {
   const user = await currentUser()
   if (!user) return null
   
-  const tryouts = user.role === "GURU" 
-    ? await getAllTryouts()
-    : user.id
-      ? await getTryoutForUser(user.id)
+  const [tryouts, koleksiSoals] = await Promise.all([
+    user.role === "GURU" 
+      ? getAllTryouts()
+      : user.id
+        ? await getTryoutForUser(user.id)
+        : [],
+    user.role === "GURU"
+      ? db.koleksiSoal.findMany({
+          where: {
+            soals: {
+              some: {
+                authorId: user.id
+              }
+            }
+          }
+        })
       : []
+  ])
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "350px",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar />
-      <SidebarInset className="flex min-h-screen">
-        <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-6">
+    <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Tryouts</h1>
@@ -38,9 +40,7 @@ export default async function TryoutPage() {
               </p>
             </div>
             {user.role === "GURU" && (
-              <Link href="/tryout/create">
-                <Button>Create Tryout</Button>
-              </Link>
+              <CreateTryoutDialog koleksiSoals={koleksiSoals} />
             )}
           </div>
 
@@ -51,8 +51,6 @@ export default async function TryoutPage() {
         isGuru={user.role === "GURU"}
         userRole={user.role}
       />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    </div>
   )
 }

@@ -273,6 +273,7 @@ model Tryout {
   nama          String
   startTime     DateTime
   endTime       DateTime
+  duration      Int              @default(30) // Duration in minutes
   koleksiSoalId Int
   isActive      Boolean            @default(false) 
   guruId        String

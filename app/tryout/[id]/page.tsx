@@ -64,7 +64,7 @@ export default async function TryoutPage(props: Props) {
   return (
     <div>
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-center mb-4">
           <h1 className="text-2xl font-bold">{tryout.koleksiSoal.nama}</h1>
           {status === 'ended' && (
             <Link href={`/tryout/${tryoutId}/leaderboard`}>
@@ -73,7 +73,7 @@ export default async function TryoutPage(props: Props) {
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <div className="grid gap-4 sm:grid-cols-2 mb-6 text-center mx-auto max-w-lg">
           <div>
             <p className="text-sm text-muted-foreground">Start Time</p>
             <p className="font-medium">{formatDate(tryout.startTime)}</p>
@@ -133,6 +133,7 @@ export default async function TryoutPage(props: Props) {
                     tryoutId={tryoutId}
                     userId={user.id}
                     questions={questions}
+                    duration={tryout.duration}
                   />
                 )
               }

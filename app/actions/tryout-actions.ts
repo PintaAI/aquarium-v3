@@ -8,7 +8,8 @@ export async function createTryout(
   guruId: string,
   koleksiSoalId: number,
   startTime: Date,
-  endTime: Date
+  endTime: Date,
+  duration?: number // Optional since we have a default value in schema
 ) {
   const user = await currentUser()
 
@@ -32,6 +33,7 @@ export async function createTryout(
       koleksiSoalId,
       startTime,
       endTime,
+      duration: duration ?? 30, // Use provided duration or default to 30 minutes
       isActive: true
     }
   })

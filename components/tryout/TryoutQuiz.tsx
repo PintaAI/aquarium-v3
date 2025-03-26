@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { submitTryoutAnswers } from "@/app/actions/tryout-actions"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -21,13 +21,74 @@ interface TryoutQuizProps {
   tryoutId: number
   userId: string
   questions: Question[]
+  duration: number // in minutes
 }
 
-export function TryoutQuiz({ tryoutId, userId, questions }: TryoutQuizProps) {
+export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuizProps) {
   const router = useRouter()
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(-1))
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Initialize with duration in seconds
+  const [timeRemaining, setTimeRemaining] = useState(() => {
+    const stored = localStorage.getItem(`tryout-${tryoutId}-time`)
+    const parsedTime = stored ? parseInt(stored) : duration * 60
+    return isNaN(parsedTime) ? duration * 60 : parsedTime
+  })
+
+  const handleSubmit = useCallback(async () => {
+    // Filter out unanswered questions (-1)
+    const answeredQuestions = answers.filter(answer => answer !== -1)
+    
+    if (!answeredQuestions.length) {
+      alert("Jawab minimal satu soal untuk menyelesaikan tryout")
+      return
+    }
+
+    if (answers.includes(-1)) {
+      const confirmed = window.confirm("Ada Soal yang belum dijawab, yakin ingin selesaikan tryout?")
+      if (!confirmed) return
+    }
+
+    try {
+      setIsSubmitting(true)
+      await submitTryoutAnswers(tryoutId, userId, answers)
+      router.push(`/tryout/${tryoutId}/leaderboard`)
+    } catch (error) {
+      alert("Failed to submit answers: " + (error as Error).message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [answers, tryoutId, userId, router])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => {
+        const newTime = prev - 1
+        
+        if (newTime <= 0) {
+          clearInterval(timer)
+          handleSubmit()
+          localStorage.removeItem(`tryout-${tryoutId}-time`)
+          return 0
+        }
+        
+        localStorage.setItem(`tryout-${tryoutId}-time`, newTime.toString())
+        return newTime
+      })
+    }, 1000)
+
+    return () => {
+      clearInterval(timer)
+    }
+  }, [tryoutId, handleSubmit])
+
+  // Format remaining time as MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(Math.max(0, seconds) / 60)
+    const secs = Math.max(0, seconds) % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   const handleAnswerClick = (opsiId: number) => {
     const newAnswers = [...answers]
@@ -47,31 +108,6 @@ export function TryoutQuiz({ tryoutId, userId, questions }: TryoutQuizProps) {
     }
   }
 
-  const handleSubmit = async () => {
-    // Filter out unanswered questions (-1)
-    const answeredQuestions = answers.filter(answer => answer !== -1)
-    
-    if (!answeredQuestions.length) {
-      alert("Please answer at least one question before submitting")
-      return
-    }
-
-    if (answers.includes(-1)) {
-      const confirmed = window.confirm("You have unanswered questions. Do you want to submit anyway?")
-      if (!confirmed) return
-    }
-
-    try {
-      setIsSubmitting(true)
-      await submitTryoutAnswers(tryoutId, userId, answers)
-      router.push(`/tryout/${tryoutId}/leaderboard`)
-    } catch (error) {
-      alert("Failed to submit answers: " + (error as Error).message)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-background rounded-lg shadow-md space-y-6">
       {/* Progress bar */}
@@ -87,6 +123,12 @@ export function TryoutQuiz({ tryoutId, userId, questions }: TryoutQuizProps) {
         <span className="text-sm font-medium text-muted-foreground">
           Question {currentQuestion + 1}/{questions.length}
         </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Sisa Waktu:</span>
+          <span className={`font-bold ${timeRemaining <= 300 ? 'text-red-500' : 'text-primary'}`}>
+            {formatTime(timeRemaining)}
+          </span>
+        </div>
         <span className="text-sm font-medium text-muted-foreground">
           Answered: {answers.filter(a => a !== -1).length} of {questions.length}
         </span>

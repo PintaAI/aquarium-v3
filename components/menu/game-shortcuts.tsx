@@ -15,7 +15,7 @@ export function GameShortcuts() {
             href="/game"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
           >
-            View all
+            Selengkapnya
             <ChevronRight className="h-4 w-4 ml-1" />
           </Link>
         </div>

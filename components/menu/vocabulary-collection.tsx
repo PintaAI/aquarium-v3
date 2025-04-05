@@ -25,7 +25,7 @@ export function VocabularyCollection() {
             href="/vocabulary"
             className="text-sm font-medium text-muted-foreground hover:text-primary/80 transition-colors flex items-center"
           >
-            View all
+            Selengkapnya
             <ChevronRight className="h-4 w-4 ml-1" />
           </Link>
         </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { ArticleList } from "@/components/articles/article-list"
+import { ChevronRight } from "lucide-react"
 
 interface LatestArticlesProps {
   articles: Article[]
@@ -18,12 +19,16 @@ export function LatestArticles({ articles, isLoading = false }: LatestArticlesPr
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <CardTitle className="text-xl sm:text-lg">Artikel terbaru</CardTitle>
-            <CardDescription className="text-sm">Recently published articles</CardDescription>
+            <CardDescription className="text-sm">
+              Lihat artikel terbaru di bawah per tanggal {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </CardDescription>
           </div>
-          <Link href="/artikel">
-            <Badge variant="outline" className="rounded-lg text-muted-foreground text-xs sm:text-sm">
-              View All
-            </Badge>
+          <Link
+            href="/artikel"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
+          >
+            Selengkapnya
+            <ChevronRight className="h-4 w-4 ml-1" />
           </Link>
         </div>
       </CardHeader>

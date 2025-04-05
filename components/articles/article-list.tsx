@@ -91,7 +91,7 @@ export function ArticleList({
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Daftar Artikel</h2>
+        
         {isGuru && (
           <Link href="/artikel/create">
             <Button>Buat Artikel</Button>

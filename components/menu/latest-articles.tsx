@@ -2,7 +2,6 @@
 
 import type { Article } from "@/app/actions/article-actions"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { ArticleList } from "@/components/articles/article-list"
 import { ChevronRight } from "lucide-react"

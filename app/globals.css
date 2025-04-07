@@ -222,18 +222,18 @@
     box-shadow: inset 0 0 20px 20px var(--background);
   }
   
-  /* Apply Jua font to Hangeul characters */
+  /* Apply system default font to Hangeul characters */
   :lang(ko),
   :lang(ko-KR),
   .hangeul,
   .korean {
-    font-family: var(--font-jua);
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif;
   }
   
-  /* Automatically detect and apply Jua font to Hangul character ranges */
+  /* Automatically detect and apply system font to Hangul character ranges */
   *:not(pre, code, kbd, samp) {
     unicode-range: U+AC00-D7AF, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
-    font-family: var(--font-jua), var(--font-atma);
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", var(--font-atma);
   }
 }
 

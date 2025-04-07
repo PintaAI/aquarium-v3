@@ -89,9 +89,9 @@ export default async function VocabularyDetailPage(
         </div>
       </Card>
 
-      <Card className="mt-6">
-        <CardHeader className="flex flex-row sm:flex-row sm:items-center justify-between">
-          <CardTitle className="flex items-center text-base sm:text-lg">
+      <Card className="mt-2 sm:mt-6">
+        <CardHeader className="flex flex-row sm:flex-row sm:items-center justify-between py-2 pb-0">
+          <CardTitle className="mx-auto flex items-center text-base sm:text-lg">
             <BookOpenIcon className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             Daftar Kosakata
           </CardTitle>
@@ -106,7 +106,7 @@ export default async function VocabularyDetailPage(
           )}
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-1">
           {collection.items.length === 0 ? (
             <div className="text-center py-12">
               <BookOpenIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EyeIcon, EyeOffIcon, MinusIcon, PlusIcon, ShuffleIcon, SearchIcon } from "lucide-react";
+import { PiSwapDuotone } from "react-icons/pi";
 import { startTransition, useOptimistic, useState, useMemo } from "react";
 import { toggleVocabularyItemCheck } from "@/app/actions/vocabulary-actions";
 import { toast } from "sonner";
@@ -83,8 +84,8 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
   };
 
   return (
-    <div className="relative rounded-lg border overflow-x-auto min-h-[200px]">
-      <div className="p-4 flex flex-col gap-4">
+    <div className="relative rounded-lg  overflow-x-auto min-h-[200px]">
+      <div className="p-2 flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -109,7 +110,7 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
             onClick={() => setShowKoreanFirst(prev => !prev)}
             className={!showKoreanFirst ? "bg-primary/10" : ""}
           >
-            {showKoreanFirst ? "한→ID" : "ID→한"}
+            <PiSwapDuotone className="h-6 w-6" />
           </Button>
         </div>
         

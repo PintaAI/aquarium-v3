@@ -54,11 +54,13 @@ export interface LiveSessionUIProps extends React.HTMLAttributes<HTMLDivElement>
       id: string;
       name: string;
       image: string;
+      role?: string;
     };
     participants: {
       id: string;
       name: string;
       image: string;
+      role?: string;
     }[];
   };
   chatHook?: UseChatHook;
@@ -209,6 +211,10 @@ export function LiveSessionUI({ chatHook, session, ...rest }: LiveSessionUIProps
     { source: Track.Source.ScreenShare, withPlaceholder: false }
   ]);
 
+  const audioTracks = useTracks([
+    { source: Track.Source.Microphone, withPlaceholder: false }
+  ]);
+
   return (
     <div className="flex flex-col min-h-screen w-full bg-background pb-32" {...rest}>
       <div className="max-w-[1280px] w-full mx-auto px-2 py-3">
@@ -257,6 +263,28 @@ export function LiveSessionUI({ chatHook, session, ...rest }: LiveSessionUIProps
                   );
                 })
               )}
+            </div>
+
+            {/* Audio Tracks */}
+            <div style={{ display: 'none' }}>
+              {audioTracks.map((track) => {
+                if (!track.publication?.track) return null;
+                
+                const stream = new MediaStream();
+                stream.addTrack(track.publication.track.mediaStreamTrack);
+
+                return (
+                  <div key={track.publication.trackSid}>
+                    <ReactPlayer
+                      url={stream}
+                      playing
+                      width="0"
+                      height="0"
+                      volume={1}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             {/* Session Info and Controls */}
@@ -311,7 +339,13 @@ export function LiveSessionUI({ chatHook, session, ...rest }: LiveSessionUIProps
 
                 {/* Control buttons */}
                 <div className="flex gap-2 ml-4">
-                  {session?.creator.id === localParticipant.identity && (
+                  {(
+                    session?.creator.id === localParticipant.identity ||
+                    session?.participants.find(p => 
+                      p.id === localParticipant.identity && 
+                      (p.role === "ADMIN" || p.role === "GURU")
+                    )
+                  ) && (
                     <>
                       <ControlButton
                         onClick={async () => {

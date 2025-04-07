@@ -126,10 +126,10 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[50px]"></TableHead>
-            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base">
+            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base text-center">
               {showKoreanFirst ? "Korea" : "Indonesia"}
             </TableHead>
-            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base">
+            <TableHead className="w-[calc(50%-50px)] text-sm sm:text-base text-center">
               {showKoreanFirst ? "Indonesia" : "Korea"}
             </TableHead>
           </TableRow>
@@ -148,7 +148,7 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
               </TableCell>
               <TableCell 
                 style={{ fontSize: `${fontSize}px` }}
-                className={`font-medium ${
+                className={`font-medium text-center ${
                   showKoreanFirst ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'
                 } ${checkedStates[item.id] ? "line-through" : ""}`}
               >
@@ -157,14 +157,14 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
               <TableCell 
                 onClick={() => setRevealedItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
                 style={{ fontSize: `${fontSize}px` }}
-                className={`${
+                className={`text-center ${
                   isMeaningHidden && !revealedItems[item.id]
                     ? "text-muted-foreground cursor-pointer hover:bg-muted/50" 
                     : showKoreanFirst ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'
                 } ${checkedStates[item.id] ? "line-through" : ""}`}
               >
                 {isMeaningHidden && !revealedItems[item.id] ? (
-                  <span className="italic">• • •</span>
+              <span className="italic text-center block">• • •</span>
                 ) : (
                   showKoreanFirst ? item.indonesian : item.korean
                 )}
@@ -173,12 +173,12 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
           ))}
         </TableBody>
       </Table>
-      <div className="fixed bottom-24 right-20 flex gap-2 z-50">
+      <div className="fixed bottom-24 md:right-20 left-1/2 md:left-auto transform -translate-x-1/2 md:translate-x-0 flex gap-2 z-50">
         <Button 
           variant="secondary" 
           size="sm"
           onClick={decreaseFontSize}
-          className="shadow-lg rounded-full w-10 h-10 p-0"
+          className="shadow-lg rounded-full w-10 h-10 md:w-12 md:h-12 p-0"
         >
           <MinusIcon className="h-4 w-4" />
         </Button>
@@ -186,7 +186,7 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
           variant="secondary" 
           size="sm"
           onClick={increaseFontSize}
-          className="shadow-lg rounded-full w-10 h-10 p-0"
+          className="shadow-lg rounded-full w-10 h-10 md:w-12 md:h-12 p-0"
         >
           <PlusIcon className="h-4 w-4" />
         </Button>
@@ -197,7 +197,7 @@ export function VocabularyTable({ items: initialItems }: VocabularyTableProps) {
             setIsMeaningHidden(!isMeaningHidden);
             setRevealedItems({}); // Reset individual reveals when toggling global visibility
           }}
-          className="shadow-lg flex items-center gap-2 rounded-full"
+          className="shadow-lg flex items-center gap-2 rounded-full h-10 md:h-12 px-4 md:px-6"
         >
           {isMeaningHidden ? (
             <>

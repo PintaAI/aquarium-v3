@@ -88,6 +88,7 @@ export default async function LiveSessionPage(props: LiveSessionPageProps) {
         roomId={sessionWithAccess.id}
         userName={user.name || user.id}
         userId={user.id}
+        userRole={user.role}
       />
       </div>
     )

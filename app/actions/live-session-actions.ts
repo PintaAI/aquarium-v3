@@ -100,7 +100,8 @@ export async function getLiveSessionWithAccess(sessionId: string) {
         select: {
           id: true,
           name: true,
-          image: true
+          image: true,
+          role: true
         }
       },
       course: {
@@ -113,7 +114,8 @@ export async function getLiveSessionWithAccess(sessionId: string) {
         select: {
           id: true,
           name: true,
-          image: true
+          image: true,
+          role: true
         }
       }
     }

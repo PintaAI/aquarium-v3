@@ -29,6 +29,7 @@ interface LiveSession {
     id: string;
     name: string;
     image: string;
+    role?: string;
   }[];
 }
 import { useRouter } from "next/navigation"
@@ -42,6 +43,7 @@ interface LiveKitRoomProps {
   roomId: string
   userName: string
   userId: string
+  userRole?: string
   children?: ReactNode
 }
 
@@ -50,7 +52,7 @@ function SessionUI({ session }: { session: LiveSession }) {
   return <LiveSessionUI session={session} chatHook={chat} />
 }
 
-export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProps) {
+export function LiveKitRoomWrapper({ roomId, userName, userId, userRole }: LiveKitRoomProps) {
   const { token, error, isLoading: tokenLoading } = useLiveKitToken(roomId, userName)
   const router = useRouter()
   const [session, setSession] = useState<LiveSession | null>(null)
@@ -111,6 +113,7 @@ export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProp
         id: p.id,
         name: p.name || "",
         image: p.image || "",
+        role: undefined,  // Will be set for current user when passing to SessionUI
       })),
     }
   }
@@ -146,7 +149,6 @@ export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProp
     <LiveKitRoom
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
       token={token}
-      audio={false}
       video={false}
       style={{ height: "100vh", width: "100%" }}
       onDisconnected={async () => {
@@ -154,7 +156,13 @@ export function LiveKitRoomWrapper({ roomId, userName, userId }: LiveKitRoomProp
         router.push("/")
       }}
     >
-      {session && <SessionUI session={session} />}
+      {session && <SessionUI session={{
+        ...session,
+        participants: session.participants.map(p => ({
+          ...p,
+          role: p.id === userId ? userRole : p.role
+        }))
+      }} />}
     </LiveKitRoom>
   )
 }

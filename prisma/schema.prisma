@@ -53,23 +53,32 @@ model Course {
   members         User[]       @relation("CourseMembers")
 }
 
+enum LiveSessionStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+}
+
 model LiveSession {
-  id              String   @id @default(cuid())
+  id              String           @id @default(cuid())
   name            String
   description     String?
-  isActive        Boolean  @default(true)
+  streamCallId    String?          // Stream Video Call ID
+  status          LiveSessionStatus @default(SCHEDULED)
   scheduledStart  DateTime
   scheduledEnd    DateTime?
   actualStart     DateTime?
   actualEnd       DateTime?
   recordingUrl    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   creatorId       String
   courseId        Int
-  course          Course   @relation("CourseLiveSessions", fields: [courseId], references: [id])
-  creator         User     @relation("LiveSessionCreator", fields: [creatorId], references: [id])
-  participants    User[]   @relation("LiveSessionParticipants")
+  course          Course           @relation("CourseLiveSessions", fields: [courseId], references: [id])
+  creator         User             @relation("LiveSessionCreator", fields: [creatorId], references: [id])
+  participants    User[]           @relation("LiveSessionParticipants")
+
+  @@index([streamCallId])
 }
 
 model Module {

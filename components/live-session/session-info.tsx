@@ -18,8 +18,8 @@ interface SessionInfoProps {
     name: string
     image?: string
   }
-  startTime: Date
-  viewCount?: number
+  // startTime: Date // Removed unused prop
+  // viewCount?: number // Removed unused prop
 }
 
 export function SessionInfo({
@@ -29,31 +29,16 @@ export function SessionInfo({
   courseTitle,
   status,
   instructor,
-  startTime,
-  viewCount = 0
+  // startTime, // Removed unused prop
+  // viewCount = 0 // Removed unused prop
 }: SessionInfoProps) {
   // Removed router instance
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
   // Removed Stream hooks usage
 
-  function formatDate(date: Date) {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(date)
-  }
-
-  function formatViewCount(count: number) {
-    if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M views`
-    }
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K views`
-    }
-    return `${count} views`
-  }
+  // Removed unused formatDate function
+  // Removed unused formatViewCount function
 
   // Removed handleExit function
 

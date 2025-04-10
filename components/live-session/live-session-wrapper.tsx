@@ -40,7 +40,6 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
   // General state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [participantCount, setParticipantCount] = useState(0);
   const leaveHandledByButton = useRef(false); // Ref to track if leave was handled by button
 
   // Function to pass down to mark leave as handled
@@ -248,12 +247,12 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
               status={liveSessionData.status}
               instructor={{
                 name: liveSessionData.creator.name || 'Unnamed Instructor',
-                image: liveSessionData.creator.image || undefined
-              }}
-              startTime={liveSessionData.scheduledStart}
-              viewCount={participantCount}
-            />
-          </div>
+                 image: liveSessionData.creator.image || undefined
+               }}
+               // startTime={liveSessionData.scheduledStart} // Removed unused prop
+               // viewCount={participantCount} // Removed unused prop
+             />
+           </div>
           <div className="md:h-screen md:sticky md:top-0">
             <div className="h-[calc(100vh-495px)] md:h-[570px] px-3 mt-1">
               {/* Pass channel to ChatComponent */}

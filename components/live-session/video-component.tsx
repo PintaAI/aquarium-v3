@@ -15,7 +15,7 @@ import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Radi
 import { useRouter } from "next/navigation"; // Import router
 
 import '@stream-io/video-react-sdk/dist/css/styles.css';
-import { useEffect } from 'react';
+// import { useEffect } from 'react'; // Removed unused import
 
 interface VideoComponentProps {
   call: Call; // Accept the initialized call object

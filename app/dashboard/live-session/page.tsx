@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { DeleteSessionButton } from '@/components/live-session/delete-session-button'
+
 
 export default async function LiveSessionPage() {
   const session = await auth()
@@ -78,20 +80,24 @@ export default async function LiveSessionPage() {
                     </div>
                     <div className="flex flex-col gap-1 mt-2">
                       {session.isCurrentUserCreator ? (
-                        // GURU: Show Start/Join button
-                        session.status === 'SCHEDULED' ? (
-                          <StartSessionButton sessionId={session.id} />
-                        ) : (
-                          <Button 
-                            className="w-full" 
-                            variant="default" 
+                        // GURU: Show Start/Join/Delete buttons
+                        <div className="flex flex-col gap-2"> {/* Wrap buttons */}
+                          {session.status === 'SCHEDULED' ? (
+                            <StartSessionButton sessionId={session.id} />
+                          ) : (
+                            <Button 
+                              className="w-full" 
+                              variant="default" 
                             asChild
                           >
                             <Link href={`/dashboard/live-session/${session.id}`}>
-                              Join as Host
+                              Join Session
                             </Link>
                           </Button>
-                        )
+                          )}
+                          {/* Add Delete Button Here - Only for creator */}
+                          <DeleteSessionButton sessionId={session.id} />
+                        </div>
                       ) : (
                         // MURID: Show Join button or waiting state
                         session.status === 'LIVE' ? (

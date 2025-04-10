@@ -1,11 +1,15 @@
 "use client"
+// Removed Button import as it's only needed for Show More/Less now
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Mic, ScreenShare, LogOut } from "lucide-react"
+// Removed Lucide icons for buttons
 import { useState } from "react"
+// Removed Stream imports: Call, useCallStateHooks
+// Removed useRouter import
 
 interface SessionInfoProps {
+  // Removed call prop
   name: string
   description: string | null
   courseTitle: string
@@ -18,19 +22,23 @@ interface SessionInfoProps {
   viewCount?: number
 }
 
-export function SessionInfo({ 
-  name, 
-  description, 
-  courseTitle, 
+export function SessionInfo({
+  // Removed call prop
+  name,
+  description,
+  courseTitle,
   status,
   instructor,
   startTime,
   viewCount = 0
 }: SessionInfoProps) {
+  // Removed router instance
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
+  // Removed Stream hooks usage
+
   function formatDate(date: Date) {
-    return new Intl.DateTimeFormat('en-US', { 
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -47,36 +55,23 @@ export function SessionInfo({
     return `${count} views`
   }
 
-  const shortDescription = description && description.length > 200 
-    ? description.slice(0, 200) + "..."
+  // Removed handleExit function
+
+  const shortDescription = description && description.length > 50
+    ? description.slice(0, 24) + "..."
     : description
 
   return (
     <div className="space-y-4 p-3 pb-0">
-      <div className="flex justify-between items-center">
-        {/* Title */}
-        <div className="flex items-center gap-2">
+      {/* Header without buttons */}
+      <div className="flex justify-between items-start">
+        <div className="flex items-center gap-2 flex-wrap">
           <h1 className="text-xl font-semibold leading-tight sm:text-2xl">
             {name}
           </h1>
-          <Badge variant="outline" className="bg-destructive text-white">{status}</Badge>
+          <Badge variant={status === 'LIVE' ? 'destructive' : 'outline'}>{status}</Badge>
         </div>
-        
-        {/* Control buttons */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Mic className="h-4 w-4" />
-            <span className="hidden sm:inline">Mic</span>
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <ScreenShare className="h-4 w-4" />
-            <span className="hidden sm:inline">Screen</span>
-          </Button>
-          <Button variant="destructive" size="sm" className="gap-2">
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Exit</span>
-          </Button>
-        </div>
+        {/* Control buttons removed */}
       </div>
 
       {/* Meta information */}
@@ -104,9 +99,9 @@ export function SessionInfo({
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
               {isDescriptionExpanded ? description : shortDescription}
             </p>
-            {description.length > 200 && (
-              <Button 
-                variant="link" 
+            {description && description.length > 24 && (
+              <Button // Keep Button import for this
+                variant="link"
                 className="px-0 text-sm h-auto"
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
               >

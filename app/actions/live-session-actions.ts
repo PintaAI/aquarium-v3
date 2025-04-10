@@ -3,6 +3,7 @@
 import { db } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 
 const createSessionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -243,5 +244,45 @@ export async function getLiveSessions(currUserId?: string) {
   } catch (error) {
     console.error("Failed to fetch live sessions:", error)
     return { active: [], scheduled: [] }
+  }
+}
+
+export async function deleteLiveSession(sessionId: string) {
+  try {
+    const user = await currentUser()
+    if (!user || user.role !== 'GURU') {
+      throw new Error('Unauthorized')
+    }
+
+    // Verify the user is the creator of the session
+    const session = await db.liveSession.findUnique({
+      where: { id: sessionId, creatorId: user.id },
+      select: { id: true } // Only need the ID for verification
+    })
+
+    if (!session) {
+      throw new Error('Session not found or user is not the creator')
+    }
+
+    // TODO: Add logic here to potentially stop the stream via Stream SDK if it's active
+    // before deleting the database record. This depends on the Stream SDK's capabilities.
+    // Example: await stopStream(session.streamCallId);
+
+    // Delete the session
+    await db.liveSession.delete({
+      where: { id: sessionId }
+    })
+
+    // Revalidate the path to update the UI
+    revalidatePath('/dashboard/live-session')
+    // Also revalidate the specific session page in case someone is viewing it
+    revalidatePath(`/dashboard/live-session/${sessionId}`) 
+
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to delete live session:', error)
+    // Check if error is an instance of Error to access message property safely
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete live session'
+    return { success: false, error: errorMessage }
   }
 }

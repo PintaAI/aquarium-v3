@@ -2,6 +2,7 @@ import { currentUser } from "@/lib/auth";
 import { getArticles } from "@/app/actions/article-actions";
 
 import { UpcomingTryoutBanner } from "@/components/tryout/upcoming-tryout-banner";
+import { UpcomingLiveSessionBanner } from "@/components/live-session/upcoming-live-session-banner";
 import Image from "next/image";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { LatestCourses } from "@/components/menu/latest-courses";
@@ -50,7 +51,7 @@ export default async function HomePage() {
                   <span className="text-md font-bold">Pejuangkorea Academy</span>
                 </div>
                 <div className="w-full md:w-[600px] space-y-2">
-                
+                  <UpcomingLiveSessionBanner />
                   <UpcomingTryoutBanner />
                 </div>
               </header>

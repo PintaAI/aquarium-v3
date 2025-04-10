@@ -1,17 +1,19 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { getLiveSession } from '@/app/actions/live-session-actions'
-import { VideoComponent } from '@/components/live-session/video-component'
-import { SessionInfo } from '@/components/live-session/session-info'
-import { ChatComponent } from '@/components/live-session/chat-component'
+// Import the new wrapper component
+import { LiveSessionWrapper } from '@/components/live-session/live-session-wrapper'
+// ChatComponent is now rendered inside the wrapper, so we don't need it here directly
 
 interface PageProps {
-  params: {
+  params: { // Corrected params type based on previous file content
     sessionId: string
   }
 }
 
+// This remains a Server Component for initial data fetching
 export default async function LiveSessionPage({ params }: PageProps) {
+  // Removed the await for params as it's directly available in App Router
   const session = await auth()
   if (!session?.user) {
     redirect('/auth/login')
@@ -19,42 +21,18 @@ export default async function LiveSessionPage({ params }: PageProps) {
 
   const liveSession = await getLiveSession(params.sessionId)
   if (!liveSession) {
-    redirect('/dashboard/live-session')
+    // Redirect if session data couldn't be fetched (e.g., invalid ID)
+    redirect('/dashboard/live-session?error=session_not_found')
   }
 
+  // Determine if the current user is the creator
   const isCreator = liveSession.creator.id === session.user.id
 
+  // Render the client wrapper component, passing down the fetched data
   return (
-    <div className="container mx-auto space-y-6 md:space-y-0">
-      <div className="md:grid md:grid-cols-3 md:gap-6">
-        <div className="md:col-span-2">
-          <VideoComponent 
-            streamCallId={liveSession.streamCallId}
-            isCreator={isCreator}
-          />
-          <SessionInfo 
-            name={liveSession.name}
-            description={liveSession.description}
-            courseTitle={liveSession.course.title}
-            status={liveSession.status}
-            instructor={{
-              name: liveSession.creator.name || 'Unnamed Instructor',
-              image: liveSession.creator.image || undefined
-            }}
-            startTime={liveSession.scheduledStart}
-            viewCount={liveSession.participants.length}
-          />
-        </div>
-        <div className="md:h-screen md:sticky md:top-0">
-          <div className="h-[294px] md:h-[570px] px-3 mt-1">
-            <ChatComponent 
-              sessionId={liveSession.id}
-              username={session.user.name || 'Anonymous'}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-   
+    <LiveSessionWrapper
+      liveSessionData={liveSession}
+      isCreator={isCreator}
+    />
   )
 }

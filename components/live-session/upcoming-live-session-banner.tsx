@@ -1,0 +1,60 @@
+import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
+import { id } from "date-fns/locale"
+import { cn } from "@/lib/utils"
+import { BlinkingDot } from "../ui/blinking-dot"
+import { getLiveSessions } from "@/app/actions/live-session-actions"
+
+function getTimeLeft(startTime: Date): string {
+  return formatDistanceToNow(new Date(startTime), { 
+    addSuffix: true,
+    locale: id 
+  })
+}
+
+export async function UpcomingLiveSessionBanner() {
+  const { active, scheduled } = await getLiveSessions()
+  
+  // Prioritize active sessions over scheduled ones
+  const session = active[0] || scheduled[0]
+  
+  if (!session) return null
+  
+  const isLive = session.status === 'LIVE'
+  const timeLeft = isLive ? null : getTimeLeft(session.scheduledStart)
+
+  return (
+    <Link 
+      href={`/dashboard/live-session/${session.id}`}
+      className={cn(
+        "bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-emerald-500/10",
+        "hover:from-emerald-500/15 hover:via-emerald-500/10 hover:to-emerald-500/15",
+        "transition-all duration-300 border border-emerald-500/20 rounded-lg py-2 px-3 flex items-center gap-3 group",
+        "transition-all duration-300 border rounded-lg py-2 px-3 flex items-center gap-3 group"
+      )}
+    >
+      <BlinkingDot color={isLive ? "blue" : "emerald"} />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium whitespace-nowrap overflow-hidden">
+          <div className="hover:animate-marquee inline-block">
+            <span className={cn(
+              isLive ? "text-emerald-950-700" : "text-emerald-700"
+            )}>
+              {session.name}
+            </span>
+            <span className="text-muted-foreground mx-2">•</span>
+            <span className="text-muted-foreground truncate">{session.course.title}</span>
+          </div>
+        </div>
+      </div>
+      <span className={cn(
+        "shrink-0 text-xs px-2 py-0.5 rounded-full",
+        isLive 
+          ? "text-red-600 bg-red-500/10 animate-pulse"
+          : "text-emerald-600 bg-emerald-500/10"
+      )}>
+        {isLive ? "Join Sekarang ▶" : `Dimulai ${timeLeft} ➜`}
+      </span>
+    </Link>
+  )
+}

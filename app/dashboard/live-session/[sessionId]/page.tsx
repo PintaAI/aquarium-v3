@@ -5,21 +5,18 @@ import { getLiveSession } from '@/app/actions/live-session-actions'
 import { LiveSessionWrapper } from '@/components/live-session/live-session-wrapper'
 // ChatComponent is now rendered inside the wrapper, so we don't need it here directly
 
-interface PageProps {
-  params: { // Corrected params type based on previous file content
-    sessionId: string
-  }
-}
-
 // This remains a Server Component for initial data fetching
-export default async function LiveSessionPage({ params }: PageProps) {
-  // Removed the await for params as it's directly available in App Router
+// Define props inline to potentially avoid type inference issues during build
+export default async function LiveSessionPage({ params }: { params: { sessionId: string } }) {
+  // Params are passed directly in the App Router
+  const { sessionId } = params; // Correctly access sessionId without await
+
   const session = await auth()
   if (!session?.user) {
     redirect('/auth/login')
   }
 
-  const liveSession = await getLiveSession(params.sessionId)
+  const liveSession = await getLiveSession(sessionId) // Use awaited sessionId
   if (!liveSession) {
     // Redirect if session data couldn't be fetched (e.g., invalid ID)
     redirect('/dashboard/live-session?error=session_not_found')

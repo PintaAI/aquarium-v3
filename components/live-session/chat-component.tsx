@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
-import { StreamChat, Channel, Event } from 'stream-chat'
+import {  Channel, Event } from 'stream-chat'
 import { Send } from 'lucide-react'
 
 interface Message {
@@ -16,12 +16,10 @@ interface Message {
 }
 
 interface ChatComponentProps {
-  chatClient: StreamChat
   channel: Channel
-  username: string
 }
 
-export function ChatComponent({ chatClient, channel, username }: ChatComponentProps) {
+export function ChatComponent({ channel }: ChatComponentProps) {
   const [newMessage, setNewMessage] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [messages, setMessages] = useState<Message[]>([])

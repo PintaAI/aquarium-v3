@@ -190,8 +190,8 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
 
       cleanupStream();
     };
-    // Depend on stable user ID, streamCallId, session ID, and isCreator status
-  }, [user?.id, liveSessionData.streamCallId, liveSessionData.id, isCreator]); // Added liveSessionData.id
+    // Depend on stable user ID, name, image, streamCallId, session ID, session name, and isCreator status
+  }, [user?.id, user?.name, user?.image, liveSessionData.streamCallId, liveSessionData.id, liveSessionData.name, isCreator]);
 
   if (isLoading) {
     return (
@@ -252,12 +252,10 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
           </div>
           <div className="md:h-screen md:sticky md:top-0">
             <div className="h-[calc(100vh-569px)] md:h-[570px] px-3 mt-1">
-              {/* Pass chat client and chanel to ChatComponent */}
-              {chatClient && chatChannel && user && (
+              {/* Pass channel to ChatComponent */}
+              {chatChannel && (
                 <ChatComponent
-                  chatClient={chatClient}
                   channel={chatChannel}
-                  username={user.name || 'Anonymous'} // Pass username for consistency if needed, though Stream handles it
                 />
               )}
             </div>

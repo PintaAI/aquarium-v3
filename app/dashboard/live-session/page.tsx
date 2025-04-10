@@ -107,7 +107,7 @@ export default async function LiveSessionPage() {
                             asChild
                           >
                             <Link href={`/dashboard/live-session/${session.id}`}>
-                              Join Session
+                              Join as Host
                             </Link>
                           </Button>
                         ) : (

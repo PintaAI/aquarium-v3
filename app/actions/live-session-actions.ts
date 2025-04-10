@@ -162,7 +162,7 @@ export async function getLiveSession(sessionId: string) {
   }
 }
 
-export async function getLiveSessions(currUserId?: string) {
+export async function getLiveSessions() {
   try {
     const user = await currentUser()
     if (!user) {

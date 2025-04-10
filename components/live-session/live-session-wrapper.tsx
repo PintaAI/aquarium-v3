@@ -113,7 +113,9 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
             members: [
               {
                 user_id: user.id,
-                role: isCreator ? 'host' : 'user', // Use 'user' as the default role
+                role: user.role === 'GURU' 
+                  ? (isCreator ? 'host' : 'moderator') 
+                  : 'user', // Default to 'user' for MURID or other roles
               },
             ],
             

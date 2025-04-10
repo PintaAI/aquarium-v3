@@ -15,6 +15,7 @@ import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Radi
 import { useRouter } from "next/navigation"; // Import router
 
 import '@stream-io/video-react-sdk/dist/css/styles.css';
+import { useEffect } from 'react';
 // import { useEffect } from 'react'; // Removed unused import
 
 interface VideoComponentProps {
@@ -55,13 +56,15 @@ function CustomControls({
   const { camera, isEnabled: isCameraOn } = useCameraState();
   const { screenShare, status: screenShareStatus } = useScreenShareState();
   const isScreensharing = screenShareStatus === 'enabled'; // Check status
-  const call = useCall(); // Use the dedicated hook
-  // Use the correct hook to check live status
-  const isLive = useIsCallLive();
-  const participants = useParticipants(); // Still needed for kicking logic
-  // const participantCount = participants?.length || 0; // No longer needed here
+  const participants = useParticipants();
   
-  // useEffect for onParticipantCountChange removed
+ 
+  const currentParticipant = participants.find(p => p.userId === userId);
+  const canAccessControls = currentParticipant?.roles?.some(role => role === 'host' || role === 'moderator') ?? false;
+  const call = useCall(); // Use the dedicated hook
+ 
+  const isLive = useIsCallLive();
+
 
   const handleExit = async () => {
     if (!call) {
@@ -150,8 +153,8 @@ function CustomControls({
 
   return (
     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-background/80 rounded-lg backdrop-blur-sm"> {/* Position inside bottom edge (bottom-4) + high z-index (z-50) */}
-      {/* Camera Button */}
-      <Button
+      {/* Camera Button - only for host/moderator */}
+      {canAccessControls && <Button
         variant="outline"
         size="icon"
         onClick={() => {
@@ -160,9 +163,9 @@ function CustomControls({
         title={isCameraOn ? 'Disable Camera' : 'Enable Camera'}
       >
         {isCameraOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-      </Button>
-      {/* Mic Button */}
-      <Button
+      </Button>}
+      {/* Mic Button - only for host/moderator */}
+      {canAccessControls && <Button
         variant="outline"
         size="icon"
         onClick={() => {
@@ -172,9 +175,9 @@ function CustomControls({
         title={isMute ? 'Unmute' : 'Mute'}
       >
         {isMute ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-      </Button>
-      {/* Screen Share Button */}
-      <Button
+      </Button>}
+      {/* Screen Share Button - only for host/moderator */}
+      {canAccessControls && <Button
         variant="outline"
         size="icon"
         onClick={() => {
@@ -184,7 +187,7 @@ function CustomControls({
         title={isScreensharing ? 'Stop Sharing' : 'Share Screen'}
       >
         {isScreensharing ? <ScreenShareOff className="h-5 w-5" /> : <ScreenShare className="h-5 w-5" />}
-      </Button>
+      </Button>}
       {/* Exit Button */}
       <Button
         variant="destructive"
@@ -222,29 +225,40 @@ function CustomControls({
 const SimpleLivestreamLayout = () => {
   const { useParticipants, useParticipantCount } = useCallStateHooks();
   const participantCount = useParticipantCount();
-  // Get the host/streamer - assuming they are the first participant for simplicity
-  // In a more robust scenario, you might filter by role ('host') if available
-  const [firstParticipant] = useParticipants(); 
+  const router = useRouter();
+  const [firstParticipant] = useParticipants();
+  
+  // Use useEffect for navigation
+  useEffect(() => {
+    if (!firstParticipant) {
+      router.push('/');
+    }
+  }, [firstParticipant, router]);
+
+  // Show nothing while redirecting
+  if (!firstParticipant) {
+    return null;
+  }
 
   return (
-    <div className="w-full h-full relative"> {/* Ensure layout fills container */}
-      {/* Display Participant Count (e.g., top-right corner) */}
+    <div className="w-full h-full relative">
       <div className="absolute top-2 right-2 z-10 bg-bcakground text-white text-xs px-2 py-1 rounded">
         Live: {participantCount}
       </div>
-
-      {/* Display Host Video or Placeholder */}
-      {firstParticipant ? (
-        <ParticipantView 
-          participant={firstParticipant}
-          trackType="screenShareTrack" 
-          className="w-full h-full object-cover" // Ensure video fills space
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-background">
-          Waiting for host...
-        </div>
-      )}
+      
+      <ParticipantView 
+        participant={firstParticipant}
+        trackType="screenShareTrack"
+        className="w-full h-full rounded-lg"
+        refs={{
+          setVideoElement: (element: HTMLVideoElement | null) => {
+            if (element) {
+              element.style.objectFit = 'contain';
+            }
+          },
+          setVideoPlaceholderElement: () => {}
+        }}
+      />
     </div>
   );
 };
@@ -269,7 +283,7 @@ export function VideoComponent({
         <CustomControls
           isCreator={isCreator}
           markLeaveHandled={markLeaveHandled}
-          // onParticipantCountChange removed
+         
           deleteSessionAction={deleteSessionAction} // Pass down
           sessionId={sessionId}                     // Pass down
           userId={userId}                           // Pass down

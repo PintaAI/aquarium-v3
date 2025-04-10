@@ -25,7 +25,8 @@ export default function HangeulGame() {
     buttonRefs,
     handleOptionClick,
     startGame,
-    settings,
+    settings, // Get current settings state
+    updateSettings, // Get the update function
   } = useHangulGame();
 
   // Handler for starting the game
@@ -41,10 +42,10 @@ export default function HangeulGame() {
     difficultyLevel: GameDifficulty;
     gameMode: GameMode;
   }) => {
-    // Update settings in the game state before restarting
-    Object.assign(settings, newSettings);
-    startGame();
-  }, [startGame, settings]);
+    updateSettings(newSettings); // Use the function from the hook
+    // Start game immediately with new settings
+    startGame(); 
+  }, [updateSettings, startGame]);
 
   // Handler for character info dialog
   const toggleCharacterInfo = useCallback(() => {

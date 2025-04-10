@@ -47,9 +47,13 @@ const setStoredHighScore = (score: number): void => {
   localStorage.setItem('hangulHighScore', score.toString());
 };
 
-export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
-  const settings = { ...DEFAULT_SETTINGS, ...customSettings };
-  
+export const useHangulGame = (initialSettings?: Partial<GameSettings>) => {
+  // Manage settings with useState
+  const [settings, setSettings] = useState<GameSettings>({
+    ...DEFAULT_SETTINGS,
+    ...initialSettings,
+  });
+
   const [characters, setCharacters] = useState<HangulCharacter[]>([]);
   const [gameState, setGameState] = useState<GameState>({
     currentChar: null,
@@ -66,9 +70,15 @@ export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
     isCorrect: null,
     remainingTime: 100,
   });
-  
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Function to update settings
+  const updateSettings = useCallback((newSettings: Partial<GameSettings>) => {
+    setSettings(prev => ({ ...prev, ...newSettings }));
+    // Note: startGame is called separately in the component after updating settings
+  }, []);
 
   const shuffleArray = useCallback((array: string[]) => {
     return [...array].sort(() => Math.random() - 0.5);
@@ -78,7 +88,7 @@ export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
   useEffect(() => {
     const newCharacters = getCharactersByDifficulty(settings.difficultyLevel);
     setCharacters(newCharacters);
-  }, [settings.difficultyLevel]);
+  }, [settings.difficultyLevel]); // Depends on settings state
 
   // Generate a new question
   const generateQuestion = useCallback(() => {
@@ -103,12 +113,13 @@ export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
       isCorrect: null,
       remainingTime: 100,
     }));
-  }, [characters, settings.timePerQuestion, shuffleArray]);
+  }, [characters, settings.timePerQuestion, shuffleArray]); // Keep dependencies here
 
-  // Start or restart the game
+  // Start or restart the game - ONLY resets state, doesn't generate question directly
   const startGame = useCallback(() => {
     setGameState(prev => ({
       ...prev,
+      // Reset core game state, keep high score
       score: 0,
       questionNumber: 1,
       gameOver: false,
@@ -116,10 +127,26 @@ export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
       correctAnswers: 0,
       incorrectAnswers: 0,
       isCorrect: null,
+      feedback: '', // Clear feedback on restart
+      timeLeft: settings.timePerQuestion, // Reset timer based on current settings
+      remainingTime: 100, // Reset progress bar
     }));
-    
-    generateQuestion();
-  }, [generateQuestion]);
+    // Character loading and question generation are handled by effects now
+  }, [settings.timePerQuestion]); // Depends only on settings needed for reset
+
+  // Effect to generate a question when characters load or question number changes
+  useEffect(() => {
+    // Only generate if game is not over and characters are loaded
+    if (!gameState.gameOver && characters.length > 0) {
+      generateQuestion();
+    }
+    // Clear timer if game ends while this effect is pending
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [characters, gameState.questionNumber, gameState.gameOver, generateQuestion]); // Trigger on these changes
 
   // Move to the next question or end the game
   const handleNextQuestion = useCallback(() => {
@@ -182,7 +209,7 @@ export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
     setTimeout(() => {
       handleNextQuestion();
     }, 1500);
-  }, [gameState, handleNextQuestion]);
+  }, [gameState.currentChar?.pronunciation, gameState.score, gameState.highScore, handleNextQuestion]); // Refined dependencies
 
   // Timer effect
   useEffect(() => {
@@ -234,10 +261,10 @@ export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
     };
   }, [gameState.gameOver, gameState.feedback, gameState.currentChar, settings.timePerQuestion, handleNextQuestion]);
 
-  // Effect to initialize the game on mount
+  // Effect to initialize the game state on mount (or when startGame identity changes - should be stable now)
   useEffect(() => {
-    startGame();
-    
+    startGame(); // Just resets the state
+
     // Clean up function
     return () => {
       if (timerRef.current) {
@@ -260,6 +287,7 @@ export const useHangulGame = (customSettings?: Partial<GameSettings>) => {
     buttonRefs,
     handleOptionClick,
     startGame,
-    settings,
+    settings, // Return current settings state
+    updateSettings, // Return the update function
   };
 };

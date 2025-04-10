@@ -249,8 +249,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
                 name: liveSessionData.creator.name || 'Unnamed Instructor',
                  image: liveSessionData.creator.image || undefined
                }}
-               // startTime={liveSessionData.scheduledStart} // Removed unused prop
-               // viewCount={participantCount} // Removed unused prop
+       
              />
            </div>
           <div className="md:h-screen md:sticky md:top-0">

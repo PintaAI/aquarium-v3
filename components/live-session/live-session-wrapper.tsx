@@ -255,7 +255,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
             />
           </div>
           <div className="md:h-screen md:sticky md:top-0">
-            <div className="h-[calc(100vh-569px)] md:h-[570px] px-3 mt-1">
+            <div className="h-[calc(100vh-495px)] md:h-[570px] px-3 mt-1">
               {/* Pass channel to ChatComponent */}
               {chatChannel && (
                 <ChatComponent

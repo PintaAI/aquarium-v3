@@ -84,6 +84,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
               id: user.id,
               name: user.name || 'Anonymous',
               image: user.image || undefined,
+              
             },
             token: tokenResult.token,
           });
@@ -116,8 +117,11 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
                 role: isCreator ? 'host' : 'user', // Use 'user' as the default role
               },
             ],
+            
           },
         });
+          await currentCallInstance.camera.disable(); // Disable camera by default
+          await currentCallInstance.microphone.disable(); // Disable microphone by default
           await currentCallInstance.join(); // Explicitly join the call
           if (isMounted) {
             setCall(currentCallInstance); // Set the state with the created instance
@@ -229,13 +233,13 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
           <div className="md:col-span-2">
              {/* Pass the initialized call object, isCreator status, and handler down */}
              <VideoComponent
-               call={call}
-               isCreator={isCreator}
-               markLeaveHandled={markLeaveHandled}
-               onParticipantCountChange={setParticipantCount}
-               deleteSessionAction={deleteLiveSession} // Pass action
-               sessionId={liveSessionData.id}         // Pass session ID
-               userId={user?.id}                      // Pass user ID (ensure it's defined)
+                call={call}
+                isCreator={isCreator}
+                markLeaveHandled={markLeaveHandled}
+                // onParticipantCountChange removed
+                deleteSessionAction={deleteLiveSession} // Pass action
+                sessionId={liveSessionData.id}         // Pass session ID
+                userId={user?.id}                      // Pass user ID (ensure it's defined)
              />
              <SessionInfo
                name={liveSessionData.name}

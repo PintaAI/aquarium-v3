@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { DeleteSessionButton } from '@/components/live-session/delete-session-button'
 
 
+
 export default async function LiveSessionPage() {
   const session = await auth()
   if (!session?.user) {
@@ -91,7 +92,7 @@ export default async function LiveSessionPage() {
                             asChild
                           >
                             <Link href={`/dashboard/live-session/${session.id}`}>
-                              Join Session
+                              Join as Host
                             </Link>
                           </Button>
                           )}
@@ -107,7 +108,7 @@ export default async function LiveSessionPage() {
                             asChild
                           >
                             <Link href={`/dashboard/live-session/${session.id}`}>
-                              Join as Host
+                              Join Live Session
                             </Link>
                           </Button>
                         ) : (

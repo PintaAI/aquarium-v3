@@ -3,8 +3,9 @@
 import {
   StreamCall, // The React Component
   Call,       // The type for the call object
-  SpeakerLayout,// Default controls, we might replace or supplement
+  // SpeakerLayout removed
   StreamTheme,
+  ParticipantView, // Needed for custom layout
   useCallStateHooks, // Import state hooks
   useCall, // Import hook to get the call object
   // CallingState enum no longer needed for this check
@@ -20,7 +21,7 @@ interface VideoComponentProps {
   call: Call; // Accept the initialized call object
   isCreator: boolean; // Accept creator status
   markLeaveHandled: () => void; // Add handler prop
-  onParticipantCountChange?: (count: number) => void; // Add callback for participant count
+  // onParticipantCountChange removed
   // Add new props from wrapper
   deleteSessionAction: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
   sessionId: string;
@@ -31,7 +32,7 @@ interface VideoComponentProps {
 interface CustomControlsProps {
   isCreator: boolean;
   markLeaveHandled: () => void;
-  onParticipantCountChange?: (count: number) => void;
+  // onParticipantCountChange removed
   deleteSessionAction: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
   sessionId: string;
   userId?: string;
@@ -39,10 +40,10 @@ interface CustomControlsProps {
 
 
 // Internal component for custom controls, rendered inside StreamCall
-function CustomControls({ 
-  isCreator, 
-  markLeaveHandled, 
-  onParticipantCountChange,
+function CustomControls({
+  isCreator,
+  markLeaveHandled,
+  // onParticipantCountChange removed
   deleteSessionAction,
   sessionId,
   userId 
@@ -57,13 +58,10 @@ function CustomControls({
   const call = useCall(); // Use the dedicated hook
   // Use the correct hook to check live status
   const isLive = useIsCallLive();
-  const participants = useParticipants();
-  const participantCount = participants?.length || 0;
+  const participants = useParticipants(); // Still needed for kicking logic
+  // const participantCount = participants?.length || 0; // No longer needed here
   
-  // Call the callback whenever participant count changes
-  useEffect(() => {
-    onParticipantCountChange?.(participantCount);
-  }, [participantCount, onParticipantCountChange]);
+  // useEffect for onParticipantCountChange removed
 
   const handleExit = async () => {
     if (!call) {
@@ -151,7 +149,7 @@ function CustomControls({
   };
 
   return (
-    <div className="absolute -bottom-13 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-2 p-2 bg-background/80 rounded-lg backdrop-blur-sm">
+    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-background/80 rounded-lg backdrop-blur-sm"> {/* Position inside bottom edge (bottom-4) + high z-index (z-50) */}
       {/* Camera Button */}
       <Button
         variant="outline"
@@ -220,27 +218,58 @@ function CustomControls({
   );
 }
 
+// New Custom Layout Component
+const SimpleLivestreamLayout = () => {
+  const { useParticipants, useParticipantCount } = useCallStateHooks();
+  const participantCount = useParticipantCount();
+  // Get the host/streamer - assuming they are the first participant for simplicity
+  // In a more robust scenario, you might filter by role ('host') if available
+  const [firstParticipant] = useParticipants(); 
 
-export function VideoComponent({ 
-  call, 
-  isCreator, 
-  markLeaveHandled, 
-  onParticipantCountChange,
+  return (
+    <div className="w-full h-full relative"> {/* Ensure layout fills container */}
+      {/* Display Participant Count (e.g., top-right corner) */}
+      <div className="absolute top-2 right-2 z-10 bg-bcakground text-white text-xs px-2 py-1 rounded">
+        Live: {participantCount}
+      </div>
+
+      {/* Display Host Video or Placeholder */}
+      {firstParticipant ? (
+        <ParticipantView 
+          participant={firstParticipant}
+          trackType="screenShareTrack" 
+          className="w-full h-full object-cover" // Ensure video fills space
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-background">
+          Waiting for host...
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+export function VideoComponent({
+  call,
+  isCreator,
+  markLeaveHandled,
+  // onParticipantCountChange removed
   deleteSessionAction, // Accept new props
   sessionId,
   userId
 }: VideoComponentProps) { // Use updated props interface
   // The StreamVideo context is provided by the parent (LiveSessionWrapper)
   return (
-    <StreamTheme as="main" className="w-full aspect-video bg-muted rounded-sm mt-0 md:mt-6 relative"> {/* Added relative positioning */}
+    <StreamTheme as="main" className="w-full aspect-video bg-background rounded-sm mt-0 md:mt-6 relative overflow-hidden"> {/* Changed bg, added overflow */}
       <StreamCall call={call}>
-        {/* Use SpeakerLayout for a typical presentation view */}
-        <SpeakerLayout />
-        {/* Render custom controls, pass all necessary props */}
-        <CustomControls 
-          isCreator={isCreator} 
+        {/* Replace SpeakerLayout with the custom layout */}
+        <SimpleLivestreamLayout />
+        {/* Render custom controls, pass necessary props (removed onParticipantCountChange) */}
+        <CustomControls
+          isCreator={isCreator}
           markLeaveHandled={markLeaveHandled}
-          onParticipantCountChange={onParticipantCountChange}
+          // onParticipantCountChange removed
           deleteSessionAction={deleteSessionAction} // Pass down
           sessionId={sessionId}                     // Pass down
           userId={userId}                           // Pass down

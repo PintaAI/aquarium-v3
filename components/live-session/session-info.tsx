@@ -74,12 +74,7 @@ export function SessionInfo({
         {/* Control buttons removed */}
       </div>
 
-      {/* Meta information */}
-      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-        <span>{formatViewCount(viewCount)}</span>
-        <span>•</span>
-        <span>{formatDate(startTime)}</span>
-      </div>
+
 
       {/* Instructor info and description */}
       <div className="flex flex-col gap-4 rounded-lg bg-muted/10 p-3">

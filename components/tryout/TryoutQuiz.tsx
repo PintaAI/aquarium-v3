@@ -36,19 +36,7 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
     return isNaN(parsedTime) ? duration * 60 : parsedTime
   })
 
-  const handleSubmit = useCallback(async () => {
-    // Filter out unanswered questions (-1)
-    const answeredQuestions = answers.filter(answer => answer !== -1)
-    
-    if (!answeredQuestions.length) {
-      alert("Jawab minimal satu soal untuk menyelesaikan tryout")
-      return
-    }
-
-    if (answers.includes(-1)) {
-      const confirmed = window.confirm("Ada Soal yang belum dijawab, yakin ingin selesaikan tryout?")
-      if (!confirmed) return
-    }
+const handleSubmit = useCallback(async () => {
 
     try {
       setIsSubmitting(true)
@@ -217,13 +205,16 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
             </Button>
           </div>
           
-          <Button 
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full"
-          >
-            {isSubmitting ? "Submitting..." : "Submit Answers"}
-          </Button>
+          {/* Only show submit button if all questions are answered */}
+          {!answers.includes(-1) && (
+            <Button 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Answers"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

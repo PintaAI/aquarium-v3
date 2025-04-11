@@ -209,7 +209,7 @@ export const useHangulGame = (initialSettings?: Partial<GameSettings>) => {
     setTimeout(() => {
       handleNextQuestion();
     }, 1500);
-  }, [gameState.currentChar, gameState.gameOver, gameState.score, gameState.highScore, handleNextQuestion]); // Added missing dependencies
+  }, [gameState.gameOver, gameState.currentChar, gameState.score, gameState.highScore, handleNextQuestion]); // Added missing dependencies
 
   // Timer effect
   useEffect(() => {

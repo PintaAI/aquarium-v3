@@ -9,6 +9,8 @@ import {
   useCallStateHooks, // Import state hooks
   useCall, // Import hook to get the call object
   StreamVideoParticipant, // Import the participant type
+  hasScreenShare,
+  hasVideo, // Import the utility function
   // CallingState enum no longer needed for this check
 } from '@stream-io/video-react-sdk';
 import { Button } from "@/components/ui/button"; // Import Button
@@ -222,12 +224,38 @@ function CustomControls({
   );
 }
 
-// New Custom Layout Component
-const SimpleLivestreamLayout = () => {
+// Props interface SimpleLivestreamLayoutProps removed as it's empty and unused
+
+// New Custom Layout Component - No props needed
+const SimpleLivestreamLayout = () => { // Remove props argument and type
   const { useParticipants, useParticipantCount } = useCallStateHooks();
   const participants = useParticipants();
   const participantCount = useParticipantCount();
- 
+
+  // Log participant details in a structured format when the list changes
+  useEffect(() => {
+    console.groupCollapsed("--- Participant Details Update ---"); // Use groupCollapsed for less noise initially
+    if (participants.length === 0) {
+      console.log("No participants currently in the call.");
+    } else {
+      const participantData = participants.map((p) => ({
+        id: p.userId,
+        name: p.name,
+        roles: p.roles,
+        videoStreamActive: p.videoStream?.active ?? false,
+        screenShareStreamActive: p.screenShareStream?.active ?? false,
+        // You could add more details here if needed, e.g., isSpeaking: p.isSpeaking
+      }));
+      // Log the array of structured participant objects
+      console.log("Current Participants:", participantData);
+      // Alternatively, log each participant object individually within the group:
+      // participantData.forEach((data, index) => {
+      //   console.log(`Participant ${index + 1}:`, data);
+      // });
+    }
+    console.groupEnd(); // End the group
+  }, [participants]); // Rerun when participants array changes
+
   const router = useRouter(); // Keep router for potential future use or cleanup
 
   // --- Refined Participant Selection Logic ---
@@ -238,14 +266,14 @@ const SimpleLivestreamLayout = () => {
   const hosts = participants.filter(p => p.roles.includes('host'));
 
   if (hosts.length > 0) {
-    // 2. Prioritize screen sharing host (Use correct property: isScreenSharing)
-    const screenSharingHost = hosts.find(p => p.screenShareStream?.active);
+    // 2. Prioritize screen sharing host (Use hasScreenShare utility as per feedback)
+    const screenSharingHost = hosts.find(p => hasScreenShare(p));
     if (screenSharingHost) {
       participantToShow = screenSharingHost;
       trackTypeToShow = "screenShareTrack";
     } else {
       // 3. Prioritize camera-enabled host (Use correct property: isCameraEnabled)
-      const cameraEnabledHost = hosts.find(p => p.videoStream?.active);
+      const cameraEnabledHost = hosts.find(p => hasVideo(p));
       if (cameraEnabledHost) {
         participantToShow = cameraEnabledHost;
         trackTypeToShow = "videoTrack";
@@ -260,7 +288,8 @@ const SimpleLivestreamLayout = () => {
   // 5. If no suitable host found, fall back to the very first participant overall
   if (!participantToShow && participants.length > 0) {
     participantToShow = participants[0];
-    trackTypeToShow = "videoTrack"; // Default to video for overall fallback
+    // Also check if the fallback participant is screen sharing
+    trackTypeToShow = hasScreenShare(participants[0]) ? "screenShareTrack" : "videoTrack";
   }
   // --- End Refined Participant Selection Logic ---
 

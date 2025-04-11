@@ -222,11 +222,8 @@ function CustomControls({
   );
 }
 
-// Props for the layout component - userId no longer needed
-interface SimpleLivestreamLayoutProps {}
-
-// New Custom Layout Component - userId removed from signature
-const SimpleLivestreamLayout = ({}: SimpleLivestreamLayoutProps) => {
+// New Custom Layout Component
+const SimpleLivestreamLayout = () => {
   const { useParticipants, useParticipantCount } = useCallStateHooks();
   const participants = useParticipants();
   const participantCount = useParticipantCount();

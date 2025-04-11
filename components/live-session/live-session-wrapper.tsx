@@ -26,7 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter, // Added DialogFooter
+ 
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input'; // Added Input
 import { Label } from '@/components/ui/label';   // Added Label
@@ -233,7 +233,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
       cleanupStream();
     };
     // Depend on stable user ID, name, image, streamCallId, session ID, session name, and isCreator status
-  }, [user?.id, user?.name, user?.image, liveSessionData.streamCallId, liveSessionData.id, liveSessionData.name, isCreator]);
+  }, [user?.id, user?.name, user?.image, user?.role, liveSessionData.streamCallId, liveSessionData.id, liveSessionData.name, isCreator]);
 
   // Note: Removed useCallIngress hook approach
 
@@ -304,7 +304,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
                      <DialogTitle>Konfigurasi Streaming OBS/RTMP</DialogTitle>
                      <DialogDescription>
                        {/* Updated Description */}
-                       Gunakan detail ini di aplikasi streaming Anda (mis., OBS atau Streamlabs di tablet) di bawah pengaturan 'Stream'. Pilih layanan 'Custom'.
+                       Gunakan detail ini di aplikasi streaming Anda (mis., OBS atau Streamlabs di tablet) di bawah pengaturan &apos;Stream&apos;. Pilih layanan &apos;Custom&apos;.
                      </DialogDescription>
                    </DialogHeader>
                    <div className="grid gap-4 py-4">

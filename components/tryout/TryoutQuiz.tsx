@@ -43,7 +43,7 @@ const handleSubmit = useCallback(async () => {
       await submitTryoutAnswers(tryoutId, userId, answers)
       router.push(`/tryout/${tryoutId}/leaderboard`)
     } catch (error) {
-      alert("Failed to submit answers: " + (error as Error).message)
+      alert("Gagal mengirim jawaban: " + (error as Error).message)
     } finally {
       setIsSubmitting(false)
     }
@@ -109,16 +109,16 @@ const handleSubmit = useCallback(async () => {
       {/* Question header */}
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium text-muted-foreground">
-          Question {currentQuestion + 1}/{questions.length}
+          Soal {currentQuestion + 1}/{questions.length}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Sisa Waktu:</span>
+          <span className="text-sm font-medium">Waktu Tersisa:</span>
           <span className={`font-bold ${timeRemaining <= 300 ? 'text-red-500' : 'text-primary'}`}>
             {formatTime(timeRemaining)}
           </span>
         </div>
         <span className="text-sm font-medium text-muted-foreground">
-          Answered: {answers.filter(a => a !== -1).length} of {questions.length}
+          Terjawab: {answers.filter(a => a !== -1).length} dari {questions.length}
         </span>
       </div>
       
@@ -135,7 +135,7 @@ const handleSubmit = useCallback(async () => {
               <div className="relative h-[300px] w-full rounded-lg overflow-hidden">
                 <Image
                   src={questions[currentQuestion].attachmentUrl || ''}
-                  alt="Question attachment"
+                  alt="Lampiran soal"
                   fill
                   className="object-contain border-2 border-muted rounded-lg"
                   loading="lazy"
@@ -155,7 +155,7 @@ const handleSubmit = useCallback(async () => {
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:underline block"
               >
-                View attachment
+                Lihat Lampiran
               </a>
             )}
           </div>
@@ -194,14 +194,14 @@ const handleSubmit = useCallback(async () => {
               disabled={currentQuestion === 0 || isSubmitting}
               variant="outline"
             >
-              Previous
+              Sebelumnya
             </Button>
             <Button
               onClick={handleNext}
               disabled={currentQuestion === questions.length - 1 || isSubmitting}
               variant="outline"
             >
-              Next
+              Selanjutnya
             </Button>
           </div>
           
@@ -212,7 +212,7 @@ const handleSubmit = useCallback(async () => {
               disabled={isSubmitting}
               className="w-full"
             >
-              {isSubmitting ? "Submitting..." : "Submit Answers"}
+              {isSubmitting ? "Mengirim..." : "Kirim Jawaban"}
             </Button>
           )}
         </div>

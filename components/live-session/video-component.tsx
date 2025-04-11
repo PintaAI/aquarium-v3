@@ -8,6 +8,7 @@ import {
   ParticipantView, // Needed for custom layout
   useCallStateHooks, // Import state hooks
   useCall, // Import hook to get the call object
+  StreamVideoParticipant, // Import the participant type
   // CallingState enum no longer needed for this check
 } from '@stream-io/video-react-sdk';
 import { Button } from "@/components/ui/button"; // Import Button
@@ -152,7 +153,7 @@ function CustomControls({
   };
 
   return (
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-background/80 rounded-lg backdrop-blur-sm"> {/* Position inside bottom edge (bottom-4) + high z-index (z-50) */}
+    <div className="absolute bottom-0 right-0 z-50 flex items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-background/80 rounded-lg backdrop-blur-sm"> {/* Responsive padding/gap */}
       {/* Camera Button - only for host/moderator */}
       {canAccessControls && <Button
         variant="outline"
@@ -162,7 +163,7 @@ function CustomControls({
         }}
         title={isCameraOn ? 'Disable Camera' : 'Enable Camera'}
       >
-        {isCameraOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+        {isCameraOn ? <Video className="h-4 w-4 sm:h-5 sm:w-5" /> : <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" />} {/* Responsive icon size */}
       </Button>}
       {/* Mic Button - only for host/moderator */}
       {canAccessControls && <Button
@@ -174,7 +175,7 @@ function CustomControls({
       // Re-enable disabled check
         title={isMute ? 'Unmute' : 'Mute'}
       >
-        {isMute ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+        {isMute ? <MicOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />} {/* Responsive icon size */}
       </Button>}
       {/* Screen Share Button - only for host/moderator */}
       {canAccessControls && <Button
@@ -186,7 +187,7 @@ function CustomControls({
        // Re-enable disabled check
         title={isScreensharing ? 'Stop Sharing' : 'Share Screen'}
       >
-        {isScreensharing ? <ScreenShareOff className="h-5 w-5" /> : <ScreenShare className="h-5 w-5" />}
+        {isScreensharing ? <ScreenShareOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <ScreenShare className="h-4 w-4 sm:h-5 sm:w-5" />} {/* Responsive icon size */}
       </Button>}
       {/* Exit Button */}
       <Button
@@ -195,7 +196,7 @@ function CustomControls({
         onClick={handleExit} // Use handleExit directly
         title="Exit Session"
       >
-        <LogOut className="h-5 w-5" />
+        <LogOut className="h-4 w-4 sm:h-5 sm:w-5" /> {/* Responsive icon size */}
       </Button>
       {/* Go Live Button (only for creator and if not live) */}
       {isCreator && !isLive && (
@@ -214,41 +215,94 @@ function CustomControls({
           }}
           title="Go Live"
         >
-          <Radio className="h-5 w-5 text-red-500" /> {/* Using Radio icon */}
+          <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" /> {/* Responsive icon size */}
         </Button>
       )}
     </div>
   );
 }
 
-// New Custom Layout Component
-const SimpleLivestreamLayout = () => {
-  const { useParticipants, useParticipantCount } = useCallStateHooks();
-  const participantCount = useParticipantCount();
-  const router = useRouter();
-  const [firstParticipant] = useParticipants();
-  
-  // Use useEffect for navigation
-  useEffect(() => {
-    if (!firstParticipant) {
-      router.push('/');
-    }
-  }, [firstParticipant, router]);
+// Props for the layout component - userId no longer needed
+interface SimpleLivestreamLayoutProps {}
 
-  // Show nothing while redirecting
-  if (!firstParticipant) {
-    return null;
+// New Custom Layout Component - userId removed from signature
+const SimpleLivestreamLayout = ({}: SimpleLivestreamLayoutProps) => {
+  const { useParticipants, useParticipantCount } = useCallStateHooks();
+  const participants = useParticipants();
+  const participantCount = useParticipantCount();
+ 
+  const router = useRouter(); // Keep router for potential future use or cleanup
+
+  // --- Refined Participant Selection Logic ---
+  let participantToShow: StreamVideoParticipant | undefined = undefined;
+  let trackTypeToShow: "videoTrack" | "screenShareTrack" = "videoTrack"; // Default to video track
+
+  // 1. Filter for hosts
+  const hosts = participants.filter(p => p.roles.includes('host'));
+
+  if (hosts.length > 0) {
+    // 2. Prioritize screen sharing host (Use correct property: isScreenSharing)
+    const screenSharingHost = hosts.find(p => p.screenShareStream?.active);
+    if (screenSharingHost) {
+      participantToShow = screenSharingHost;
+      trackTypeToShow = "screenShareTrack";
+    } else {
+      // 3. Prioritize camera-enabled host (Use correct property: isCameraEnabled)
+      const cameraEnabledHost = hosts.find(p => p.videoStream?.active);
+      if (cameraEnabledHost) {
+        participantToShow = cameraEnabledHost;
+        trackTypeToShow = "videoTrack";
+      } else {
+        // 4. Fallback to the first host found (regardless of tracks)
+        participantToShow = hosts[0];
+        trackTypeToShow = "videoTrack"; // Default to video for fallback host
+      }
+    }
+  }
+
+  // 5. If no suitable host found, fall back to the very first participant overall
+  if (!participantToShow && participants.length > 0) {
+    participantToShow = participants[0];
+    trackTypeToShow = "videoTrack"; // Default to video for overall fallback
+  }
+  // --- End Refined Participant Selection Logic ---
+
+
+  // Handle case where there are no participants or the selected one isn't found
+  useEffect(() => {
+    // Redirect if the determined participantToShow is still undefined after initial load
+    // This check might need refinement depending on desired behavior when empty
+    if (participants.length > 0 && !participantToShow) {
+       console.warn("No participant could be determined to show.");
+       // Potentially redirect or show a placeholder
+       // router.push('/'); // Example redirect
+    } else if (participants.length === 0 && participantCount === 0) {
+       // Handle completely empty call scenario if needed
+       console.log("No participants in the call.");
+       // router.push('/'); // Example redirect
+    }
+  }, [participantToShow, participants, participantCount, router]);
+
+
+  // Show nothing if no participant can be shown yet
+  if (!participantToShow) {
+    // You might want a loading indicator or placeholder here instead of null
+    return (
+       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+         Waiting for participant...
+       </div>
+    );
   }
 
   return (
     <div className="w-full h-full relative">
-      <div className="absolute top-2 right-2 z-10 bg-bcakground text-white text-xs px-2 py-1 rounded">
+      <div className="absolute top-2 right-2 z-10 bg-background/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm"> {/* Improved styling */}
         Live: {participantCount}
       </div>
-      
-      <ParticipantView 
-        participant={firstParticipant}
-        trackType="screenShareTrack"
+
+      <ParticipantView
+        participant={participantToShow}
+        trackType={trackTypeToShow} // Use determined track type
         className="w-full h-full rounded-lg"
         refs={{
           setVideoElement: (element: HTMLVideoElement | null) => {
@@ -277,9 +331,9 @@ export function VideoComponent({
   return (
     <StreamTheme as="main" className="w-full aspect-video bg-background rounded-sm mt-0 md:mt-6 relative overflow-hidden"> {/* Changed bg, added overflow */}
       <StreamCall call={call}>
-        {/* Replace SpeakerLayout with the custom layout */}
+        {/* Replace SpeakerLayout with the custom layout - removed userId prop */}
         <SimpleLivestreamLayout />
-        {/* Render custom controls, pass necessary props (removed onParticipantCountChange) */}
+        {/* Render custom controls, pass necessary props */}
         <CustomControls
           isCreator={isCreator}
           markLeaveHandled={markLeaveHandled}

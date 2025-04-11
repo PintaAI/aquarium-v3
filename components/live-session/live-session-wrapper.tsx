@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react'; 
+import { useEffect, useState, useRef } from 'react';
+import { Copy } from 'lucide-react'; // Import Copy icon
 import {
   StreamVideo,
   StreamVideoClient,
-
-  Call,      
+  Call,
   LoadingIndicator,
-
+  // useCallStateHooks, // No longer needed for this approach
 } from '@stream-io/video-react-sdk';
 // Chat SDK imports
 import { StreamChat, Channel } from 'stream-chat';
@@ -18,6 +18,19 @@ import { SessionInfo } from './session-info';       // Will receive call prop
 import { ChatComponent } from './chat-component';
 import type { LiveSession } from '@/app/actions/live-session-actions'; // Import type
 import { deleteLiveSession } from '@/app/actions/live-session-actions'; // Import delete action
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter, // Added DialogFooter
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input'; // Added Input
+import { Label } from '@/components/ui/label';   // Added Label
+import { useToast } from '@/hooks/use-toast'; // Added useToast
 
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 
@@ -31,9 +44,12 @@ const apiKey = process.env.NEXT_PUBLIC_STREAMCALL_API_KEY;
 
 export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWrapperProps) {
   const user = UseCurrentUser();
+  const { toast } = useToast(); // Initialize toast
   // Video state
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
+  const [streamToken, setStreamToken] = useState<string | null>(null); // State for the token
+  const [rtmpUrlFromGet, setRtmpUrlFromGet] = useState<string | null>(null); // State for RTMP URL from call.get()
   // Chat state
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const [chatChannel, setChatChannel] = useState<Channel | null>(null);
@@ -74,6 +90,8 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
         if (!tokenResult.success || !tokenResult.token) {
           throw new Error(tokenResult.error || 'Failed to generate Stream token.');
         }
+        const currentToken = tokenResult.token; // Store token temporarily
+        if (isMounted) setStreamToken(currentToken); // Set token state
 
         // Initialize clients if they don't exist
         if (!currentVideoClient) {
@@ -83,9 +101,9 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
               id: user.id,
               name: user.name || 'Anonymous',
               image: user.image || undefined,
-              
+
             },
-            token: tokenResult.token,
+            token: currentToken, // Use the stored token
           });
           if (isMounted) setVideoClient(currentVideoClient);
         }
@@ -98,7 +116,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
               name: user.name || 'Anonymous',
               image: user.image || undefined,
             },
-            tokenResult.token
+            currentToken // Use the stored token
           );
           if (isMounted) setChatClient(currentChatClient);
         }
@@ -124,6 +142,25 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
           await currentCallInstance.camera.disable(); // Disable camera by default
           await currentCallInstance.microphone.disable(); // Disable microphone by default
           await currentCallInstance.join(); // Explicitly join the call
+
+          // --- Get RTMP URL via call.get() ---
+          try {
+            // Ensure the call instance exists before calling get()
+            if (currentCallInstance) {
+                const callGetResponse = await currentCallInstance.get();
+                const url = callGetResponse.call.ingress?.rtmp?.address;
+                if (url && isMounted) {
+                  setRtmpUrlFromGet(url);
+                  console.log('[LiveSessionWrapper] RTMP URL fetched via call.get():', url); // Add log
+                } else if (isMounted) {
+                  console.warn('[LiveSessionWrapper] RTMP URL not found in call.get() response.'); // Add warning
+                }
+            }
+          } catch (getErr) {
+             console.error('[LiveSessionWrapper] Error calling call.get():', getErr);
+          }
+          // --- End Get RTMP URL ---
+
           if (isMounted) {
             setCall(currentCallInstance); // Set the state with the created instance
           }
@@ -198,6 +235,8 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
     // Depend on stable user ID, name, image, streamCallId, session ID, session name, and isCreator status
   }, [user?.id, user?.name, user?.image, liveSessionData.streamCallId, liveSessionData.id, liveSessionData.name, isCreator]);
 
+  // Note: Removed useCallIngress hook approach
+
   if (isLoading) {
     return (
       <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)]">
@@ -250,9 +289,108 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
               instructor={{
                 name: liveSessionData.creator.name || 'Unnamed Instructor',
                  image: liveSessionData.creator.image || undefined
-               }}
-       
-             />
+                }}
+              />
+
+             {/* --- OBS/RTMP Streaming Info Modal (Indonesian) --- */}
+             {isCreator && rtmpUrlFromGet && streamToken && (
+               <Dialog>
+                 <DialogTrigger asChild>
+                   {/* Updated Button Text */}
+                   <Button variant="outline" className="mt-4 w-full md:w-auto">Tutorial Streaming di Tablet</Button>
+                 </DialogTrigger>
+                 <DialogContent className="sm:max-w-[525px]">
+                   <DialogHeader>
+                     <DialogTitle>Konfigurasi Streaming OBS/RTMP</DialogTitle>
+                     <DialogDescription>
+                       {/* Updated Description */}
+                       Gunakan detail ini di aplikasi streaming Anda (mis., OBS atau Streamlabs di tablet) di bawah pengaturan 'Stream'. Pilih layanan 'Custom'.
+                     </DialogDescription>
+                   </DialogHeader>
+                   <div className="grid gap-4 py-4">
+                     {/* Server URL Row */}
+                     <div className="space-y-1">
+                       <Label htmlFor="rtmp-url">URL Server</Label>
+                       <div className="flex items-center gap-2">
+                         <Input
+                           id="rtmp-url"
+                           value={rtmpUrlFromGet}
+                           readOnly
+                           className="flex-1 font-mono text-xs h-8" // Use flex-1 to take available space
+                         />
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           className="h-8 px-2" // Adjust padding
+                           onClick={async () => {
+                             try {
+                               await navigator.clipboard.writeText(rtmpUrlFromGet);
+                               toast({
+                                 title: "Tersalin!",
+                                 description: "URL Server disalin ke clipboard.",
+                               });
+                             } catch (err) {
+                               console.error("Gagal menyalin URL server:", err);
+                               toast({
+                                 variant: "destructive",
+                                 title: "Gagal Menyalin",
+                                 description: "Tidak dapat menyalin URL Server ke clipboard.",
+                               });
+                             }
+                           }}
+                         >
+                           <Copy className="h-4 w-4" />
+                           <span className="sr-only">Salin URL Server</span> {/* Screen reader text */}
+                         </Button>
+                       </div>
+                     </div>
+
+                     {/* Stream Key Row */}
+                     <div className="space-y-1">
+                       <Label htmlFor="stream-key">Streamkey</Label>
+                       <div className="flex items-center gap-2">
+                         <Input
+                           id="stream-key"
+                           type="password" // Mask the key initially
+                           value={streamToken}
+                           readOnly
+                           className="flex-1 font-mono text-xs h-8" // Use flex-1
+                         />
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           className="h-8 px-2" // Adjust padding
+                           onClick={async () => {
+                             try {
+                               await navigator.clipboard.writeText(streamToken);
+                               toast({
+                                 title: "Tersalin!",
+                                 description: "Kunci Stream disalin ke clipboard.",
+                               });
+                             } catch (err) {
+                               console.error("Gagal menyalin Kunci Stream:", err);
+                               toast({
+                                 variant: "destructive",
+                                 title: "Gagal Menyalin",
+                                 description: "Tidak dapat menyalin Kunci Stream ke clipboard.",
+                               });
+                             }
+                           }}
+                         >
+                           <Copy className="h-4 w-4" />
+                           <span className="sr-only">Salin Kunci Stream</span> {/* Screen reader text */}
+                         </Button>
+                       </div>
+                     </div>
+
+                     <p className="text-xs text-destructive text-center mt-1">Perlakukan Kunci Stream seperti kata sandi!</p>
+                   </div>
+                   {/* DialogFooter removed as copy buttons are inline */}
+                 </DialogContent>
+               </Dialog>
+             )}
+             {/* --- End OBS/RTMP Streaming Info --- */}
+
            </div>
           <div className="md:h-screen md:sticky md:top-0">
             <div className="h-[calc(100vh-495px)] md:h-[570px] px-3 mt-1">

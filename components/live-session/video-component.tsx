@@ -10,77 +10,191 @@ import {
   useCall, // Import hook to get the call object
   StreamVideoParticipant, // Import the participant type
   hasScreenShare,
-  hasVideo, // Import the utility function
+  hasVideo,
+  hasAudio, // Import the utility function
+  OwnCapability,
   // CallingState enum no longer needed for this check
 } from '@stream-io/video-react-sdk';
 import { Button } from "@/components/ui/button"; // Import Button
-import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Radio } from "lucide-react"; // Import icons
+import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Eye, Check, X, Radio } from "lucide-react"; // Import icons
 import { useRouter } from "next/navigation"; // Import router
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
-import '@stream-io/video-react-sdk/dist/css/styles.css';
-import { useEffect } from 'react';
-// import { useEffect } from 'react'; // Removed unused import
 
-interface VideoComponentProps {
-  call: Call; // Accept the initialized call object
-  isCreator: boolean; // Accept creator status
-  markLeaveHandled: () => void; // Add handler prop
-  // onParticipantCountChange removed
-  // Add new props from wrapper
-  deleteSessionAction: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
-  sessionId: string;
-  userId?: string; // User ID might be undefined initially
+// Type for permission request events
+interface PermissionRequestEvent {
+  type: 'call.permission_request';
+  permissions: string[];
+  user: {
+    id: string;
+    name?: string;
+    image?: string;
+  };
 }
 
-// Define props for CustomControls separately for clarity
-interface CustomControlsProps {
+// Custom permission request handler component
+const PermissionRequestHandler = () => {
+  const call = useCall();
+  const { useLocalParticipant, useHasPermissions } = useCallStateHooks();
+  const localParticipant = useLocalParticipant();
+  const canUpdatePermissions = useHasPermissions(OwnCapability.UPDATE_CALL_PERMISSIONS);
+  const [permissionRequests, setPermissionRequests] = useState<PermissionRequestEvent[]>([]);
+  // Track last request time for each user
+  const [lastRequestTimes, setLastRequestTimes] = useState<Record<string, number>>({});
+  
+  // Timeout removal handler
+  const removeRequest = (request: PermissionRequestEvent) => {
+    setPermissionRequests(requests => requests.filter(r => r !== request));
+  };
+
+  useEffect(() => {
+    if (!call || !canUpdatePermissions) return;
+
+    const handlePermissionRequest = (event: PermissionRequestEvent) => {
+      // Ignore own requests
+      if (event.user.id !== localParticipant?.userId) {
+        setPermissionRequests(requests => [...requests, event]);
+      }
+    };
+
+    const unsubscribe = call.on('call.permission_request', handlePermissionRequest);
+    return () => {
+      unsubscribe();
+    };
+  }, [call, canUpdatePermissions, localParticipant]);
+
+  const handleRequest = async (accept: boolean, request: PermissionRequestEvent) => {
+    if (!call) return;
+    
+    const now = Date.now();
+    const lastRequestTime = lastRequestTimes[request.user.id] || 0;
+    const timeSinceLastRequest = now - lastRequestTime;
+
+    // Check if 5 seconds have passed since last request
+    if (timeSinceLastRequest < 5000) {
+      // Show feedback about waiting period
+      console.log(`Tunggu ${Math.ceil((5000 - timeSinceLastRequest) / 1000)} `);
+      return;
+    }
+
+    try {
+      // Update last request time for this user
+      setLastRequestTimes(prev => ({
+        ...prev,
+        [request.user.id]: now
+      }));
+      if (accept) {
+        await call.grantPermissions(request.user.id, request.permissions);
+      } else {
+        await call.revokePermissions(request.user.id, request.permissions);
+      }
+      setPermissionRequests(requests => requests.filter(r => r !== request));
+    } catch (err) {
+      console.error("Failed to handle permission request:", err);
+    }
+  };
+
+  if (permissionRequests.length === 0) return null;
+
+  return (
+    <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50">
+      {permissionRequests.map((request, index) => {
+        // Set timeout to remove request after 3.5 seconds
+        setTimeout(() => removeRequest(request), 5000);
+        
+        return (
+          <div 
+            key={index} 
+            className="bg-background/80 backdrop-blur-sm rounded-lg p-2 flex items-center gap-2 text-xs min-w-[200px]"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex-shrink-0 overflow-hidden">
+              {request.user.image ? (
+                <Image
+                  src={request.user.image} 
+                  alt={request.user.name || 'User'} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-sm font-medium">
+                  {(request.user.name || request.user.id).charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <span className="flex-1">{request.user.name || request.user.id} Ingin berbicara</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => handleRequest(true, request)}
+            >
+              <Check className="h-4 w-4 text-green-500" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => handleRequest(false, request)}
+            >
+              <X className="h-4 w-4 text-red-500" />
+            </Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+interface VideoComponentProps {
+  call: Call;
   isCreator: boolean;
   markLeaveHandled: () => void;
-  // onParticipantCountChange removed
   deleteSessionAction: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
   sessionId: string;
   userId?: string;
 }
 
+interface CustomControlsProps {
+  isCreator: boolean;
+  markLeaveHandled: () => void;
+  deleteSessionAction: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
+  sessionId: string;
+  userId?: string;
+}
 
-// Internal component for custom controls, rendered inside StreamCall
 function CustomControls({
   isCreator,
   markLeaveHandled,
-  // onParticipantCountChange removed
   deleteSessionAction,
   sessionId,
   userId 
 }: CustomControlsProps) {
   const router = useRouter();
-  // Destructure useIsCallLive from useCallStateHooks as per user feedback
   const { useMicrophoneState, useCameraState, useScreenShareState, useIsCallLive, useParticipants } = useCallStateHooks();
   const { microphone, isMute } = useMicrophoneState();
   const { camera, isEnabled: isCameraOn } = useCameraState();
   const { screenShare, status: screenShareStatus } = useScreenShareState();
-  const isScreensharing = screenShareStatus === 'enabled'; // Check status
+  const isScreensharing = screenShareStatus === 'enabled';
   const participants = useParticipants();
+  const [lastRequestTime, setLastRequestTime] = useState<number>(0);
+  const [cooldownMessage, setCooldownMessage] = useState<string | null>(null);
   
- 
   const currentParticipant = participants.find(p => p.userId === userId);
   const canAccessControls = currentParticipant?.roles?.some(role => role === 'host' || role === 'moderator') ?? false;
-  const call = useCall(); // Use the dedicated hook
- 
+  const call = useCall();
   const isLive = useIsCallLive();
 
-
+  // ...rest of the existing handleExit function...
   const handleExit = async () => {
     if (!call) {
       console.warn("Call object not available for exit.");
-      router.push('/dashboard/live-session'); // Navigate even if call object is missing
+      router.push('/dashboard/live-session');
       return;
     }
 
     if (isCreator) {
-      // Creator Logic: Stop live, kick participants, delete session, then leave
       console.log("Creator leaving session:", sessionId);
       try {
-        // 1. Stop the livestream if it's live
         if (isLive) {
           console.log("Stopping livestream...");
           await call.stopLive();
@@ -89,152 +203,167 @@ function CustomControls({
           console.log("Stream was not live, skipping stopLive.");
         }
 
-        // 2. Get participants to kick (everyone except the creator)
-        // Access userId directly on the participant object
-        const participantsToKick = participants.filter(p => p.userId !== userId); 
+        const participantsToKick = participants.filter(p => p.userId !== userId);
         const participantIdsToKick = participantsToKick.map(p => p.userId);
 
-        // 3. Kick participants if there are any
         if (participantIdsToKick.length > 0) {
           console.log(`Kicking ${participantIdsToKick.length} participants:`, participantIdsToKick);
-          // Use updateCallMembers to remove members
-          await call.updateCallMembers({ remove_members: participantIdsToKick }); 
+          await call.updateCallMembers({ remove_members: participantIdsToKick });
           console.log("Participants kicked.");
         } else {
           console.log("No other participants to kick.");
         }
 
-        // 4. Delete the session from the database
         console.log("Deleting session from DB:", sessionId);
         const deleteResult = await deleteSessionAction(sessionId);
         if (!deleteResult.success) {
           console.error("Failed to delete session:", deleteResult.error);
-          // Decide if we should still proceed with leaving the call and navigating
-          // For now, we'll log the error and continue
         } else {
           console.log("Session deleted successfully from DB.");
         }
 
-        // 5. Mark leave as handled (important for cleanup effect)
         markLeaveHandled();
-
-        // 6. Leave the call
         console.log("Leaving Stream call...");
         await call.leave();
         console.log("Left Stream call.");
-
-        // 7. Navigate away
         router.push('/dashboard/live-session');
 
       } catch (err) {
         console.error("Error during creator exit process:", err);
-        // Attempt to mark leave handled and leave call even on error, but don't navigate?
-        // Or maybe just navigate to avoid getting stuck? Let's navigate for now.
         try {
-          markLeaveHandled(); // Still mark as handled
-          await call.leave(); // Attempt to leave again
+          markLeaveHandled();
+          await call.leave();
         } catch (leaveErr) {
           console.error("Failed to leave call after error:", leaveErr);
         }
-        router.push('/dashboard/live-session'); // Navigate even on error
+        router.push('/dashboard/live-session');
       }
     } else {
-      // Participant Logic: Just leave the call
       console.log("Participant leaving session.");
       try {
-        markLeaveHandled(); // Mark leave handled *before* calling leave
+        markLeaveHandled();
         await call.leave();
         router.push('/dashboard/live-session');
       } catch (err) {
         console.error("Failed to leave call via button (participant):", err);
-        // If leave fails, the cleanup effect might still run
-        // Navigate anyway to avoid getting stuck
         router.push('/dashboard/live-session');
       }
     }
   };
 
   return (
-    <div className="absolute bottom-0 right-0 z-50 flex items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-background/80 rounded-lg backdrop-blur-sm"> {/* Responsive padding/gap */}
-      {/* Camera Button - only for host/moderator */}
-      {canAccessControls && <Button
-        variant="outline"
-        size="icon"
-        onClick={() => {
-          camera.toggle();
-        }}
-        title={isCameraOn ? 'Disable Camera' : 'Enable Camera'}
-      >
-        {isCameraOn ? <Video className="h-4 w-4 sm:h-5 sm:w-5" /> : <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" />} {/* Responsive icon size */}
-      </Button>}
-      {/* Mic Button - only for host/moderator */}
-      {canAccessControls && <Button
-        variant="outline"
-        size="icon"
-        onClick={() => {
-          microphone.toggle();
-        }}
-      // Re-enable disabled check
-        title={isMute ? 'Unmute' : 'Mute'}
-      >
-        {isMute ? <MicOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />} {/* Responsive icon size */}
-      </Button>}
-      {/* Screen Share Button - only for host/moderator */}
-      {canAccessControls && <Button
-        variant="outline"
-        size="icon"
-        onClick={() => {
-          screenShare.toggle();
-        }}
-       // Re-enable disabled check
-        title={isScreensharing ? 'Stop Sharing' : 'Share Screen'}
-      >
-        {isScreensharing ? <ScreenShareOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <ScreenShare className="h-4 w-4 sm:h-5 sm:w-5" />} {/* Responsive icon size */}
-      </Button>}
-      {/* Exit Button */}
-      <Button
-        variant="destructive"
-        size="icon"
-        onClick={handleExit} // Use handleExit directly
-        title="Exit Session"
-      >
-        <LogOut className="h-4 w-4 sm:h-5 sm:w-5" /> {/* Responsive icon size */}
-      </Button>
-      {/* Go Live Button (only for creator and if not live) */}
-      {isCreator && !isLive && (
+    <div className="absolute -bottom-4 md:-bottom-7 right-0 md:-right-2 z-50 text-muted-foreground flex flex-col items-end">
+      {cooldownMessage && (
+        <div className="mb-2 bg-background mr-2 backdrop-blur-sm rounded-lg p-2 text-sm animate-in fade-in">
+          {cooldownMessage}
+        </div>
+      )}
+      <div className="flex items-center gap-1 p-1 sm:gap-2 sm:p-2 bg-background rounded-lg">
+        {canAccessControls && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => camera.toggle()}
+            title={isCameraOn ? 'Disable Camera' : 'Enable Camera'}
+          >
+            {isCameraOn ? <Video className="h-4 w-4 sm:h-5 sm:w-5" /> : <VideoOff className="h-4 w-4 sm:h-5 sm:w-5" />}
+          </Button>
+        )}
+
         <Button
-          variant="secondary" // Or another appropriate variant
+          variant="outline"
           size="icon"
           onClick={async () => {
-            if (call) {
-              try {
-                await call.goLive();
-              } catch (err) {
-                console.error("Failed to go live:", err);
-                // Optionally show a toast or error message to the user
+            if (canAccessControls) {
+              microphone.toggle();
+            } else if (call && !call.permissionsContext.hasPermission(OwnCapability.SEND_AUDIO)) {
+              if (call.permissionsContext.canRequest(OwnCapability.SEND_AUDIO)) {
+                const now = Date.now();
+                const timeSinceLastRequest = now - lastRequestTime;
+
+                if (timeSinceLastRequest < 5000) {
+                  const waitTime = Math.ceil((5000 - timeSinceLastRequest) / 1000);
+                  setCooldownMessage(`Tunggu ${waitTime} detik sebelum meminta izin lagi.`);
+                  setTimeout(() => setCooldownMessage(null), 2000);
+                  return;
+                }
+
+                try {
+                  setLastRequestTime(now);
+                  await call.requestPermissions({
+                    permissions: [OwnCapability.SEND_AUDIO],
+                  });
+                } catch (err) {
+                  console.error("Failed to request audio permission:", err);
+                }
               }
+            } else if (call?.permissionsContext.hasPermission(OwnCapability.SEND_AUDIO)) {
+              microphone.toggle();
             }
           }}
-          title="Go Live"
+          disabled={
+            !canAccessControls && 
+            call && 
+            !call.permissionsContext.hasPermission(OwnCapability.SEND_AUDIO) && 
+            !call.permissionsContext.canRequest(OwnCapability.SEND_AUDIO)
+          }
+          title={isMute ? 'Unmute' : 'Mute'}
         >
-          <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" /> {/* Responsive icon size */}
+          {isMute ? <MicOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
         </Button>
-      )}
+
+        {canAccessControls && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => screenShare.toggle()}
+            title={isScreensharing ? 'Stop Sharing' : 'Share Screen'}
+          >
+            {isScreensharing ? <ScreenShareOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <ScreenShare className="h-4 w-4 sm:h-5 sm:w-5" />}
+          </Button>
+        )}
+
+        <Button
+          variant="destructive"
+          size="icon"
+          onClick={handleExit}
+          title="Exit Session"
+        >
+          <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
+        </Button>
+
+        {isCreator && !isLive && (
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={async () => {
+              if (call) {
+                try {
+                  await call.goLive();
+                } catch (err) {
+                  console.error("Failed to go live:", err);
+                }
+              }
+            }}
+            title="Go Live"
+          >
+            <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
 
-// Props interface SimpleLivestreamLayoutProps removed as it's empty and unused
+// Rest of the components (SimpleLivestreamLayout, VideoComponent) remain unchanged
 
-// New Custom Layout Component - No props needed
-const SimpleLivestreamLayout = () => { // Remove props argument and type
+const SimpleLivestreamLayout = () => {
   const { useParticipants, useParticipantCount } = useCallStateHooks();
   const participants = useParticipants();
   const participantCount = useParticipantCount();
 
-  // Log participant details in a structured format when the list changes
   useEffect(() => {
-    console.groupCollapsed("--- Participant Details Update ---"); // Use groupCollapsed for less noise initially
+    console.groupCollapsed("--- Participant Details Update ---");
     if (participants.length === 0) {
       console.log("No participants currently in the call.");
     } else {
@@ -244,75 +373,51 @@ const SimpleLivestreamLayout = () => { // Remove props argument and type
         roles: p.roles,
         videoStreamActive: p.videoStream?.active ?? false,
         screenShareStreamActive: p.screenShareStream?.active ?? false,
-        // You could add more details here if needed, e.g., isSpeaking: p.isSpeaking
+        audioStreamActive: p.audioStream?.active ?? false,
       }));
-      // Log the array of structured participant objects
       console.log("Current Participants:", participantData);
-      // Alternatively, log each participant object individually within the group:
-      // participantData.forEach((data, index) => {
-      //   console.log(`Participant ${index + 1}:`, data);
-      // });
     }
-    console.groupEnd(); // End the group
-  }, [participants]); // Rerun when participants array changes
+    console.groupEnd();
+  }, [participants]);
 
-  const router = useRouter(); // Keep router for potential future use or cleanup
+  const router = useRouter();
 
-  // --- Refined Participant Selection Logic ---
   let participantToShow: StreamVideoParticipant | undefined = undefined;
-  let trackTypeToShow: "videoTrack" | "screenShareTrack" = "videoTrack"; // Default to video track
+  let trackTypeToShow: "videoTrack" | "screenShareTrack" = "videoTrack";
 
-  // 1. Filter for hosts
   const hosts = participants.filter(p => p.roles.includes('host'));
 
   if (hosts.length > 0) {
-    // 2. Prioritize screen sharing host (Use hasScreenShare utility as per feedback)
     const screenSharingHost = hosts.find(p => hasScreenShare(p));
     if (screenSharingHost) {
       participantToShow = screenSharingHost;
       trackTypeToShow = "screenShareTrack";
     } else {
-      // 3. Prioritize camera-enabled host (Use correct property: isCameraEnabled)
       const cameraEnabledHost = hosts.find(p => hasVideo(p));
       if (cameraEnabledHost) {
         participantToShow = cameraEnabledHost;
         trackTypeToShow = "videoTrack";
       } else {
-        // 4. Fallback to the first host found (regardless of tracks)
         participantToShow = hosts[0];
-        trackTypeToShow = "videoTrack"; // Default to video for fallback host
+        trackTypeToShow = "videoTrack";
       }
     }
   }
 
-  // 5. If no suitable host found, fall back to the very first participant overall
   if (!participantToShow && participants.length > 0) {
     participantToShow = participants[0];
-    // Also check if the fallback participant is screen sharing
     trackTypeToShow = hasScreenShare(participants[0]) ? "screenShareTrack" : "videoTrack";
   }
-  // --- End Refined Participant Selection Logic ---
 
-
-  // Handle case where there are no participants or the selected one isn't found
   useEffect(() => {
-    // Redirect if the determined participantToShow is still undefined after initial load
-    // This check might need refinement depending on desired behavior when empty
     if (participants.length > 0 && !participantToShow) {
        console.warn("No participant could be determined to show.");
-       // Potentially redirect or show a placeholder
-       // router.push('/'); // Example redirect
     } else if (participants.length === 0 && participantCount === 0) {
-       // Handle completely empty call scenario if needed
        console.log("No participants in the call.");
-       // router.push('/'); // Example redirect
     }
   }, [participantToShow, participants, participantCount, router]);
 
-
-  // Show nothing if no participant can be shown yet
   if (!participantToShow) {
-    // You might want a loading indicator or placeholder here instead of null
     return (
        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
          Waiting for participant...
@@ -320,16 +425,20 @@ const SimpleLivestreamLayout = () => { // Remove props argument and type
     );
   }
 
+  const activeAudioParticipants = participants.filter(p => 
+    hasAudio(p) && p.sessionId !== participantToShow?.sessionId
+  );
+
   return (
     <div className="w-full h-full relative">
-      <div className="absolute top-2 right-2 z-10 bg-background/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm"> {/* Improved styling */}
-        Live: {participantCount}
+      <div className="absolute scale-75 md:scale-100 flex gap-0.5 top-2 right-2 z-10 bg-background/20 text-muted-foreground text-xs px-2 py-1 rounded backdrop-blur-sm">
+        <Eye className='m-1 h-3 w-3' /> {participantCount}
       </div>
 
       <ParticipantView
         participant={participantToShow}
-        trackType={trackTypeToShow} // Use determined track type
-        className="w-full h-full rounded-lg"
+        trackType={trackTypeToShow}
+        className="w-full h-full "
         refs={{
           setVideoElement: (element: HTMLVideoElement | null) => {
             if (element) {
@@ -339,35 +448,56 @@ const SimpleLivestreamLayout = () => { // Remove props argument and type
           setVideoPlaceholderElement: () => {}
         }}
       />
+
+      <div className="absolute top-2 left-2 flex gap-2">
+        {activeAudioParticipants.map(participant => (
+          <ParticipantView
+            key={participant.sessionId}
+            participant={participant}
+            ParticipantViewUI={() => (
+              <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                {participant.image ? (
+                  <Image
+                    src={participant.image} 
+                    alt={participant.name || 'Participant'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-medium text-primary">
+                    {(participant.name || 'User').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            )}
+            VideoPlaceholder={null}
+            trackType="none"
+          />
+        ))}
+      </div>
     </div>
   );
 };
-
 
 export function VideoComponent({
   call,
   isCreator,
   markLeaveHandled,
-  // onParticipantCountChange removed
-  deleteSessionAction, // Accept new props
+  deleteSessionAction,
   sessionId,
   userId
-}: VideoComponentProps) { // Use updated props interface
-  // The StreamVideo context is provided by the parent (LiveSessionWrapper)
+}: VideoComponentProps) {
   return (
-    <StreamTheme as="main" className="w-full aspect-video bg-background rounded-sm mt-0 md:mt-6 relative overflow-hidden"> {/* Changed bg, added overflow */}
+    <StreamTheme as="main" className="w-full aspect-video text-background dark:text-foreground mt-0 md:mt-6 relative overflow-visible str-video">
       <StreamCall call={call}>
-        {/* Replace SpeakerLayout with the custom layout - removed userId prop */}
         <SimpleLivestreamLayout />
-        {/* Render custom controls, pass necessary props */}
         <CustomControls
           isCreator={isCreator}
           markLeaveHandled={markLeaveHandled}
-         
-          deleteSessionAction={deleteSessionAction} // Pass down
-          sessionId={sessionId}                     // Pass down
-          userId={userId}                           // Pass down
+          deleteSessionAction={deleteSessionAction}
+          sessionId={sessionId}
+          userId={userId}
         />
+        {isCreator && <PermissionRequestHandler />}
       </StreamCall>
     </StreamTheme>
   );

@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Copy } from 'lucide-react'; // Import Copy icon
+import { Copy } from 'lucide-react'; 
 import {
   StreamVideo,
   StreamVideoClient,
   Call,
   LoadingIndicator,
-  // useCallStateHooks, // No longer needed for this approach
+
 } from '@stream-io/video-react-sdk';
 // Chat SDK imports
 import { StreamChat, Channel } from 'stream-chat';
@@ -133,7 +133,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
                 user_id: user.id,
                 role: user.role === 'GURU' 
                   ? (isCreator ? 'host' : 'moderator') 
-                  : 'user', // Default to 'user' for MURID or other roles
+                  : 'moderator', // Default to 'user' for MURID or other roles
               },
             ],
             

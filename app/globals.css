@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 @plugin "tailwindcss-animate";
 
@@ -80,6 +81,42 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Stream Video theme customization */
+.light .str-video {
+  --str-video__primary-color: var(--accent);
+  --str-video__secondary-color: var(--background);
+  --str-video__text-color1: var(--background);
+  --str-video__background-color1: var(--background);
+  --str-video__background-color2: var(--popover);
+  --str-video__border-color: var(--border);
+  --str-video__button-background: var(--popover);
+  --str-video__button-background-hover: var(--accent);
+  --str-video__button-text-color: var(--background);
+  --str-video__overlay-color: rgba(0, 0, 0, 0.7);
+  --str-video__tooltip-background: var(--popover);
+  --str-video__tooltip-text-color: var(--foreground);
+  --str-video__base-color6: #cad1d8;
+  --str-video__background-color4: var(--accent);
+
+}
+
+/* Dark mode overrides */
+.dark .str-video {
+  --str-video__primary-color: var(--accent);
+  --str-video__secondary-color: var(--muted);
+  --str-video__text-color1: var(--foreground);
+  --str-video__background-color1: var(--background);
+  --str-video__background-color2: var(--popover);
+  --str-video__border-color: var(--border);
+  --str-video__button-background: var(--popover);
+  --str-video__button-background-hover: var(--accent);
+  --str-video__button-text-color: var(--foreground);
+  --str-video__overlay-color: rgba(0, 0, 0, 0.7);
+  --str-video__tooltip-background: var(--popover);
+  --str-video__tooltip-text-color: var(--foreground);
+  --str-video__base-color6: #244d3d27;
 }
 
 :root {

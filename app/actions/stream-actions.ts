@@ -27,9 +27,6 @@ export async function generateStreamToken() {
     const issuedAt = Math.floor(Date.now() / 1000) - 60; // Set issuedAt 60 seconds in the past to allow for clock skew
     const expirationTime = issuedAt + 60 * 60; // Token valid for 1 hour from the adjusted issuedAt time
 
-    // Generate token associated with the user's ID. Permissions will be determined
-    // by the call type configuration in the Stream dashboard based on the user's role there.
-    // Pass both issuedAt (iat) and expirationTime (exp)
     const token = client.createToken(user.id, expirationTime, issuedAt);
 
     // Optional: Log user ID for debugging, role is handled by Stream based on call type config

@@ -1,5 +1,5 @@
-import { formatDate } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { getCurrentLocalTime, formatLocalDate,} from "@/lib/date-utils"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import { useRouter } from "next/navigation"
@@ -52,7 +52,7 @@ export function TryoutCard({
   userRole
 }: TryoutCardProps) {
   const router = useRouter()
-  const now = new Date()
+  const now = getCurrentLocalTime()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const canDelete = userRole === "GURU" || userRole === "ADMIN"
   let status: 'upcoming' | 'active' | 'ended' = 'upcoming'
@@ -140,10 +140,10 @@ export function TryoutCard({
       <CardContent>
         <div className="space-y-2">
           <div className="text-sm">
-            <span className="font-semibold">Start:</span> {formatDate(startTime)}
+            <span className="font-semibold">Start:</span> {formatLocalDate(startTime)}
           </div>
           <div className="text-sm">
-            <span className="font-semibold">End:</span> {formatDate(endTime)}
+            <span className="font-semibold">End:</span> {formatLocalDate(endTime)}
           </div>
           {showParticipantCount && (
             <div className="text-sm">

@@ -1,15 +1,11 @@
 import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
-import { id } from "date-fns/locale"
+import { toLocalTime, getRelativeTime } from "@/lib/date-utils"
 import { cn } from "@/lib/utils"
 import { BlinkingDot } from "../ui/blinking-dot"
 import { getLiveSessions } from "@/app/actions/live-session-actions"
 
 function getTimeLeft(startTime: Date): string {
-  return formatDistanceToNow(new Date(startTime), { 
-    addSuffix: true,
-    locale: id 
-  })
+  return getRelativeTime(toLocalTime(startTime))
 }
 
 export async function UpcomingLiveSessionBanner() {

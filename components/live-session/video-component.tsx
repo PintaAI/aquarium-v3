@@ -20,6 +20,7 @@ import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Eye,
 import { useRouter } from "next/navigation"; // Import router
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { toUTC, getCurrentLocalTime } from '@/lib/date-utils';
 
 
 // Type for permission request events
@@ -67,9 +68,9 @@ const PermissionRequestHandler = () => {
   const handleRequest = async (accept: boolean, request: PermissionRequestEvent) => {
     if (!call) return;
     
-    const now = Date.now();
-    const lastRequestTime = lastRequestTimes[request.user.id] || 0;
-    const timeSinceLastRequest = now - lastRequestTime;
+  const now = toUTC(getCurrentLocalTime()).getTime();
+  const lastRequestTime = lastRequestTimes[request.user.id] || 0;
+  const timeSinceLastRequest = now - lastRequestTime;
 
     // Check if 5 seconds have passed since last request
     if (timeSinceLastRequest < 5000) {
@@ -278,7 +279,7 @@ function CustomControls({
               microphone.toggle();
             } else if (call && !call.permissionsContext.hasPermission(OwnCapability.SEND_AUDIO)) {
               if (call.permissionsContext.canRequest(OwnCapability.SEND_AUDIO)) {
-                const now = Date.now();
+                const now = toUTC(getCurrentLocalTime()).getTime();
                 const timeSinceLastRequest = now - lastRequestTime;
 
                 if (timeSinceLastRequest < 5000) {

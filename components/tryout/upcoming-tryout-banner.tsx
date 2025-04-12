@@ -1,16 +1,12 @@
 import Link from "next/link"
 import { getUpcomingTryout } from "@/app/actions/tryout-actions"
-import { formatDistanceToNow } from "date-fns"
-import { id } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { BlinkingDot } from "../ui/blinking-dot"
+import { getRelativeTime } from "@/lib/date-utils"
 
 
 function getTimeLeft(startTime: Date): string {
-  return formatDistanceToNow(new Date(startTime), { 
-    addSuffix: true,
-    locale: id 
-  })
+  return getRelativeTime(startTime)
 }
 
 export async function UpcomingTryoutBanner() {

@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { currentUser } from "@/lib/auth"
 import { getTryout, getTryoutLeaderboard } from "@/app/actions/tryout-actions"
-import { formatDate } from "@/lib/utils"
+import { DateDisplay } from "@/components/shared"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { notFound } from "next/navigation"
@@ -35,7 +35,7 @@ export default async function LeaderboardPage(props: Props) {
         <div>
           <h1 className="text-2xl font-bold">{tryout.koleksiSoal.nama}</h1>
           <p className="text-sm text-muted-foreground">
-            {formatDate(tryout.startTime)} - {formatDate(tryout.endTime)}
+            <DateDisplay date={tryout.startTime} /> - <DateDisplay date={tryout.endTime} />
           </p>
         </div>
         <Link href={`/tryout/${tryoutId}`}>
@@ -95,7 +95,7 @@ export default async function LeaderboardPage(props: Props) {
                     <div>
                       <p className="font-medium">{entry.user.name || entry.user.email || 'Anonymous'}</p>
                       <p className="text-sm text-muted-foreground">
-                        Submitted {formatDate(entry.submittedAt!)}
+                        Submitted <DateDisplay date={entry.submittedAt!} relative />
                       </p>
                     </div>
                   </div>

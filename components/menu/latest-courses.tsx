@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Course } from "@/app/actions/course-actions";
 import { RecentCourse, getRecentCourses } from "@/lib/recent-courses";
+import { getCurrentLocalTime, compareDates } from "@/lib/date-utils";
 
 export function LatestCourses() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -33,14 +34,14 @@ export function LatestCourses() {
     if (!combinedCourses.some(c => c.id === course.id)) {
       combinedCourses.push({
         ...course,
-        lastAccessed: new Date(course.updatedAt)
+        lastAccessed: getCurrentLocalTime()
       });
     }
   });
 
-  // Sort by lastAccessed date
+  // Sort by lastAccessed date using our compareDates utility
   combinedCourses.sort((a, b) => {
-    return new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime();
+    return -compareDates(a.lastAccessed, b.lastAccessed); // Negative to reverse order (newest first)
   });
 
   // Limit to 3 items

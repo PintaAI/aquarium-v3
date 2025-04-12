@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Card,  CardDescription, CardTitle } from "@/components/ui/card";
+import { compareDates } from "@/lib/date-utils";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusIcon, SearchIcon } from "lucide-react";
@@ -25,9 +26,8 @@ export default function CourseList({ initialCourses, userRole, userId, error }: 
 
   const sortCourses = (coursesToSort: Course[], order: string) => {
     return [...coursesToSort].sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return order === 'newest' ? dateB - dateA : dateA - dateB;
+      const comparison = compareDates(a.createdAt, b.createdAt);
+      return order === 'newest' ? -comparison : comparison;
     });
   };
 

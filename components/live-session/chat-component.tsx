@@ -7,6 +7,9 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
 import {  Channel, Event } from 'stream-chat'
 import { Send } from 'lucide-react'
 
+import { toUTC } from '@/lib/date-utils'
+import { DateDisplay } from '../shared'
+
 interface Message {
   id: string
   text: string
@@ -38,7 +41,7 @@ export function ChatComponent({ channel }: ChatComponentProps) {
         text: message.text || '',
         sender: message.user?.name || message.user?.id || 'Unknown User',
         senderImage: message.user?.image as string | undefined,
-        timestamp: new Date(message.created_at || Date.now())
+        timestamp: toUTC(message.created_at || new Date())
       }])
     }
 
@@ -53,7 +56,7 @@ export function ChatComponent({ channel }: ChatComponentProps) {
             text: msg.text || '',
             sender: msg.user?.name || msg.user?.id || 'Unknown User',
             senderImage: msg.user?.image as string | undefined,
-            timestamp: new Date(msg.created_at || Date.now())
+            timestamp: toUTC(msg.created_at || new Date())
           }))
         )
       } catch (error) {
@@ -108,7 +111,12 @@ export function ChatComponent({ channel }: ChatComponentProps) {
             </Avatar>
             <div className="min-w-0">
               <span className="font-bold text-sm text-primary mr-2">{message.sender}</span>
-              <span className="text-sm text-black dark:text-muted-foreground break-words">{message.text}</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm text-black dark:text-muted-foreground break-words">{message.text}</span>
+                <span className="text-xs text-muted-foreground">
+                  <DateDisplay date={message.timestamp} relative />
+                </span>
+              </div>
             </div>
           </div>
         </div>

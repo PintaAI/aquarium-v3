@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { toUTC, formatForInput } from '@/lib/date-utils'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -82,27 +82,32 @@ function CreateSessionForm({ courses, onSuccess }: CreateSessionFormProps) {
     defaultValues: {
       name: "",
       description: "",
-      scheduledStart: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+      scheduledStart: formatForInput(new Date()),
       courseId: ""
     }
   })
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const sessionData: CreateSessionInput = {
-      ...data,
-      courseId: parseInt(data.courseId),
-      scheduledStart: new Date(data.scheduledStart),
-      scheduledEnd: data.scheduledEnd ? new Date(data.scheduledEnd) : undefined
-    }
+    try {
+      const sessionData: CreateSessionInput = {
+        ...data,
+        courseId: parseInt(data.courseId),
+        scheduledStart: toUTC(data.scheduledStart),
+        scheduledEnd: data.scheduledEnd ? toUTC(data.scheduledEnd) : undefined
+      }
 
-    const result = await createLiveSession(sessionData)
+      const result = await createLiveSession(sessionData)
 
-    if (result.success) {
-      toast.success("Live session created successfully")
-      router.refresh()
-      onSuccess?.()
-    } else {
-      toast.error(result.error || "Failed to create live session")
+      if (result.success) {
+        toast.success("Live session created successfully")
+        router.refresh()
+        onSuccess?.()
+      } else {
+        toast.error(result.error || "Failed to create live session")
+      }
+    } catch (error) {
+      console.error("Date conversion error:", error)
+      toast.error("Invalid date format. Please check the date and time inputs.")
     }
   }
 

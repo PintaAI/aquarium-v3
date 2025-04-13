@@ -7,6 +7,8 @@ import { DateDisplay } from "@/components/shared"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { notFound } from "next/navigation"
+import { FaTrophy } from "react-icons/fa"
+import { IoArrowBack } from "react-icons/io5"
 
 interface Props {
   params: Promise<{
@@ -46,11 +48,6 @@ export default async function LeaderboardPage(props: Props) {
           <p className="text-sm text-muted-foreground">
             <DateDisplay date={tryout.startTime} format="PPP p" /> - <DateDisplay date={tryout.endTime} format="PPP p" />
           </p>
-          <div className="pt-2">
-            <Link href={`/tryout/`}>
-              <Button variant="outline">Kembali</Button>
-            </Link>
-          </div>
         </div>
       </div>
 
@@ -81,11 +78,22 @@ export default async function LeaderboardPage(props: Props) {
       )}
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold ml-2">Ranking</h2>
+        <div className="flex items-center justify-between mx-2">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <FaTrophy className="text-yellow-500" />
+            Ranking
+          </h2>
+          <Link href={`/tryout/`}>
+            <Button variant="outline" size="sm">
+              <IoArrowBack className="mr-2 h-4 w-4" />
+              Kembali
+            </Button>
+          </Link>
+        </div>
         
         {leaderboard.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">
-            No submissions yet
+            Belum ada yang berpartisipasi dalam tryout ini
           </p>
         ) : (
           <div className="space-y-2 m-2">
@@ -137,7 +145,7 @@ export default async function LeaderboardPage(props: Props) {
                     </Avatar>
                     <div>
                       <p className="font-medium flex flex-wrap items-center gap-2 min-w-0">
-                        <span className="truncate">
+                        <span className="text-sm sm:text-lg truncate">
                           {entry.user.name || entry.user.email || 'Anonymous'}
                         </span>
                         {index === 0 ? (

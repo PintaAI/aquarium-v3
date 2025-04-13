@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { getCurrentLocalTime, formatLocalDate,} from "@/lib/date-utils"
+import { getCurrentLocalTime } from "@/lib/date-utils"
+import { DateDisplay } from "../shared/date-display"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import { useRouter } from "next/navigation"
@@ -140,10 +141,10 @@ export function TryoutCard({
       <CardContent>
         <div className="space-y-2">
           <div className="text-sm">
-            <span className="font-semibold">Start:</span> {formatLocalDate(startTime)}
+            <span className="font-semibold">Start:</span> <DateDisplay date={startTime} />
           </div>
           <div className="text-sm">
-            <span className="font-semibold">End:</span> {formatLocalDate(endTime)}
+            <span className="font-semibold">End:</span> <DateDisplay date={endTime} />
           </div>
           {showParticipantCount && (
             <div className="text-sm">

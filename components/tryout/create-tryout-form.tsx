@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent,} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toUTC, formatForInput, getCurrentLocalTime } from "@/lib/date-utils"
+import { formatForInput, getCurrentLocalTime } from "@/lib/date-utils"
 import { 
   Select,
   SelectContent,
@@ -52,8 +52,8 @@ export function CreateTryoutForm({ koleksiSoals, onSubmit }: CreateTryoutFormPro
     const formData = new FormData(e.currentTarget)
     
     const koleksiSoalId = parseInt(formData.get("koleksiSoalId") as string)
-    const startTime = toUTC(formData.get("startTime") as string)
-    const endTime = toUTC(formData.get("endTime") as string)
+    const startTime = new Date(formData.get("startTime") as string)
+    const endTime = new Date(formData.get("endTime") as string)
     const durationType = formData.get("durationType") as string
     const duration = durationType === "custom" 
       ? parseInt(formData.get("customDuration") as string)

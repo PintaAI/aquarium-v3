@@ -101,7 +101,8 @@ export async function joinTryout(tryoutId: number, userId: string) {
 export async function submitTryoutAnswers(
   tryoutId: number,
   userId: string,
-  answers: number[]
+  answers: number[],
+  timeTakenSeconds: number
 ) {
   const user = await currentUser()
 
@@ -166,7 +167,8 @@ export async function submitTryoutAnswers(
     },
     data: {
       score,
-      submittedAt: now
+      submittedAt: now,
+      timeTakenSeconds
     }
   })
 
@@ -198,7 +200,7 @@ export async function getTryoutLeaderboard(tryoutId: number) {
     },
     orderBy: [
       { score: 'desc' },
-      { submittedAt: 'asc' }
+      { timeTakenSeconds: 'asc' }
     ]
   })
 

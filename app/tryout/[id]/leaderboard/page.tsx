@@ -10,6 +10,14 @@ import { notFound } from "next/navigation"
 import { FaTrophy } from "react-icons/fa"
 import { IoArrowBack } from "react-icons/io5"
 
+// Format time taken in MM:SS format
+const formatTime = (seconds: number | null) => {
+  if (!seconds) return "-" // Default to 30 minutes if null
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
 interface Props {
   params: Promise<{
     id: string
@@ -53,8 +61,8 @@ export default async function LeaderboardPage(props: Props) {
 
       {user.role === "MURID" && userRank > 0 && (
         <Card className="p-4 mb-6 bg-primary text-primary-foreground">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-2">
-                  <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
               <div className="text-2xl font-bold">#{userRank}</div>
               <Avatar>
                 <AvatarImage src={user.image || undefined} />
@@ -67,10 +75,8 @@ export default async function LeaderboardPage(props: Props) {
                 <p className="text-sm opacity-90">Your Rank</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold">
-                {leaderboard[userRank - 1].score}
-              </p>
+            <div className="text-right flex flex-col">
+              <p className="text-2xl font-bold">{leaderboard[userRank - 1].score}</p>
               <p className="text-sm opacity-90">Points</p>
             </div>
           </div>
@@ -101,7 +107,6 @@ export default async function LeaderboardPage(props: Props) {
               <Card 
                 key={entry.userId} 
                 className={`p-4 transition-all duration-300 ${
-                  entry.userId === user.id ? 'bg-accent' : 
                   index === 0 ? 'bg-gradient-to-r from-yellow-500/10 via-yellow-500/5 to-yellow-500/10 border-yellow-500/30 hover:border-yellow-500/50' :
                   index === 1 ? 'bg-gradient-to-r from-gray-400/10 via-gray-400/5 to-gray-400/10 border-gray-400/30 hover:border-gray-400/50' :
                   index === 2 ? 'bg-gradient-to-r from-amber-600/10 via-amber-600/5 to-amber-600/10 border-amber-600/30 hover:border-amber-600/50' : ''
@@ -163,7 +168,7 @@ export default async function LeaderboardPage(props: Props) {
                         ) : null}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Submitted <DateDisplay date={entry.submittedAt!} relative />
+                        Selesai {formatTime(entry.timeTakenSeconds)}
                       </p>
                     </div>
                   </div>

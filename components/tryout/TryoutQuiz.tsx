@@ -29,6 +29,11 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(-1))
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Store start time for accurate duration calculation
+  const [startTime, setStartTime] = useState<number | null>(null)
+  const [hasInteracted, setHasInteracted] = useState(false)
+  
   // Initialize with duration in seconds
   const [timeRemaining, setTimeRemaining] = useState(() => {
     const stored = localStorage.getItem(`tryout-${tryoutId}-time`)
@@ -36,18 +41,32 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
     return isNaN(parsedTime) ? duration * 60 : parsedTime
   })
 
-const handleSubmit = useCallback(async () => {
+  // Set start time when user first interacts
+  useEffect(() => {
+    if (!hasInteracted && !startTime) {
+      const stored = localStorage.getItem(`tryout-${tryoutId}-startTime`)
+      if (stored) {
+        setStartTime(parseInt(stored))
+      }
+    }
+  }, [hasInteracted, startTime, tryoutId])
 
+  const handleSubmit = useCallback(async () => {
     try {
       setIsSubmitting(true)
-      await submitTryoutAnswers(tryoutId, userId, answers)
+      // Calculate actual time taken based on duration
+      const timeTakenSeconds = Math.min(
+        duration * 60,
+        startTime ? Math.floor((Date.now() - startTime) / 1000) : 0
+      )
+      await submitTryoutAnswers(tryoutId, userId, answers, timeTakenSeconds)
       router.push(`/tryout/${tryoutId}/leaderboard`)
     } catch (error) {
       alert("Gagal mengirim jawaban: " + (error as Error).message)
     } finally {
       setIsSubmitting(false)
     }
-  }, [answers, tryoutId, userId, router])
+  }, [answers, tryoutId, userId, router, duration, startTime])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -79,6 +98,13 @@ const handleSubmit = useCallback(async () => {
   }
 
   const handleAnswerClick = (opsiId: number) => {
+    // Start timer on first interaction
+    if (!hasInteracted) {
+      const now = Date.now()
+      setStartTime(now)
+      setHasInteracted(true)
+      localStorage.setItem(`tryout-${tryoutId}-startTime`, now.toString())
+    }
     const newAnswers = [...answers]
     newAnswers[currentQuestion] = opsiId
     setAnswers(newAnswers)

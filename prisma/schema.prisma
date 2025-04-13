@@ -296,9 +296,10 @@ model TryoutParticipant {
   id          Int       @id @default(autoincrement())
   tryoutId    Int
   userId      String
-  score       Int       @default(0)
-  submittedAt DateTime?
-  createdAt   DateTime  @default(now())
+  score            Int       @default(0)
+  submittedAt      DateTime?
+  timeTakenSeconds Int?      // Nullable for backward compatibility with existing records
+  createdAt        DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   tryout      Tryout    @relation(fields: [tryoutId], references: [id])
   user        User      @relation(fields: [userId], references: [id])

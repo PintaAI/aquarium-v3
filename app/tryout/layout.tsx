@@ -20,11 +20,11 @@ export default function TryoutLayout({
       }
     >
       <AppSidebar />
-      <div className="flex flex-1 flex-col gap-4 p-0 sm:p-4 pb-24">
+      
         <div className="mt-5 max-w-7xl mx-auto w-full ">
           {children}
         </div>
-      </div>
+      
     </SidebarProvider>
   );
 }

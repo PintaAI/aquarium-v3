@@ -2,15 +2,14 @@
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { useParams } from "next/navigation";
 
 export default function TryoutLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const params = useParams();
-  const id = params?.id as string | undefined;
+  
+  
 
   return (
     <SidebarProvider

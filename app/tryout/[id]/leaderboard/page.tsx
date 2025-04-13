@@ -31,7 +31,7 @@ export default async function LeaderboardPage(props: Props) {
   const userRank = leaderboard.findIndex(entry => entry.userId === user.id) + 1
 
   return (
-    <div className="m-2">
+    <div >
       <div className="mb-8 flex flex-col items-center text-center">
         <div className="w-24 h-24 mb-4 relative">
           <Image
@@ -44,10 +44,10 @@ export default async function LeaderboardPage(props: Props) {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">{tryout.koleksiSoal.nama}</h1>
           <p className="text-sm text-muted-foreground">
-            <DateDisplay date={tryout.startTime} /> - <DateDisplay date={tryout.endTime} />
+            <DateDisplay date={tryout.startTime} format="PPP p" /> - <DateDisplay date={tryout.endTime} format="PPP p" />
           </p>
           <div className="pt-2">
-            <Link href={`/tryout/${tryoutId}`}>
+            <Link href={`/tryout/`}>
               <Button variant="outline">Kembali</Button>
             </Link>
           </div>
@@ -81,14 +81,14 @@ export default async function LeaderboardPage(props: Props) {
       )}
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Ranking</h2>
+        <h2 className="text-xl font-semibold ml-2">Ranking</h2>
         
         {leaderboard.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">
             No submissions yet
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 m-2">
             {leaderboard.map((entry, index) => (
               <Card 
                 key={entry.userId} 
@@ -159,8 +159,8 @@ export default async function LeaderboardPage(props: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right flex gap-2 items-baseline justify-end sm:block">
-                    <p className={`text-lg sm:text-xl font-bold ${
+                  <div className="text-right flex flex-col">
+                    <p className={`text-lg mr-2 sm:text-xl font-bold ${
                       index === 0 ? 'text-yellow-500' :
                       index === 1 ? 'text-gray-400' :
                       index === 2 ? 'text-amber-600' : ''

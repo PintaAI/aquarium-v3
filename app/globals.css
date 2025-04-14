@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "@stream-io/video-react-sdk/dist/css/styles.css";
 
-@plugin "tailwindcss-animate";
+/* @plugin "tailwindcss-animate"; Temporarily comment out to test for conflicts */
 
 @keyframes shake {
   0%, 100% { 
@@ -30,12 +30,13 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    /* Translate by half the element's width (since content is duplicated) */
+    transform: translateX(-50%); 
   }
 }
 
 .animate-marquee {
-  display: inline-block;
+  /* display: inline-block; Let the element's default display work */
   white-space: nowrap;
   animation: marquee 20s linear infinite;
 }

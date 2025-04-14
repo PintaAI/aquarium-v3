@@ -1,4 +1,5 @@
 import { formatDistanceToNow, format, parseISO } from 'date-fns'
+import { id } from 'date-fns/locale/id' // Import Indonesian locale
 import { toZonedTime,} from 'date-fns-tz'
 
 /**
@@ -38,7 +39,8 @@ export function formatLocalDate(date: Date | string, formatStr: string = 'PPpp')
  */
 export function getRelativeTime(date: Date | string): string {
   const localDate = toLocalTime(date)
-  return formatDistanceToNow(localDate, { addSuffix: true })
+  // Add Indonesian locale to formatDistanceToNow
+  return formatDistanceToNow(localDate, { addSuffix: true, locale: id }) 
 }
 
 /**

@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation"; // Import router
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { toUTC, getCurrentLocalTime } from '@/lib/date-utils';
+import { sendNotification } from '@/app/actions/push-notifications'; // Import sendNotification
 
 
 // Type for permission request events
@@ -341,8 +342,24 @@ function CustomControls({
               if (call) {
                 try {
                   await call.goLive();
+                  // Send notification after successfully going live
+                  try {
+                    await sendNotification(
+                      'all', // Send to all users
+                      'Sesi Live Dimulai!', // Notification title
+                      {
+                        body: `Sesi live baru saja dimulai. Bergabung sekarang!`, // Notification body
+                        url: `/dashboard/live-session?sessionId=${sessionId}` // Optional: URL to open on click
+                      }
+                    );
+                    console.log("Go live notification sent successfully.");
+                  } catch (notificationError) {
+                    console.error("Failed to send go live notification:", notificationError);
+                    // Optionally inform the user about the notification failure, but don't block the UI
+                  }
                 } catch (err) {
                   console.error("Failed to go live:", err);
+                  // Handle go live error (e.g., show a toast message)
                 }
               }
             }}

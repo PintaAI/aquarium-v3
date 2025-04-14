@@ -104,26 +104,28 @@ export function ChatComponent({ channel }: ChatComponentProps) {
       <div className="flex-1 overflow-y-auto p-2 space-y-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
         {messages.map((message, index) => (
         <div key={message.id} className={`px-2 py-1 hover:bg-muted/50 rounded ${index % 2 === 0 ? 'bg-muted/30' : ''}`}>
-          <div className="flex items-start gap-2">
-            <Avatar className="h-5 w-5 flex-shrink-0 mt-0.5">
-              <AvatarImage src={message.senderImage} />
+          <div className="flex gap-3">
+            <Avatar className="h-8 w-8 flex-shrink-0">
+              <AvatarImage src={message.senderImage} width={32} height={32} alt={`${message.sender}'s avatar`} />
               <AvatarFallback>{message.sender[0]}</AvatarFallback>
             </Avatar>
-            <div className="min-w-0">
-              <span className="font-bold text-sm text-primary mr-2">{message.sender}</span>
+            <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
-                <span className="text-sm text-black dark:text-muted-foreground break-words">{message.text}</span>
+                <span className="font-medium text-sm">{message.sender}</span>
                 <span className="text-xs text-muted-foreground">
-                  <DateDisplay date={message.timestamp} relative />
+                  <DateDisplay date={message.timestamp} format="h:mm aa" />
                 </span>
               </div>
+              <p className="text-sm mt-0.5 text-black dark:text-muted-foreground break-words whitespace-pre-wrap">
+                {message.text}
+              </p>
             </div>
           </div>
         </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <div className="border-t p-2">
+      <div className="border-t p-3">
         <div className="flex gap-2">
           <Input
             value={newMessage}

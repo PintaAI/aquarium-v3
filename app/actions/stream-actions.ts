@@ -3,6 +3,48 @@
 import { currentUser } from '@/lib/auth';
 import { StreamClient } from '@stream-io/node-sdk';
 
+// Interface for user data
+interface StreamUser {
+  id: string;
+  name: string | null;
+  image: string | null;
+}
+
+// Create users in Stream before using them in calls
+export async function createStreamUsers(users: StreamUser[]) {
+  try {
+    console.log('[Stream] Creating users:', users.map(u => ({ id: u.id, name: u.name })));
+    
+    const apiKey = process.env.NEXT_PUBLIC_STREAMCALL_API_KEY;
+    const apiSecret = process.env.STREAMCALL_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      throw new Error('Stream API credentials not found');
+    }
+
+    const client = new StreamClient(apiKey, apiSecret);
+
+    // Create/Update users in Stream
+    // Create/Update users in Stream - use upsertUsers for batch operation
+    const createUsersResult = await client.upsertUsers(
+      users.map(user => ({
+        id: user.id,
+        name: user.name || 'Anonymous',
+        image: user.image || undefined
+      }))
+    );
+
+    console.log('[Stream] Users created successfully:', createUsersResult);
+    return { success: true };
+  } catch (error) {
+    console.error('[Stream] Failed to create users:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to create users in Stream'
+    };
+  }
+}
+
 export async function generateStreamToken() {
   try {
     const user = await currentUser();

@@ -11,7 +11,7 @@ import {
 } from '@stream-io/video-react-sdk';
 // Chat SDK imports
 import { StreamChat, Channel } from 'stream-chat';
-import { generateStreamToken } from '@/app/actions/stream-actions';
+import { createStreamUsers, generateStreamToken } from '@/app/actions/stream-actions';
 import { UseCurrentUser } from '@/hooks/use-current-user';
 import { VideoComponent } from './video-component'; // Will be simplified
 import { SessionInfo } from './session-info';       // Will receive call prop
@@ -35,16 +35,21 @@ import { useToast } from '@/hooks/use-toast'; // Added useToast
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 
 interface LiveSessionWrapperProps {
-  liveSessionData: LiveSession; // Receive fetched data
+  liveSessionData: LiveSession;
   isCreator: boolean;
+  guruUsers: Array<{
+    id: string;
+    name: string | null;
+    image: string | null;
+  }>;
 }
 
 // Ensure API Key is available client-side
 const apiKey = process.env.NEXT_PUBLIC_STREAMCALL_API_KEY;
 
-export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWrapperProps) {
+export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: LiveSessionWrapperProps) {
   const user = UseCurrentUser();
-  const { toast } = useToast(); // Initialize toast
+  const { toast } = useToast();
   // Video state
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
@@ -121,24 +126,37 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
           if (isMounted) setChatClient(currentChatClient);
         }
 
-        // Create or get existing call and channel instances
-        if (!currentCallInstance && currentVideoClient && isMounted && liveSessionData.streamCallId) {
-          currentCallInstance = currentVideoClient.call('livestream', liveSessionData.streamCallId);
-          
-          // Use getOrCreate for the video call
-          await currentCallInstance.getOrCreate({
-          data: {
-            members: [
-              {
-                user_id: user.id,
-                role: user.role === 'GURU' 
-                  ? (isCreator ? 'host' : 'moderator') 
-                  : 'moderator', // Default to 'user' for MURID or other roles
-              },
-            ],
-            
-          },
-        });
+  // Create or get existing call and channel instances
+  if (!currentCallInstance && currentVideoClient && isMounted && liveSessionData.streamCallId) {
+    try {
+      // First create/update all GURU users in Stream
+      const createUsersResult = await createStreamUsers(guruUsers);
+      if (!createUsersResult.success) {
+        throw new Error('[LiveSessionWrapper] Failed to create users in Stream: ' + createUsersResult.error);
+      }
+
+      // Initialize call instance
+      currentCallInstance = currentVideoClient.call('livestream', liveSessionData.streamCallId);
+      
+      // Set up members with roles
+      const members = guruUsers.map(guruUser => {
+        const role = guruUser.id === liveSessionData.creator.id ? 'host' : 'moderator';
+        return {
+          user_id: guruUser.id,
+          role: role
+        };
+      });
+
+      // Create or get the call
+      const result = await currentCallInstance.getOrCreate({
+        data: {
+          members: members,
+        },
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to setup call');
+      return;
+    }
           await currentCallInstance.camera.disable(); // Disable camera by default
           await currentCallInstance.microphone.disable(); // Disable microphone by default
           await currentCallInstance.join(); // Explicitly join the call
@@ -151,13 +169,9 @@ export function LiveSessionWrapper({ liveSessionData, isCreator }: LiveSessionWr
                 const url = callGetResponse.call.ingress?.rtmp?.address;
                 if (url && isMounted) {
                   setRtmpUrlFromGet(url);
-                  console.log('[LiveSessionWrapper] RTMP URL fetched via call.get():', url); // Add log
-                } else if (isMounted) {
-                  console.warn('[LiveSessionWrapper] RTMP URL not found in call.get() response.'); // Add warning
                 }
             }
           } catch (getErr) {
-             console.error('[LiveSessionWrapper] Error calling call.get():', getErr);
           }
           // --- End Get RTMP URL ---
 

@@ -1,30 +1,25 @@
 'use client';
-
 import {
-  StreamCall, // The React Component
-  Call,       // The type for the call object
-  // SpeakerLayout removed
+  StreamCall, 
+  Call,       
   StreamTheme,
-  ParticipantView, // Needed for custom layout
-  useCallStateHooks, // Import state hooks
-  useCall, // Import hook to get the call object
-  StreamVideoParticipant, // Import the participant type
+  ParticipantView, 
+  useCallStateHooks, 
+  useCall, 
+  StreamVideoParticipant, 
   hasScreenShare,
   hasVideo,
-  hasAudio, // Import the utility function
+  hasAudio, 
   OwnCapability,
-  // CallingState enum no longer needed for this check
 } from '@stream-io/video-react-sdk';
-import { Button } from "@/components/ui/button"; // Import Button
-import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Eye, Check, X, Radio } from "lucide-react"; // Import icons
-import { useRouter } from "next/navigation"; // Import router
+import { Button } from "@/components/ui/button"; 
+import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Eye, Check, X, Radio } from "lucide-react"; 
+import { useRouter } from "next/navigation"; 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { toUTC, getCurrentLocalTime } from '@/lib/date-utils';
-import { sendNotification } from '@/app/actions/push-notifications'; // Import sendNotification
+import { sendNotification } from '@/app/actions/push-notifications'; 
 
-
-// Type for permission request events
 interface PermissionRequestEvent {
   type: 'call.permission_request';
   permissions: string[];
@@ -35,7 +30,6 @@ interface PermissionRequestEvent {
   };
 }
 
-// Custom permission request handler component
 const PermissionRequestHandler = () => {
   const call = useCall();
   const { useLocalParticipant, useHasPermissions } = useCallStateHooks();
@@ -372,8 +366,6 @@ function CustomControls({
     </div>
   );
 }
-
-// Rest of the components (SimpleLivestreamLayout, VideoComponent) remain unchanged
 
 const SimpleLivestreamLayout = () => {
   const { useParticipants, useParticipantCount } = useCallStateHooks();

@@ -4,6 +4,25 @@ import { db } from "@/lib/db"
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
 
+export async function getAllGuruUsers() {
+  try {
+    const guruUsers = await db.user.findMany({
+      where: {
+        role: 'GURU'
+      },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+      }
+    });
+    return { success: true, users: guruUsers };
+  } catch (error) {
+    console.error('Failed to fetch GURU users:', error);
+    return { success: false, error: 'Failed to fetch GURU users' };
+  }
+}
+
 export async function updateProfile(data: {
   name: string
   image?: string

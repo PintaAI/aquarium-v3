@@ -5,7 +5,7 @@ import { StartSessionButton } from '@/components/live-session/start-session-butt
 import { getLiveSessions } from '@/app/actions/live-session-actions'
 import { getCourses } from '@/app/actions/course-actions'
 import { CreateSessionButton } from '@/components/live-session/create-session-form'
-import { format } from 'date-fns'
+import { formatLocalDate } from '@/lib/date-utils'
 import { Card,  CardDescription,  CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -93,17 +93,17 @@ export default async function LiveSessionPage() {
                       <div>
                         {session.status === 'LIVE' ? (
                           <>
-                            Started: {format(new Date(session.actualStart || session.scheduledStart), 'PPp')}
+                            Started: {formatLocalDate(session.actualStart || session.scheduledStart, 'PPp')}
                           </>
                         ) : (
                           <>
-                            Starts: {format(new Date(session.scheduledStart), 'PPp')}
+                            Starts: {formatLocalDate(session.scheduledStart, 'PPp')}
                           </>
                         )}
                       </div>
                       {session.scheduledEnd && (
                         <div>
-                          Ends: {format(new Date(session.scheduledEnd), 'PPp')}
+                          Ends: {formatLocalDate(session.scheduledEnd, 'PPp')}
                         </div>
                       )}
                     </div>

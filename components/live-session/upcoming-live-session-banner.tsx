@@ -1,11 +1,12 @@
 import Link from "next/link"
-import { toLocalTime, getRelativeTime } from "@/lib/date-utils"
+import {  getRelativeTime } from "@/lib/date-utils"
 import { cn } from "@/lib/utils"
 import { BlinkingDot } from "../ui/blinking-dot"
 import { getLiveSessions } from "@/app/actions/live-session-actions"
 
 function getTimeLeft(startTime: Date): string {
-  return getRelativeTime(toLocalTime(startTime))
+  // startTime is already UTC from database, just use getRelativeTime
+  return getRelativeTime(startTime)
 }
 
 export async function UpcomingLiveSessionBanner() {

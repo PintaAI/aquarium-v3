@@ -4,7 +4,7 @@ import { getTryout, joinTryout } from "@/app/actions/tryout-actions"
 import { db } from "@/lib/db"
 import { notFound, redirect } from "next/navigation"
 import { TryoutQuiz } from "@/components/tryout/TryoutQuiz"
-import { formatDate } from "@/lib/utils"
+import { formatLocalDate } from "@/lib/date-utils"
 import Link from "next/link"
 
 interface Props {
@@ -76,11 +76,11 @@ export default async function TryoutPage(props: Props) {
         <div className="grid gap-4 sm:grid-cols-2 mb-6 text-center mx-auto max-w-lg">
           <div>
             <p className="text-sm text-muted-foreground">Start Time</p>
-            <p className="font-medium">{formatDate(tryout.startTime)}</p>
+            <p className="font-medium">{formatLocalDate(tryout.startTime, 'PP p')}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">End Time</p>
-            <p className="font-medium">{formatDate(tryout.endTime)}</p>
+            <p className="font-medium">{formatLocalDate(tryout.endTime, 'PP p')}</p>
           </div>
         </div>
 
@@ -89,7 +89,7 @@ export default async function TryoutPage(props: Props) {
               if (status === 'upcoming') {
                 return (
                   <div className="text-center p-6 bg-muted rounded-lg">
-                    <p>This tryout will start at {formatDate(tryout.startTime)}</p>
+                    <p>This tryout will start at {formatLocalDate(tryout.startTime, 'PP p')}</p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Come back when the tryout starts to participate
                     </p>

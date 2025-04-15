@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { toUTC, formatForInput } from '@/lib/date-utils'
+import { formatForInput } from '@/lib/date-utils'
+import { parseISO } from 'date-fns'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -92,8 +93,8 @@ function CreateSessionForm({ courses, onSuccess }: CreateSessionFormProps) {
       const sessionData: CreateSessionInput = {
         ...data,
         courseId: parseInt(data.courseId),
-        scheduledStart: toUTC(data.scheduledStart),
-        scheduledEnd: data.scheduledEnd ? toUTC(data.scheduledEnd) : undefined
+        scheduledStart: parseISO(data.scheduledStart),  // Convert ISO string to Date object
+        scheduledEnd: data.scheduledEnd ? parseISO(data.scheduledEnd) : undefined
       }
 
       const result = await createLiveSession(sessionData)

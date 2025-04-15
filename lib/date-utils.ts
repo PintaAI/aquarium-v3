@@ -1,7 +1,7 @@
 import { formatDistanceToNow, format, parseISO } from 'date-fns'
 import { id } from 'date-fns/locale/id' // Import Indonesian locale
 import { enUS } from 'date-fns/locale/en-US' // Import English locale
-import { toZonedTime,} from 'date-fns-tz'
+import { toZonedTime } from 'date-fns-tz'
 
 /**
  * Utility functions for handling dates and times across the application
@@ -9,7 +9,7 @@ import { toZonedTime,} from 'date-fns-tz'
  */
 
 /**
- * Convert a UTC date to the user's local timezone
+ * Convert a UTC date from the database to the user's local timezone
  */
 export function toLocalTime(date: Date | string): Date {
   const parsedDate = typeof date === 'string' ? parseISO(date) : date
@@ -17,18 +17,22 @@ export function toLocalTime(date: Date | string): Date {
 }
 
 /**
- * Convert a local date to UTC for server storage
- * Uses date-fns-tz to handle timezone conversions correctly
+ * Convert a local date to UTC for database storage
+ * Note: For datetime-local inputs, the value is already in UTC format,
+ * so we just need to parse it without additional conversion
  */
 export function toUTC(date: Date | string): Date {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : new Date(date)
-  // Get the timestamp in UTC by using the local timezone offset
-  const utcTime = parsedDate.getTime() - (parsedDate.getTimezoneOffset() * 60000)
+  if (typeof date === 'string') {
+    return parseISO(date)  // For datetime-local inputs, already in UTC
+  }
+  // For Date objects, convert from local to UTC
+  const utcTime = date.getTime() - (date.getTimezoneOffset() * 60000)
   return new Date(utcTime)
 }
 
 /**
- * Format a date for display in the user's timezone
+ * Format a UTC date from the database for display in the user's timezone
+ * Note: Use this for displaying dates from the database
  */
 export function formatLocalDate(date: Date | string, formatStr: string = 'PPpp'): string {
   const localDate = toLocalTime(date)
@@ -36,7 +40,8 @@ export function formatLocalDate(date: Date | string, formatStr: string = 'PPpp')
 }
 
 /**
- * Get relative time string (e.g. "2 hours ago")
+ * Get relative time string (e.g. "2 hours ago") from a UTC database date
+ * Note: Use this for displaying relative times from database dates
  */
 export function getRelativeTime(date: Date | string, useIndonesian: boolean = true): string {
   const localDate = toLocalTime(date)
@@ -58,7 +63,7 @@ export function formatForInput(date: Date | string): string {
  * Get current time in user's timezone
  */
 export function getCurrentLocalTime(): Date {
-  return toLocalTime(new Date())
+  return new Date()
 }
 
 /**

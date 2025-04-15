@@ -7,7 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
 import {  Channel, Event } from 'stream-chat'
 import { Send } from 'lucide-react'
 
-import { toUTC } from '@/lib/date-utils'
+import { parseISO } from 'date-fns'
 import { DateDisplay } from '../shared'
 
 interface Message {
@@ -41,7 +41,7 @@ export function ChatComponent({ channel }: ChatComponentProps) {
         text: message.text || '',
         sender: message.user?.name || message.user?.id || 'Unknown User',
         senderImage: message.user?.image as string | undefined,
-        timestamp: toUTC(message.created_at || new Date())
+        timestamp: message.created_at ? parseISO(message.created_at) : new Date()
       }])
     }
 
@@ -56,7 +56,7 @@ export function ChatComponent({ channel }: ChatComponentProps) {
             text: msg.text || '',
             sender: msg.user?.name || msg.user?.id || 'Unknown User',
             senderImage: msg.user?.image as string | undefined,
-            timestamp: toUTC(msg.created_at || new Date())
+            timestamp: msg.created_at ? parseISO(msg.created_at) : new Date()
           }))
         )
       } catch (error) {

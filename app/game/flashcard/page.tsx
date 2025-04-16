@@ -20,7 +20,7 @@ export default function FlashcardPage() {
 
   return (
     <div className="flex items-center justify-center h-full pb-24">
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-3xl mx-2">
         {!isGameStarted ? (
           <StartScreen onSelectCollection={handleCollectionSelect} />
         ) : (

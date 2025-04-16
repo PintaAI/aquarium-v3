@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Layers } from "lucide-react"; // Import an icon
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -54,8 +55,18 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full justify-between">
-          <span>Pilih Koleksi Kosakata</span>
+        {/* Add some visual interest with an icon and slight animation on hover */}
+        <Button 
+          variant="outline" 
+          className="w-full justify-between group bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 hover:shadow-sm border-slate-200 dark:border-slate-700 py-5"
+        >
+          <span className="flex items-center gap-3">
+            <span className="relative">
+              <Layers className="h-5 w-5 text-blue-500 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span className="absolute inset-0 animate-ping opacity-20 bg-blue-500 rounded-full duration-1000" />
+            </span>
+            <span className="font-medium">Pilih Koleksi Kosakata</span>
+          </span>
           {loading ? (
             <span className="text-muted-foreground">Loading...</span>
           ) : error ? (

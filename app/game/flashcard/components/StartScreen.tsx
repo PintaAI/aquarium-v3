@@ -8,46 +8,36 @@ interface StartScreenProps {
 
 export function StartScreen({ onSelectCollection }: StartScreenProps) {
   return (
-    <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-b-0 border-t-blue-500">
-      <CardHeader className="flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-2xl">플래시카드</CardTitle>
-            <Badge variant="outline" className="uppercase text-xs">
+    <Card className="w-full h-full flex flex-col shadow-lg bg-gradient-to-b from-muted/30 to-background">
+      <CardHeader className="flex-shrink-0 pb-0 relative overflow-hidden">
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">
+              플래시카드
+            </CardTitle>
+            <Badge variant="outline" className="uppercase text-xs border-accent">
               Kartu Flash
             </Badge>
           </div>
         </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent/10 animate-gradient" />
       </CardHeader>
 
-      <CardContent className="flex-grow flex flex-col items-center justify-center text-center gap-8">
-        <div className="space-y-4 max-w-2xl">
-          <h2 className="text-3xl font-bold">Selamat Datang di FlashCard Korea</h2>
-          <p className="text-muted-foreground">
-            Belajar kosakata bahasa Korea dengan metode kartu flash yang efektif.
-            Pilih koleksi kata yang ingin Anda pelajari dan mulai mengingat!
+      <CardContent className="flex-grow flex flex-col items-center justify-center gap-12 pt-12">
+        <div className="relative">
+          <h2 className="text-4xl font-bold mb-3">Mulai Belajar</h2>
+          <p className="text-muted-foreground text-lg max-w-md">
+            Pilih koleksi kata yang ingin Anda Hafalkan
           </p>
+          <div className="absolute -top-8 -right-8 w-16 h-16 bg-accent/20 rounded-full animate-pulse" />
         </div>
-        
-        <div className="space-y-6 w-full max-w-xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Cara Bermain</div>
-              <div className="text-sm">Klik kartu untuk melihat arti kata</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Fitur</div>
-              <div className="text-sm">Lacak progres pembelajaran Anda</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Koleksi</div>
-              <div className="text-sm">Pilih dari berbagai kategori kata</div>
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Pilih Koleksi Kosakata</h3>
-            <CollectionSelector onSelect={onSelectCollection} />
+        <div className="w-full max-w-xl space-y-8">
+          <CollectionSelector onSelect={onSelectCollection} />
+          
+          <div className="w-full max-w-sm mx-auto p-4 rounded-lg bg-gradient-to-br from-muted/30 to-background shadow-sm text-center border border-border/50">
+            <div className="text-primary font-medium mb-2">Cara Bermain</div>
+            <div className="text-sm text-muted-foreground">Klik kartu untuk melihat arti kata</div>
           </div>
         </div>
       </CardContent>

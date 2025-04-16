@@ -60,10 +60,16 @@ export default function FlashcardGame({ collectionId, onReturn }: FlashcardGameP
     if (currentIndex < words.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setIsRevealed(false);
-    } else if (newStudied.size === words.length) {
-      // Only show completion when all cards have been studied
-      setIsComplete(true);
     }
+    // Removed the else block, last card logic handled by the button now
+  };
+
+  // Handles the click on the "Selesai!" button for the last card
+  const handleFinishClick = () => {
+    // Ensure the last card is marked studied before completing
+    const finalStudied = new Set([...studied, currentIndex]);
+    setStudied(finalStudied);
+    setIsComplete(true);
   };
 
   const prevCard = () => {
@@ -148,38 +154,15 @@ export default function FlashcardGame({ collectionId, onReturn }: FlashcardGameP
                 Kata {currentIndex + 1} dari {words.length}
               </span>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">
-                  {Math.round((studied.size / words.length) * 100)}% Selesai
-                </span>
-                {currentIndex === words.length - 1 && (
-                  <span className={cn(
-                    "text-xs",
-                    studied.size === words.length 
-                      ? "text-green-500"
-                      : "text-orange-500"
-                  )}>
-                    {studied.size === words.length 
-                      ? "Semua kata sudah dipelajari!"
-                      : "Lihat lagi untuk menyelesaikan"}
-                  </span>
-                )}
-              </div>
-            </div>
-            <Progress 
-              value={(studied.size / words.length) * 100} 
+                 <span className="text-sm font-medium">
+                   {Math.round((studied.size / words.length) * 100)}% Selesai
+                 </span>
+               </div>
+             </div>
+             <Progress
+              value={(studied.size / words.length) * 100}
               className="h-2"
-              style={{
-                background: studied.size === words.length 
-                  ? 'rgba(34, 197, 94, 0.2)' // green
-                  : currentIndex === words.length - 1
-                    ? 'rgba(245, 158, 11, 0.2)' // orange
-                    : 'rgba(96, 165, 250, 0.2)', // blue
-                '--progress-color': studied.size === words.length
-                  ? 'rgb(34, 197, 94)'
-                  : currentIndex === words.length - 1
-                    ? 'rgb(245, 158, 11)'
-                    : 'rgb(96, 165, 250)'
-              } as React.CSSProperties}
+              // Removed inline style to use default progress bar color
             />
           </div>
       </CardHeader>
@@ -247,20 +230,17 @@ export default function FlashcardGame({ collectionId, onReturn }: FlashcardGameP
                 Sebelumnya
               </Button>
               {currentIndex === words.length - 1 ? (
+                // Always show "Selesai!" button on the last card
                 <Button
-                  variant={studied.size === words.length ? "default" : "secondary"}
-                  onClick={studied.size === words.length ? () => setIsComplete(true) : nextCard}
+                  variant="default" // Use default (green) style
+                  onClick={handleFinishClick} // Call the dedicated finish handler
                   size="lg"
-                  className={cn(
-                    "w-full text-lg py-6 transition-all",
-                    studied.size === words.length
-                      ? "bg-green-500 hover:bg-green-600 text-white"
-                      : "hover:scale-105"
-                  )}
+                  className="w-full text-lg py-6 bg-green-500 hover:bg-green-600 text-white"
                 >
-                  {studied.size === words.length ? "Selesai!" : "Lihat Lagi"}
+                  Selesai!
                 </Button>
               ) : (
+                // Normal "Selanjutnya" button for other cards
                 <Button
                   variant="outline"
                   onClick={nextCard}

@@ -73,14 +73,15 @@ export default async function TryoutPage(props: Props) {
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 mb-6 text-center mx-auto max-w-lg">
-          <div>
-            <p className="text-sm text-muted-foreground">Start Time</p>
-            <p className="font-medium">{formatLocalDate(tryout.startTime, 'PP p')}</p>
+        <div className="flex justify-center items-center space-x-6 mb-6 text-center text-sm">
+          <div className="flex items-baseline space-x-1.5">
+            <span className="text-muted-foreground">Start</span>
+            <span className="font-medium">{formatLocalDate(tryout.startTime, 'MMM d, p')}</span>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">End Time</p>
-            <p className="font-medium">{formatLocalDate(tryout.endTime, 'PP p')}</p>
+          <div className="h-4 w-px bg-border"></div>
+          <div className="flex items-baseline space-x-1.5">
+            <span className="text-muted-foreground">End</span>
+            <span className="font-medium">{formatLocalDate(tryout.endTime, 'MMM d, p')}</span>
           </div>
         </div>
 
@@ -89,7 +90,7 @@ export default async function TryoutPage(props: Props) {
               if (status === 'upcoming') {
                 return (
                   <div className="text-center p-6 bg-muted rounded-lg">
-                    <p>This tryout will start at {formatLocalDate(tryout.startTime, 'PP p')}</p>
+                    <p>This tryout will start at {formatLocalDate(tryout.startTime, 'MMM d, p')}</p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Come back when the tryout starts to participate
                     </p>

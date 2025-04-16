@@ -1,9 +1,10 @@
-import { Languages, BookOpen, GraduationCap, BookText, ScrollText } from "lucide-react";
+import { Languages, GraduationCap, BookText, ScrollText, } from "lucide-react";
 import { TbAlphabetKorean } from "react-icons/tb";
 import { LucideIcon } from "lucide-react";
 import { IconType } from "react-icons";
 import { FaKeyboard } from "react-icons/fa";
 import { VscTable } from "react-icons/vsc";
+import { TbPlayCardStarFilled } from "react-icons/tb";
 
 export interface Game {
   id: string;
@@ -70,5 +71,13 @@ export const games: Game[] = [
     icon: BookText,
     route: "/game/e-book",
     type: "Resource"
+  },
+  {
+    id: "flashcard",
+    title: "Flash Card",
+    description: "Pelajari kosakata Korea dengan kartu flash interaktif",
+    icon: TbPlayCardStarFilled,
+    route: "/game/flashcard",
+    type: "Game"
   }
 ];

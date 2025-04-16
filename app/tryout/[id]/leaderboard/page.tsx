@@ -8,7 +8,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { notFound } from "next/navigation"
 import { FaTrophy } from "react-icons/fa"
-import { IoArrowBack } from "react-icons/io5"
+import { IoArrowBack, IoStopwatchOutline } from "react-icons/io5"
 
 // Format time taken in MM:SS format
 const formatTime = (seconds: number | null) => {
@@ -150,7 +150,7 @@ export default async function LeaderboardPage(props: Props) {
                     </Avatar>
                     <div>
                       <p className="font-medium flex flex-wrap items-center gap-2 min-w-0">
-                        <span className="text-sm sm:text-lg truncate">
+                        <span className={`text-sm sm:text-lg truncate ${index <= 2 ? 'font-bold' : ''}`}>
                           {entry.user.name || entry.user.email || 'Anonymous'}
                         </span>
                         {index === 0 ? (
@@ -167,8 +167,10 @@ export default async function LeaderboardPage(props: Props) {
                           </span>
                         ) : null}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Selesai {formatTime(entry.timeTakenSeconds)}
+                      <p className={`text-sm flex items-center gap-1 ${
+                        index <= 2 ? 'font-bold' : 'text-muted-foreground'
+                      }`}>
+                        <IoStopwatchOutline className="h-4 w-4 mt-0.5" /> {formatTime(entry.timeTakenSeconds)}
                       </p>
                     </div>
                   </div>

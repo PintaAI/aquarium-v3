@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { currentUser } from "@/lib/auth"
 import { getTryout, joinTryout } from "@/app/actions/tryout-actions"
+import { PiSealWarningFill } from "react-icons/pi"
+import { HiArrowRight } from "react-icons/hi2"
+import { MdArrowRightAlt } from "react-icons/md"
 import { db } from "@/lib/db"
 import { notFound, redirect } from "next/navigation"
 import { TryoutQuiz } from "@/components/tryout/TryoutQuiz"
@@ -34,21 +37,17 @@ export default async function TryoutPage(props: Props) {
   
   const tryoutId = parseInt(params.id)
   
-  // Redirect guru/admin to leaderboard immediately
-  if (user?.role === "GURU" || user?.role === "ADMIN") {
-    redirect(`/tryout/${tryoutId}/leaderboard`)
-  }
-
   const tryout = await getTryout(tryoutId)
   if (!tryout) notFound()
 
-  const userParticipation = tryout.participants.find(p => p.userId === user.id)
   const now = new Date()
-  const status = now > tryout.endTime 
-    ? 'ended' 
-    : now >= tryout.startTime 
-    ? 'active' 
-    : 'upcoming'
+  // Redirect to leaderboard if tryout has ended or user is guru/admin
+  if (now > tryout.endTime || user?.role === "GURU" || user?.role === "ADMIN") {
+    redirect(`/tryout/${tryoutId}/leaderboard`)
+  }
+
+  const userParticipation = tryout.participants.find(p => p.userId === user.id)
+  const status = now >= tryout.startTime ? 'active' : 'upcoming'
 
   async function join() {
     "use server"
@@ -63,24 +62,22 @@ export default async function TryoutPage(props: Props) {
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 m-2">
         <div className="flex items-center justify-center mb-4">
           <h1 className="text-2xl font-bold">{tryout.koleksiSoal.nama}</h1>
-          {status === 'ended' && (
-            <Link href={`/tryout/${tryoutId}/leaderboard`}>
-              <Button>View Leaderboard</Button>
-            </Link>
-          )}
         </div>
 
-        <div className="flex justify-center items-center space-x-6 mb-6 text-center text-sm">
-          <div className="flex items-baseline space-x-1.5">
-            <span className="text-muted-foreground">Start</span>
+        <div className="flex justify-center text-muted-foreground items-center gap-4 mb-6 text-center text-sm">
+          <div className="flex items-center gap-2">
+            
             <span className="font-medium">{formatLocalDate(tryout.startTime, 'MMM d, p')}</span>
+          
           </div>
-          <div className="h-4 w-px bg-border"></div>
-          <div className="flex items-baseline space-x-1.5">
-            <span className="text-muted-foreground">End</span>
+          <div className="flex items-center">
+            <MdArrowRightAlt className="w-6 h-6 text-muted-foregroundn mt-0.5" />
+          </div>
+          <div className="flex items-center gap-2">
+           
             <span className="font-medium">{formatLocalDate(tryout.endTime, 'MMM d, p')}</span>
           </div>
         </div>
@@ -98,33 +95,26 @@ export default async function TryoutPage(props: Props) {
                 )
               }
 
-              if (status === 'ended') {
-                if (!userParticipation) {
-                  return (
-                    <div className="text-center p-6 bg-muted rounded-lg">
-                      <p>This tryout has ended</p>
-                    </div>
-                  )
-                }
-                
-                return (
-                  <div className="text-center p-6 bg-muted rounded-lg">
-                    <h2 className="text-xl font-bold mb-2">Your Score</h2>
-                    <p className="text-3xl font-bold text-primary">
-                      {userParticipation.score}
-                    </p>
-                    <Link href={`/tryout/${tryoutId}/leaderboard`} className="mt-4 block">
-                      <Button>View Leaderboard</Button>
-                    </Link>
-                  </div>
-                )
-              }
-
               if (!userParticipation) {
                 return (
-                  <form action={join}>
-                    <Button className="w-full">Join Tryout</Button>
-                  </form>
+                  <div className="space-y-6">
+                    <div className="text-center p-4 bg-yellow-100/10 rounded-lg border border-yellow-200/20">
+                      <div className="flex flex-col items-center mb-4">
+                        <PiSealWarningFill className="w-10 h-10 text-yellow-500 mb-2" />
+                        <span className="font-bold text-yellow-500">PERHATIAN!!!</span>
+                      </div>
+                      <p className="text-muted-foreground mb-3">
+                        Silahkan melakukan latihan soal terlebih dahulu jika belum yakin
+                      </p>
+                      <Link href="/soal" className="text-primary hover:underline inline-flex items-center justify-center gap-2">
+                        Klik di sini untuk latihan
+                        <HiArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                    <form action={join}>
+                      <Button className="w-full text-lg" size="lg">Mulai Tryout</Button>
+                    </form>
+                  </div>
                 )
               }
 

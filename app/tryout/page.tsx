@@ -28,29 +28,46 @@ export default async function TryoutPage() {
   ])
 
   return (
-    <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Tryouts</h1>
-              <p className="text-muted-foreground">
-                {user.role === "GURU" 
-                  ? "Manage your tryouts and view participant progress"
-                  : "Join tryouts and test your knowledge"
-                }
-              </p>
+    <div className="relative min-h-screen">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background to-pruimary/10 -z-10" />
+      
+      <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
+        <div className="relative">
+          {/* Header Section */}
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="space-y-1.5">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Tryout</h1>
+                <p className="text-muted-foreground text-sm md:text-base">
+                  {user.role === "GURU" 
+                    ? "Kelola ujian latihan untuk memantau perkembangan peserta didik Anda."
+                    : "Uji kemampuan bahasa Korea Anda dengan ujian latihan yang tersedia."
+                  }
+                </p>
+              </div>
+              {user.role === "GURU" && (
+                <div className="sm:mt-1">
+                  <CreateTryoutDialog koleksiSoals={koleksiSoals} />
+                </div>
+              )}
             </div>
-            {user.role === "GURU" && (
-              <CreateTryoutDialog koleksiSoals={koleksiSoals} />
-            )}
           </div>
+        </div>
 
-        <TryoutList 
-        tryouts={tryouts}
-        userId={user.role === "MURID" ? user.id : undefined}
-        showParticipantCount={user.role === "GURU"}
-        isGuru={user.role === "GURU"}
-        userRole={user.role}
-      />
+        {/* Content Section */}
+        <div className="rounded-lg border bg-card">
+          <div className="p-6">
+            <TryoutList 
+              tryouts={tryouts}
+              userId={user.role === "MURID" ? user.id : undefined}
+              showParticipantCount={user.role === "GURU"}
+              isGuru={user.role === "GURU"}
+              userRole={user.role}
+            />
+          </div>
+        </div>
     </div>
+      </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { Card, CardContent,} from "../ui/card"
 import { getCurrentLocalTime } from "@/lib/date-utils"
 import { DateDisplay } from "../shared/date-display"
 import { Badge } from "../ui/badge"
@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog"
-import { Trash2 } from "lucide-react"
+import { Trash2, GraduationCap } from "lucide-react"
 
 interface TryoutCardProps {
   userRole?: string | null
@@ -71,9 +71,9 @@ export function TryoutCard({
   }
 
   const statusText = {
-    upcoming: 'Upcoming',
-    active: 'Active',
-    ended: 'Ended'  
+    upcoming: 'Akan Datang',
+    active: 'Aktif',
+    ended: 'Selesai'  
   }
 
   const handleCardClick = () => {
@@ -97,11 +97,30 @@ export function TryoutCard({
 
   return (
     <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer relative"
+      className="group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-200 hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-1 cursor-pointer"
       onClick={handleCardClick}
     >
+      <div className="relative h-32 w-full overflow-hidden">
+        {/* Gradient Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/20">
+            {/* Decorative Elements */}
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
+            <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-primary/20 rounded-full blur-2xl" />
+            {/* Icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <GraduationCap className="h-12 w-12 text-primary/40 group-hover:text-primary/60 transition-colors -translate-y-2" />
+            </div>
+            {/* Dates */}
+            <div className="absolute bottom-2 left-3 right-3 flex justify-between text-xs text-primary/60">
+              <DateDisplay date={startTime} format="Pp" />
+              <DateDisplay date={endTime} format="Pp" />
+            </div>
+          </div>
+        </div>
+      </div>
       {canDelete && (
-        <div className="absolute top-3 right-3 z-10">
+        <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>
               <Button 
@@ -119,7 +138,7 @@ export function TryoutCard({
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Tryout</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this tryout? This action cannot be undone.
+                 Yakin ingin menghapus tryout ini? Tindakan ini tidak dapat dibatalkan.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -130,25 +149,19 @@ export function TryoutCard({
           </AlertDialog>
         </div>
       )}
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>{koleksiSoal.nama}</span>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold group-hover:text-primary transition-colors line-clamp-1">
+            {koleksiSoal.nama}
+          </h3>
           <Badge className={statusColors[status]}>
             {statusText[status]}
           </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div className="text-sm">
-            <span className="font-semibold">Start:</span> <DateDisplay date={startTime} />
-          </div>
-          <div className="text-sm">
-            <span className="font-semibold">End:</span> <DateDisplay date={endTime} />
-          </div>
+        </div>
+        <div className="space-y-2 text-muted-foreground">
           {showParticipantCount && (
             <div className="text-sm">
-              <span className="font-semibold">Submitted:</span>{" "}
+              <span className="font-semibold text-foreground">Submitted:</span>{" "}
               {participants.filter(p => p.submittedAt !== null).length}
             </div>
           )}

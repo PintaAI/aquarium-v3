@@ -1,4 +1,8 @@
+"use client";
+
 import { Toaster } from 'sonner'
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 
 export default function LiveSessionLayout({
   children,
@@ -6,9 +10,18 @@ export default function LiveSessionLayout({
   children: React.ReactNode
 }) {
   return (
-    <>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "350px",
+        } as React.CSSProperties
+      }
+    >
       <Toaster />
-      {children}
-    </>
+      <AppSidebar />
+      <div className=" max-w-7xl mx-auto w-full mb-24 md:mb-0 ">
+        {children}
+      </div>
+    </SidebarProvider>
   )
 }

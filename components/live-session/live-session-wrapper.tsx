@@ -148,7 +148,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
       });
 
       // Create or get the call
-      const result = await currentCallInstance.getOrCreate({
+      await currentCallInstance.getOrCreate({
         data: {
           members: members,
         },
@@ -171,7 +171,8 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
                   setRtmpUrlFromGet(url);
                 }
             }
-          } catch (getErr) {
+          } catch (error) {
+            console.error('Failed to get RTMP URL:', error);
           }
           // --- End Get RTMP URL ---
 
@@ -247,7 +248,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
       cleanupStream();
     };
     // Depend on stable user ID, name, image, streamCallId, session ID, session name, and isCreator status
-  }, [user?.id, user?.name, user?.image, user?.role, liveSessionData.streamCallId, liveSessionData.id, liveSessionData.name, isCreator]);
+  }, [user?.id, user?.name, user?.image, user?.role, liveSessionData.streamCallId, liveSessionData.id, liveSessionData.name, isCreator, guruUsers, liveSessionData.creator.id]);
 
   // Note: Removed useCallIngress hook approach
 

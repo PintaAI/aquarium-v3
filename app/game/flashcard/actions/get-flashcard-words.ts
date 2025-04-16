@@ -4,13 +4,6 @@ import { db } from "@/lib/db"
 import { currentUser } from "@/lib/auth"
 import { VocabularyType } from "@prisma/client"
 
-interface VocabularyWord {
-  id: number
-  korean: string
-  indonesian: string
-  isChecked: boolean
-}
-
 export async function getFlashcardWords(collectionId?: number) {
   try {
     const user = await currentUser()

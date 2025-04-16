@@ -56,8 +56,8 @@ export default async function TryoutPage() {
         </div>
 
         {/* Content Section */}
-        <div className="rounded-lg border bg-card">
-          <div className="p-6">
+        
+          <div className="p-0">
             <TryoutList 
               tryouts={tryouts}
               userId={user.role === "MURID" ? user.id : undefined}
@@ -66,7 +66,7 @@ export default async function TryoutPage() {
               userRole={user.role}
             />
           </div>
-        </div>
+        
     </div>
       </div>
   )

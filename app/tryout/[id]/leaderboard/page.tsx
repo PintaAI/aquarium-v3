@@ -41,8 +41,8 @@ export default async function LeaderboardPage(props: Props) {
   const userRank = leaderboard.findIndex(entry => entry.userId === user.id) + 1
 
   return (
-    <div >
-      <div className="mb-8 flex flex-col items-center text-center">
+    <div className="max-w-4xl mx-auto" >
+      <div className="mb-8 flex flex-col  items-center text-center">
         <div className="w-24 h-24 mb-4 relative">
           <Image
             src="/images/circle-logo.png"

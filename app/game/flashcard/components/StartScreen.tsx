@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import CollectionSelector from './CollectionSelector';
 
 interface StartScreenProps {
-  onSelectCollection: (collectionId: number | undefined) => void;
+  onSelectCollection: (collectionId: number | undefined, title: string) => void;
 }
 
 export function StartScreen({ onSelectCollection }: StartScreenProps) {
@@ -29,11 +29,13 @@ export function StartScreen({ onSelectCollection }: StartScreenProps) {
           <p className="text-muted-foreground text-lg max-w-md">
             Pilih koleksi kata yang ingin Anda Hafalkan
           </p>
-          <div className="absolute -top-8 -right-8 w-16 h-16 bg-accent/20 rounded-full animate-pulse" />
+          
         </div>
 
         <div className="w-full max-w-xl space-y-8">
-          <CollectionSelector onSelect={onSelectCollection} />
+          <CollectionSelector 
+            onSelect={(id, title) => onSelectCollection(id, title)} 
+          />
           
           <div className="w-full max-w-sm mx-auto p-4 rounded-lg bg-gradient-to-br from-muted/30 to-background shadow-sm text-center border border-border/50">
             <div className="text-primary font-medium mb-2">Cara Bermain</div>

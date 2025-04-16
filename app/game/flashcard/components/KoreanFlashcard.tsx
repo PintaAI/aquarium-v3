@@ -48,7 +48,7 @@ function KoreanFlashcard({ word, meaning, initialFlipped = false }: KoreanFlashc
         >
           <CardContent className="p-4">
             {/* Use primary text color */}
-            <span className="text-2xl sm:text-4xl font-bold text-primary dark:text-primary transition-colors" lang="ko">
+            <span className="text-4xl sm:text-4xl font-bold text-primary dark:text-primary transition-colors" lang="ko">
               {word}
             </span>
           </CardContent>
@@ -65,7 +65,7 @@ function KoreanFlashcard({ word, meaning, initialFlipped = false }: KoreanFlashc
         >
           <CardContent className="p-4">
             {/* Use accent text color */}
-            <span className="text-lg sm:text-2xl font-medium text-accent-foreground dark:text-primary transition-colors">
+            <span className="text-lg sm:text-2xl font-bold text-accent-foreground dark:text-primary transition-colors">
               {meaning}
             </span>
           </CardContent>

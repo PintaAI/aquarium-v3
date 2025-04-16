@@ -4,18 +4,19 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { AnimatePresence } from 'framer-motion';
 import KoreanFlashcard from './KoreanFlashcard';
 import { getFlashcardWords } from '../actions/get-flashcard-words';
 import { CompletionScreen } from './CompletionScreen';
+import { ArrowLeft } from 'lucide-react';
 
 interface FlashcardGameProps {
   collectionId?: number;
+  collectionTitle: string;
   onReturn?: () => void;
 }
 
-export default function FlashcardGame({ collectionId, onReturn }: FlashcardGameProps) {
+export default function FlashcardGame({ collectionId, collectionTitle, onReturn }: FlashcardGameProps) {
   const [words, setWords] = useState<Array<{id: number; word: string; meaning: string}>>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -127,22 +128,23 @@ export default function FlashcardGame({ collectionId, onReturn }: FlashcardGameP
   }
 
   return (
-    <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-b-0 border-t-blue-500">
+    <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-b-0 border-t-primary">
       <CardHeader className="flex-shrink-0 space-y-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-2xl">플래시카드</CardTitle>
-              <Badge variant="outline" className="uppercase text-xs">
-                {words.length} Kata
-              </Badge>
+            <div>
+              <CardTitle className="text-xl">Flash-Card</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">{collectionTitle}</p>
+            </div>
+ 
             </div>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={onReturn}
               className="text-muted-foreground hover:text-primary"
             >
-              Ganti Koleksi
+              <ArrowLeft className="h-4 w-4" />
             </Button>
           </div>
 
@@ -153,7 +155,7 @@ export default function FlashcardGame({ collectionId, onReturn }: FlashcardGameP
                 Kata {currentIndex + 1} dari {words.length}
               </span>
               <div className="flex items-center gap-3">
-                 <span className="text-sm font-medium">
+                 <span className="text-sm font-medium text-muted-foreground">
                    {Math.round((studied.size / words.length) * 100)}% Selesai
                  </span>
                </div>

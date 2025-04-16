@@ -6,10 +6,12 @@ import { StartScreen } from "./components/StartScreen";
 
 export default function FlashcardPage() {
   const [selectedCollection, setSelectedCollection] = useState<number | undefined>();
+  const [collectionTitle, setCollectionTitle] = useState<string>("");
   const [isGameStarted, setIsGameStarted] = useState(false);
 
-  const handleCollectionSelect = (collectionId: number | undefined) => {
+  const handleCollectionSelect = (collectionId: number | undefined, title: string) => {
     setSelectedCollection(collectionId);
+    setCollectionTitle(title);
     setIsGameStarted(true);
   };
 
@@ -26,6 +28,7 @@ export default function FlashcardPage() {
         ) : (
           <FlashcardGame
             collectionId={selectedCollection}
+            collectionTitle={collectionTitle}
             onReturn={handleReturn}
           />
         )}

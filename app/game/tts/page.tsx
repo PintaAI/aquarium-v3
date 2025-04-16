@@ -49,7 +49,13 @@ const HangulWordGame = () => {
   };
 
   if (gameState === 'start') {
-    return <StartScreen onSelectLevel={handleSelectLevel} />;
+    return (
+            <div className="flex items-center justify-center h-[calc(100vh-150px)] p-2 sm:p-4 font-sans">
+              <div className="w-full max-w-4xl">
+                <StartScreen onSelectLevel={handleSelectLevel} />
+              </div>
+            </div>
+    );
   }
 
   return (

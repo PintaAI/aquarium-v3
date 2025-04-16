@@ -22,14 +22,21 @@ interface StartScreenProps {
 
 export function StartScreen({ onStart, onSettingsChange, currentSettings }: StartScreenProps) {
   return (
-    <Card className="w-full h-full flex flex-col shadow-lg border-t-4 border-b-0 border-t-blue-500">
-      <CardHeader className="flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-2xl hangeul">한글 Rush</CardTitle>
-            <Badge variant="outline" className="uppercase text-xs">
-              {currentSettings.difficultyLevel}
-            </Badge>
+    <Card className="w-full h-full flex flex-col shadow-lg bg-gradient-to-b from-muted/30 to-background">
+      <CardHeader className="flex-shrink-0 pb-0 relative overflow-hidden">
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-3xl font-bold hangeul bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">
+              한글 Rush
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="uppercase text-xs border-accent">
+                {currentSettings.difficultyLevel}
+              </Badge>
+              <Badge variant="outline" className="uppercase text-xs border-accent">
+                {currentSettings.gameMode === 'quiz' ? 'Quiz' : 'Learning'}
+              </Badge>
+            </div>
           </div>
           <GameSettings
             onSettingsChange={onSettingsChange}
@@ -37,34 +44,41 @@ export function StartScreen({ onStart, onSettingsChange, currentSettings }: Star
             disabled={false}
           />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent/10 animate-gradient" />
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col items-center justify-center text-center gap-6">
-        <div className="space-y-4">
-          <h2 className="text-3xl font-bold">Selamat Datang di Hangeul Rush</h2>
-          <p className="text-muted-foreground">
+
+      <CardContent className="flex-grow flex flex-col items-center justify-center gap-12 pt-12">
+        <div className="relative">
+          <h2 className="text-4xl font-bold mb-3">Selamat Datang di Hangeul Rush</h2>
+          <p className="text-muted-foreground text-lg max-w-md">
             Uji pengetahuan alfabet Korea Anda dengan permainan yang seru ini.
             Pilih pengucapan yang benar untuk setiap karakter sebelum waktu habis!
           </p>
         </div>
         
-        <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-            <div className="text-sm text-muted-foreground">Pertanyaan</div>
-            <div className="text-2xl font-bold">{currentSettings.totalQuestions}</div>
+        <div className="w-full max-w-xl space-y-8">
+          <div className="grid grid-cols-2 gap-4 w-full">
+            <div className="bg-gradient-to-br from-muted/30 to-background text-center p-4 rounded-lg border border-border/50 shadow-sm">
+              <div className="text-primary font-medium mb-1">Pertanyaan</div>
+              <div className="text-2xl font-bold">{currentSettings.totalQuestions}</div>
+            </div>
+            <div className="bg-gradient-to-br from-muted/30 to-background text-center p-4 rounded-lg border border-border/50 shadow-sm">
+              <div className="text-primary font-medium mb-1">Waktu</div>
+              <div className="text-2xl font-bold">{currentSettings.timePerQuestion}s</div>
+            </div>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-            <div className="text-sm text-muted-foreground">Waktu/Pertanyaan</div>
-            <div className="text-2xl font-bold">{currentSettings.timePerQuestion}s</div>
+
+          <div className="flex flex-col gap-4">
+            <Button 
+              size="lg" 
+              className="w-full max-w-xl text-lg py-6 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 transition-all duration-300"
+              onClick={onStart}
+            >
+              Mulai Permainan
+            </Button>
+
           </div>
         </div>
-
-        <Button 
-          size="lg" 
-          className="w-full max-w-md text-lg py-6"
-          onClick={onStart}
-        >
-          Mulai Permainan
-        </Button>
       </CardContent>
     </Card>
   );

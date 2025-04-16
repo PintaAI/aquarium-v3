@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Layers } from "lucide-react"; // Import an icon
+import { Layers } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +24,7 @@ interface Collection {
 }
 
 interface CollectionSelectorProps {
-  onSelect: (collectionId: number | undefined) => void;
+  onSelect: (collectionId: number | undefined, title: string) => void;
 }
 
 export default function CollectionSelector({ onSelect }: CollectionSelectorProps) {
@@ -39,7 +39,7 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
         if (!result.success) {
           throw new Error(result.error);
         }
-        // Only show collections that have words
+        
         const collectionsWithWords = (result.data || []).filter(c => c._count.items > 0);
         setCollections(collectionsWithWords);
       } catch (err) {
@@ -55,7 +55,6 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
   return (
     <Dialog>
       <DialogTrigger asChild>
-        {/* Add some visual interest with an icon and slight animation on hover */}
         <Button 
           variant="outline" 
           className="w-full justify-between group bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 hover:shadow-sm border-slate-200 dark:border-slate-700 py-5"
@@ -73,7 +72,7 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
             <span className="text-red-500">Error</span>
           ) : (
             <span className="text-muted-foreground">
-              {collections.length} koleksi tersedia
+              {collections.length} 게
             </span>
           )}
         </Button>
@@ -87,7 +86,7 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
             <div 
               className="cursor-pointer" 
               onClick={() => {
-                onSelect(undefined);
+                onSelect(undefined, "Acak 100 Kata");
                 document.querySelector('[role="dialog"]')?.closest('dialog')?.close();
               }}
             >
@@ -103,15 +102,14 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
                 key={collection.id} 
                 className="cursor-pointer" 
                 onClick={() => {
-                  onSelect(collection.id);
+                  onSelect(collection.id, collection.title);
                   document.querySelector('[role="dialog"]')?.closest('dialog')?.close();
                 }}
               >
                 <VocabularyCard
                   title={collection.title}
-                  items={[{ isChecked: false }]} // Dummy item for the card
+                  items={[{ isChecked: false }]} 
                   icon={collection.icon || "FaBook"}
-                  description={`${collection._count.items} kata`}
                 />
               </div>
             ))}

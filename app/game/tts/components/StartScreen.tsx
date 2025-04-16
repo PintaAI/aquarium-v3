@@ -2,113 +2,65 @@ import React from 'react';
 import { Level } from '../types';
 import { LEVELS } from '../constants';
 import { GameInstructions } from './GameInstructions';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Grid3X3, Languages } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Languages } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
 
 interface StartScreenProps {
   onSelectLevel: (level: Level) => void;
 }
 
 export function StartScreen({ onSelectLevel }: StartScreenProps) {
-  // Get level-specific styling
-  const getLevelConfig = (levelId: string) => {
-    switch (levelId) {
-      case 'easy':
-        return {
-          borderClass: 'border-l-4 border-l-emerald-600',
-          badgeVariant: 'secondary' as const,
-          buttonVariant: 'default' as const
-        };
-      case 'medium':
-        return {
-          borderClass: 'border-l-4 border-l-blue-600',
-          badgeVariant: 'secondary' as const,
-          buttonVariant: 'default' as const
-        };
-      case 'hard':
-        return {
-          borderClass: 'border-l-4 border-l-rose-600',
-          badgeVariant: 'secondary' as const,
-          buttonVariant: 'default' as const
-        };
-      default:
-        return {
-          borderClass: '',
-          badgeVariant: 'outline' as const,
-          buttonVariant: 'default' as const
-        };
-    }
-  };
+  const [selectedLevel, setSelectedLevel] = useState<string>('');
+  const selectedLevelData = LEVELS.find(level => level.id === selectedLevel);
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-8">
-      <Card className="mb-8 text-center">
-        <CardHeader>
-          <CardTitle className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-2">
-            <Languages className="h-8 w-8 text-primary" />
-            한글 단어 찾기
-          </CardTitle>
-          <CardDescription className="text-xl sm:text-2xl">
-            Hangul Word Game
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <Card className="w-full h-full flex flex-col shadow-lg bg-gradient-to-b from-muted/30 to-background">
+      <CardHeader >
+    
+            <CardTitle className="text-3xl font-bold hangeul bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent flex items-center gap-2">
+              <Languages className="h-8 w-8" />
+              한글 단어 찾기
+            </CardTitle>
+       
+      </CardHeader>
       
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        {LEVELS.map((level) => {
-          const config = getLevelConfig(level.id);
-          
-          return (
-            <Card 
-              key={level.id}
-              className={cn(
-                "overflow-hidden transition-all hover:shadow-md",
-                config.borderClass
-              )}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl">
-                  {level.name}
-                </CardTitle>
-                <CardDescription>
-                  {level.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <Badge 
-                  variant={config.badgeVariant} 
-                  className="flex items-center gap-1"
-                >
-                  <Grid3X3 className="h-3 w-3" />
-                  {level.gridSize}x{level.gridSize} Grid
-                </Badge>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  onClick={() => onSelectLevel(level)}
-                  className="w-full"
-                  variant={config.buttonVariant}
-                >
-                  Mulai
-                </Button>
-              </CardFooter>
-            </Card>
-          );
-        })}
-      </div>
-      
-      <div className="text-center mb-8">
-        <p className="text-muted-foreground">
-          Pilih-lah tingkat kesulitan yang sesuai dengan kemampuanmu
-        </p>
-        <Separator className="my-4" />
-      </div>
-      
-      <GameInstructions />
-    </div>
+      <CardContent className="flex-grow flex flex-col items-center justify-center gap-12 pt-12">
+        <div className="w-full max-w-xl space-y-8">
+          <div>
+            <GameInstructions />
+          </div>
+
+          <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Pilih tingkat kesulitan" />
+            </SelectTrigger>
+            <SelectContent>
+              {LEVELS.map((level) => (
+                <SelectItem key={level.id} value={level.id}>
+                  {level.name} ({level.gridSize}x{level.gridSize})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button 
+            onClick={() => selectedLevelData && onSelectLevel(selectedLevelData)}
+            disabled={!selectedLevel}
+            className="w-full max-w-md text-lg py-6 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 transition-all duration-300"
+          >
+            Mulai Permainan
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

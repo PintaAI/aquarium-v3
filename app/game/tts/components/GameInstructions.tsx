@@ -1,6 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent,} from "@/components/ui/card";
 import { HelpCircle } from "lucide-react";
 
 export function GameInstructions() {
@@ -13,30 +12,18 @@ export function GameInstructions() {
   ];
 
   return (
-    <Card className="mt-6 w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <HelpCircle className="h-5 w-5" />
-          Cara Bermain
-        </CardTitle>
-        <Separator />
-      </CardHeader>
-      <CardContent className="pt-4">
-        <ol className="space-y-3 text-sm sm:text-base">
+    <Card className="w-full bg-gradient-to-br from-muted/30 to-background">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-3 text-primary">
+          <HelpCircle className="h-4 w-4" />
+          <span className="font-medium">Cara Bermain</span>
+        </div>
+        <ol className="space-y-2 text-sm text-muted-foreground">
           {instructions.map((instruction, index) => (
-            <React.Fragment key={index}>
-              <li className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
-                  {index + 1}
-                </span>
-                <span className="text-muted-foreground leading-relaxed">
-                  {instruction}
-                </span>
-              </li>
-              {index < instructions.length - 1 && (
-                <Separator className="bg-muted/50" />
-              )}
-            </React.Fragment>
+            <li key={index} className="flex gap-2">
+              <span className="text-primary font-medium">{index + 1}.</span>
+              <span>{instruction}</span>
+            </li>
           ))}
         </ol>
       </CardContent>

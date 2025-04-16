@@ -36,8 +36,16 @@ function AvatarImage({
 
 function AvatarFallback({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+  const content = React.useMemo(() => {
+    if (typeof children === 'string') {
+      return children.toUpperCase()
+    }
+    return children
+  }, [children])
+
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
@@ -46,7 +54,9 @@ function AvatarFallback({
         className
       )}
       {...props}
-    />
+    >
+      {content}
+    </AvatarPrimitive.Fallback>
   )
 }
 

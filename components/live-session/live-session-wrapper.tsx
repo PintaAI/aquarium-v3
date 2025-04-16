@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Copy } from 'lucide-react'; 
+import { Copy, Clock } from 'lucide-react'; 
 import {
   StreamVideo,
   StreamVideoClient,
@@ -159,7 +159,21 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
     }
           await currentCallInstance.camera.disable(); // Disable camera by default
           await currentCallInstance.microphone.disable(); // Disable microphone by default
-          await currentCallInstance.join(); // Explicitly join the call
+          
+          try {
+            await currentCallInstance.join(); // Explicitly join the call
+          } catch (error: any) {
+            // Check for all known join failure patterns
+            if (
+              error.message?.includes("JoinBackstage failed") || 
+              error.message?.includes("JoinCall failed") ||
+              (error.message?.includes("client:post") && error.message?.includes("/join"))
+            ) {
+              setError("silahkan tunggu Guru memulai sesi");
+              return;
+            }
+            throw error;
+          }
 
           // --- Get RTMP URL via call.get() ---
           try {
@@ -263,8 +277,20 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
 
   if (error) {
     return (
-      <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)] p-4 text-center">
-        <p className="text-destructive">Error: {error}</p>
+      <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <div className="bg-muted/50 rounded-lg p-8 flex flex-col items-center space-y-4 max-w-md w-full mx-4">
+          {error === "silahkan tunggu Guru memulai sesi" ? (
+            <>
+              <Clock className="h-12 w-12 text-muted-foreground animate-pulse" />
+              <h3 className="text-xl font-semibold text-foreground">{error}</h3>
+              <p className="text-sm text-muted-foreground text-center">
+                Mohon bersabar, Guru akan segera memulai sesinya
+              </p>
+            </>
+          ) : (
+            <p className="text-destructive">Error: {error}</p>
+          )}
+        </div>
       </div>
     );
   }

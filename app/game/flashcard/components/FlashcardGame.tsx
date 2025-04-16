@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { AnimatePresence } from 'framer-motion';
 import KoreanFlashcard from './KoreanFlashcard';
 import { getFlashcardWords } from '../actions/get-flashcard-words';

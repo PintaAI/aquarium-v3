@@ -21,7 +21,7 @@ export default function TryoutLayout({
     >
       <AppSidebar />
       
-        <div className="mt-5 max-w-7xl mx-auto w-full ">
+        <div className="mt-5 max-w-7xl mx-auto w-full mb-24 ">
           {children}
         </div>
       

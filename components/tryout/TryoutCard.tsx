@@ -148,7 +148,8 @@ export function TryoutCard({
           </div>
           {showParticipantCount && (
             <div className="text-sm">
-              <span className="font-semibold">Participants:</span> {participants.length}
+              <span className="font-semibold">Submitted:</span>{" "}
+              {participants.filter(p => p.submittedAt !== null).length}
             </div>
           )}
           {(userParticipation || isGuru) && (

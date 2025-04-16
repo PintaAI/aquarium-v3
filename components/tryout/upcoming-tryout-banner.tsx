@@ -14,7 +14,7 @@ export async function UpcomingTryoutBanner() {
 
   if (!tryout) return null
   
-  const timeLeft = getTimeLeft(tryout.startTime)
+  const timeLeft = getTimeLeft(tryout.endTime)
 
   return (
     <Link 
@@ -33,7 +33,7 @@ export async function UpcomingTryoutBanner() {
           <span className="text-muted-foreground">{tryout.koleksiSoal.nama}</span>
         </p>
         <span className="shrink-0 text-xs text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded-full">
-          Dimulai {timeLeft} ➜
+          Selesai {timeLeft} ➜
         </span>
       </div>
     </Link>

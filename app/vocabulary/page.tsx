@@ -80,7 +80,7 @@ export default async function VocabularyPage() {
         </div>
 
         <TabsContent value="word" className="m-0">
-          <ScrollArea className="h-[600px] md:h-[980px] pr-4 -mr-4">
+          <ScrollArea className="h-[calc(100vh-285px)] md:h-[calc(100vh-230px)] pr-4 -mr-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {success && collections?.filter(collection => 
               collection.items.some(item => item.type === "WORD")
@@ -101,7 +101,7 @@ export default async function VocabularyPage() {
         </TabsContent>
 
         <TabsContent value="sentence" className="m-0">
-          <ScrollArea className="h-[600px] md:h-[980px] pr-4 -mr-4">
+          <ScrollArea className="h-[calc(100vh-285px)] md:h-[calc(100vh-230px)] pr-4 -mr-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {success && collections?.filter(collection => 
               collection.items.some(item => item.type === "SENTENCE")

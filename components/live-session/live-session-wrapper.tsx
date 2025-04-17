@@ -68,6 +68,20 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
     leaveHandledByButton.current = true;
   };
 
+  // Function to cleanup Stream user data
+  const cleanupStreamUser = async (userId: string, client: StreamChat) => {
+    try {
+      await client.deleteUser(userId, {
+        delete_conversation_channels: true,
+        mark_messages_deleted: true,
+        hard_delete: true,
+      });
+      console.log(`Cleaned up Stream user data for ${userId}`);
+    } catch (err) {
+      console.error(`Failed to cleanup Stream user data for ${userId}:`, err);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true; // Track component mount state
     let currentVideoClient: StreamVideoClient | null = null;
@@ -240,13 +254,14 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
             await currentChatChannel.stopWatching();
           }
 
-          // Always disconnect clients
-          if (currentVideoClient) {
-            await currentVideoClient.disconnectUser();
-          }
-          if (currentChatClient) {
-            await currentChatClient.disconnectUser();
-          }
+      // Cleanup and disconnect clients
+      if (currentChatClient && user?.id) {
+        await cleanupStreamUser(user.id, currentChatClient);
+        await currentChatClient.disconnectUser();
+      }
+      if (currentVideoClient) {
+        await currentVideoClient.disconnectUser();
+      }
 
           // Reset states only if component is still mounted (though unlikely here)
           if (isMounted) {
@@ -382,12 +397,12 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
                            }}
                          >
                            <Copy className="h-4 w-4" />
-                           <span className="sr-only">Salin URL Server</span> {/* Screen reader text */}
+                           <span className="sr-only">Salin URL Server</span> 
                          </Button>
                        </div>
                      </div>
 
-                     {/* Stream Key Row */}
+                     
                      <div className="space-y-1">
                        <Label htmlFor="stream-key">Streamkey</Label>
                        <div className="flex items-center gap-2">
@@ -420,14 +435,14 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
                            }}
                          >
                            <Copy className="h-4 w-4" />
-                           <span className="sr-only">Salin Kunci Stream</span> {/* Screen reader text */}
+                           <span className="sr-only">Salin Kunci Stream</span> 
                          </Button>
                        </div>
                      </div>
 
                      <p className="text-xs text-destructive text-center mt-1">Perlakukan Kunci Stream seperti kata sandi!</p>
                    </div>
-                   {/* DialogFooter removed as copy buttons are inline */}
+                   
                  </DialogContent>
                </Dialog>
              )}

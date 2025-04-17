@@ -108,14 +108,24 @@ export function TryoutCard({
     >
       <div className="relative h-32 w-full overflow-hidden">
         {/* Gradient Background */}
+        <div className="absolute inset-0 z-10">
+          <div className="absolute top-4 left-3 right-3 flex items-center justify-between gap-3">
+            <h3 className="text-lg font-bold group-hover:text-primary transition-colors line-clamp-1">
+              {koleksiSoal.nama}
+            </h3>
+            <Badge className={`${statusColors[status]} shrink-0`}>
+              {statusText[status]}
+            </Badge>
+          </div>
+        </div>
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/20">
+          <div className="absolute inset-0 rounded-b-sm bg-gradient-to-br from-primary/20 via-primary/10 to-primary/20 opacity-80">
             {/* Decorative Elements */}
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
             <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-primary/20 rounded-full blur-2xl" />
             {/* Icon */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <GraduationCap className="h-12 w-12 text-primary/40 group-hover:text-primary/60 transition-colors -translate-y-2" />
+              <GraduationCap className="h-12 w-12 text-primary/40 group-hover:text-primary/60 transition-colors translate-y-4" />
             </div>
             {/* Dates */}
             <div className="absolute bottom-2 left-3 right-3 flex justify-between text-xs text-primary/60">
@@ -156,14 +166,6 @@ export function TryoutCard({
         </div>
       )}
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold group-hover:text-primary transition-colors line-clamp-1">
-            {koleksiSoal.nama}
-          </h3>
-          <Badge className={statusColors[status]}>
-            {statusText[status]}
-          </Badge>
-        </div>
         <div className="space-y-2 text-muted-foreground">
           {showParticipantCount && (
             <div className="text-sm">

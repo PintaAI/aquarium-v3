@@ -12,6 +12,7 @@ import {
 // Chat SDK imports
 import { StreamChat, Channel } from 'stream-chat';
 import { createStreamUsers, generateStreamToken } from '@/app/actions/stream-actions';
+import { cleanupStreamUser } from '@/app/actions/stream-cleanup';
 import { UseCurrentUser } from '@/hooks/use-current-user';
 import { VideoComponent } from './video-component'; // Will be simplified
 import { SessionInfo } from './session-info';       // Will receive call prop
@@ -68,19 +69,6 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
     leaveHandledByButton.current = true;
   };
 
-  // Function to cleanup Stream user data
-  const cleanupStreamUser = async (userId: string, client: StreamChat) => {
-    try {
-      await client.deleteUser(userId, {
-        delete_conversation_channels: true,
-        mark_messages_deleted: true,
-        hard_delete: true,
-      });
-      console.log(`Cleaned up Stream user data for ${userId}`);
-    } catch (err) {
-      console.error(`Failed to cleanup Stream user data for ${userId}:`, err);
-    }
-  };
 
   useEffect(() => {
     let isMounted = true; // Track component mount state
@@ -254,9 +242,11 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
             await currentChatChannel.stopWatching();
           }
 
-      // Cleanup and disconnect clients
-      if (currentChatClient && user?.id) {
-        await cleanupStreamUser(user.id, currentChatClient);
+      // Cleanup user data and disconnect clients
+      if (user?.id) {
+        await cleanupStreamUser(user.id);
+      }
+      if (currentChatClient) {
         await currentChatClient.disconnectUser();
       }
       if (currentVideoClient) {

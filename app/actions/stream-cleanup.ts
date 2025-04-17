@@ -38,8 +38,6 @@ export async function cleanupAllStreamUsers() {
     }
 
     const client = new StreamClient(apiKey, apiSecret);
-    let offset = 0;
-    const limit = 100;
     let hasMore = true;
     let totalDeleted = 0;
 
@@ -57,7 +55,7 @@ export async function cleanupAllStreamUsers() {
       const userIds = users.map(user => user.id);
 
       // Delete users in batch
-      // @ts-ignore - Stream SDK types don't match actual usage
+      // @ts-expect-error - Stream SDK types don't match actual usage
       const deleteResponse = await client.deleteUsers(userIds, {
         user: 'hard',
         messages: 'hard'
@@ -69,7 +67,6 @@ export async function cleanupAllStreamUsers() {
         totalDeleted += userIds.length;
       }
 
-      offset += users.length;
     }
 
     return { success: true, totalDeleted };
@@ -92,7 +89,7 @@ export async function cleanupStreamUser(userId: string) {
     const client = new StreamClient(apiKey, apiSecret);
     
     // Delete user and wait for task completion
-    // @ts-ignore - Stream SDK types don't match actual usage
+    // @ts-expect-error - Stream SDK types don't match actual usage
     const response = await client.deleteUsers([userId], {
       user: 'hard',
       messages: 'hard'

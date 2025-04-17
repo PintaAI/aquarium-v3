@@ -6,7 +6,13 @@ interface TryoutWithRelations extends Tryout {
   koleksiSoal: {
     nama: string
   }
-  participants: TryoutParticipant[]
+  participants: (TryoutParticipant & {
+    user: {
+      name: string | null
+      email: string | null
+      image: string | null
+    }
+  })[]
 }
 
 interface TryoutListProps {

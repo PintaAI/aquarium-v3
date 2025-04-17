@@ -162,12 +162,13 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
           
           try {
             await currentCallInstance.join(); // Explicitly join the call
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Check for all known join failure patterns
             if (
-              error.message?.includes("JoinBackstage failed") || 
-              error.message?.includes("JoinCall failed") ||
-              (error.message?.includes("client:post") && error.message?.includes("/join"))
+              error instanceof Error &&
+              (error.message.includes("JoinBackstage failed") || 
+              error.message.includes("JoinCall failed") ||
+              (error.message.includes("client:post") && error.message.includes("/join")))
             ) {
               setError("silahkan tunggu Guru memulai sesi");
               return;

@@ -57,7 +57,7 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className="w-full justify-between group bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 hover:shadow-sm border-slate-200 dark:border-slate-700 py-5"
+          className="w-full justify-between group bg-white dark:bg-background hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 hover:shadow-sm border-slate-200 dark:border-slate-700 py-5"
         >
           <span className="flex items-center gap-3">
             <span className="relative">
@@ -77,12 +77,12 @@ export default function CollectionSelector({ onSelect }: CollectionSelectorProps
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-4xl">
+      <DialogContent className="sm:max-w-4xl border-none p-0">
         <DialogHeader>
-          <DialogTitle>Pilih Koleksi Kosakata</DialogTitle>
+          <DialogTitle className="mt-4 p-0 md:ml-4 ml-0 "> Kosa-kata</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="mt-4 max-h-[60vh]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-4">
+        <ScrollArea className="mt-4 max-h-[70vh]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 rounded-lg p-1">
             <div 
               className="cursor-pointer" 
               onClick={() => {

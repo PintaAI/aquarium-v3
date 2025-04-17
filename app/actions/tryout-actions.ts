@@ -47,7 +47,17 @@ export async function getTryout(tryoutId: number) {
     where: { id: tryoutId },
     include: {
       koleksiSoal: true,
-      participants: true
+      participants: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true
+            }
+          }
+        }
+      }
     }
   })
 
@@ -199,12 +209,36 @@ export async function getTryoutLeaderboard(tryoutId: number) {
       }
     },
     orderBy: [
-      { score: 'desc' },
-      { timeTakenSeconds: 'asc' }
+      { score: 'desc' }
     ]
   })
 
-  return leaderboard
+  // Custom sort to handle both timeTakenSeconds and submittedAt
+  return leaderboard.sort((a, b) => {
+    // First sort by score (descending)
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    
+    // If scores are equal, sort by time taken or submission time
+    if (a.timeTakenSeconds !== null && b.timeTakenSeconds !== null) {
+      return a.timeTakenSeconds - b.timeTakenSeconds; // faster completion first
+    }
+    
+    // If one has timeTakenSeconds and the other doesn't, prioritize the one with timeTakenSeconds
+    if (a.timeTakenSeconds !== null) return -1;
+    if (b.timeTakenSeconds !== null) return 1;
+    
+    // If neither has timeTakenSeconds, use submittedAt
+    if (a.submittedAt && b.submittedAt) {
+      return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+    }
+    
+    // If one doesn't have submittedAt, put it last
+    if (!a.submittedAt) return 1;
+    if (!b.submittedAt) return -1;
+    return 0;
+  });
 }
 
 export async function getAllTryouts() {
@@ -217,7 +251,17 @@ export async function getAllTryouts() {
   const tryouts = await db.tryout.findMany({
     include: {
       koleksiSoal: true,
-      participants: true
+      participants: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true
+            }
+          }
+        }
+      }
     },
     orderBy: { startTime: 'desc' }
   })
@@ -298,8 +342,14 @@ export async function getTryoutForUser(userId: string | undefined) {
     include: {
       koleksiSoal: true,
       participants: {
-        where: {
-          userId
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true
+            }
+          }
         }
       }
     },

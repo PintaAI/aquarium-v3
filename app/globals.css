@@ -487,3 +487,34 @@ span[style] > strong {
 mark[style] > strong {
   color: inherit;
 }
+
+/* Running Border Animation */
+@keyframes running-border-top {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes running-border-right {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+@keyframes running-border-bottom {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+@keyframes running-border-left {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(-100%); }
+}
+
+.animate-running-border-top {
+  animation: running-border-top 2s linear infinite;
+}
+.animate-running-border-right {
+  animation: running-border-right 2s linear infinite 0.5s; /* Delay start */
+}
+.animate-running-border-bottom {
+  animation: running-border-bottom 2s linear infinite 1s; /* Delay start */
+}
+.animate-running-border-left {
+  animation: running-border-left 2s linear infinite 1.5s; /* Delay start */
+}

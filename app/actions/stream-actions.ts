@@ -67,7 +67,7 @@ export async function generateStreamToken() {
 
     // Calculate timestamps
     const issuedAt = Math.floor(Date.now() / 1000) - 60; // Set issuedAt 60 seconds in the past to allow for clock skew
-    const expirationTime = issuedAt + 60 * 60; // Token valid for 1 hour from the adjusted issuedAt time
+    const expirationTime = issuedAt + 60 * 60 * 3; // Token valid for 3 hours from the adjusted issuedAt time
 
     const token = client.createToken(user.id, expirationTime, issuedAt);
 

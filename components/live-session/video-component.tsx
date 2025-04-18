@@ -106,12 +106,14 @@ const PermissionRequestHandler = () => {
           >
             <div className="w-8 h-8 rounded-full bg-primary/10 flex-shrink-0 overflow-hidden">
               {request.user.image ? (
-                <Image
-                  src={request.user.image} 
-                  alt={request.user.name || 'User'} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
+                 <Image
+                   src={request.user.image} 
+                   alt={request.user.name || 'User'} 
+                   width={32}
+                   height={32}
+                   className="w-full h-full object-cover"
+                 />
+               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm font-medium">
                   {(request.user.name || request.user.id).charAt(0).toUpperCase()}
                 </div>
@@ -478,12 +480,14 @@ const SimpleLivestreamLayout = () => {
             ParticipantViewUI={() => (
               <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                 {participant.image ? (
-                  <Image
-                    src={participant.image} 
-                    alt={participant.name || 'Participant'} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
+                 <Image
+                   src={participant.image} 
+                   alt={participant.name || 'Participant'} 
+                   width={16}
+                   height={16}
+                   className="w-full h-full object-cover"
+                 />
+               ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-medium text-primary">
                     {(participant.name || 'User').charAt(0).toUpperCase()}
                   </div>

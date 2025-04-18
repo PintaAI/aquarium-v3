@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Progress } from "@/components/ui/progress"
 import confetti from "canvas-confetti"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 
 interface MatchGameProps {
@@ -242,32 +243,27 @@ export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
     <div className="h-full flex flex-col p-6">
       {/* Game stats */}
       <div className="flex justify-between items-center px-4 py-3 bg-gradient-to-r from-muted/30 via-transparent to-muted/30 rounded-xl mb-8">
-        <div className="flex items-center gap-6">
-          <div>
-            <p className="text-sm font-medium mb-1.5">Waktu</p>
-            <div className="flex items-center gap-3">
-              <Progress 
-                value={(timeRemaining / timeLimit) * 100} 
-                className="w-36 h-2.5"
-              />
-              <span className="text-sm font-mono font-medium">
-                {formatTime(timeRemaining)}
-              </span>
+        <div className="flex-1 max-w-lg">
+          <div className="flex justify-between items-center text-sm font-medium mb-1.5">
+            <p>Progress & Waktu</p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4">
+                <p>
+                  <span className="text-primary font-bold">{matchedPairs}</span>
+                  <span className="text-muted-foreground">/{pairs}</span>
+                </p>
+                <span className="font-mono">
+                  {formatTime(timeRemaining)}
+                </span>
+                <span className="border-l border-border/50 h-6" />
+                <span className="font-bold text-xl text-primary">{score}</span>
+              </div>
             </div>
           </div>
-          
-          <div className="border-l border-border/50 pl-6">
-            <p className="text-sm font-medium mb-1.5">Progress</p>
-            <p className="font-medium">
-              <span className="text-primary">{matchedPairs}</span>
-              <span className="text-muted-foreground">/{pairs}</span>
-            </p>
-          </div>
-        </div>
-        
-        <div>
-          <p className="text-sm font-medium mb-1.5">Skor</p>
-          <p className="text-xl font-bold text-primary">{score}</p>
+          <Progress 
+            value={(timeRemaining / timeLimit) * 100} 
+            className="h-2.5"
+          />
         </div>
       </div>
       
@@ -275,16 +271,16 @@ export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
       <div className="flex-grow flex items-center justify-center px-2">
         <div className={`grid gap-3 md:gap-4 place-items-center ${ // Increased base gap from gap-2 to gap-3
           difficulty === "easy" 
-            ? "grid-cols-4 max-w-[360px] md:max-w-[400px] grid-rows-5" 
+            ? "grid-cols-4 max-w-[360px] md:max-w-[600px] grid-rows-5" 
             : difficulty === "medium" 
-            ? "grid-cols-4 sm:grid-cols-6 max-w-[320px] md:max-w-[600px]" 
-            : "grid-cols-4 sm:grid-cols-6 md:grid-cols-8 max-w-[320px] md:max-w-[800px]"
+            ? "grid-cols-4 sm:grid-cols-6 max-w-[320px] md:max-w-[800px]" 
+            : "grid-cols-4 sm:grid-cols-6 md:grid-cols-8 max-w-[320px] md:max-w-[1000px]"
         } mx-auto`}>
         {cards.map((card) => (
           <div
             key={card.id}
             className={cn(
-              "w-[84px] h-[102px] md:w-[72px] md:h-[88px] [perspective:1000px] group transition-all duration-200 ease-out",
+              "w-[84px] h-[102px] md:w-[120px] md:h-[144px] [perspective:1000px] group transition-all duration-200 ease-out",
               !card.isMatched && "cursor-pointer hover:-translate-y-1 hover:scale-[1.02]",
               card.isMatched && "cursor-default" // Change cursor for matched cards
             )}
@@ -311,7 +307,13 @@ export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
                   "group-hover:shadow-lg group-hover:shadow-primary/20 transition-all"
                 )}
               >
-                <div className="text-2xl font-bold text-primary-foreground">?</div>
+                <Image 
+                  src="/images/circle-logo.png"
+                  alt="Card logo"
+                  width={76}
+                  height={64}
+                  className="text-primary-foreground"
+                />
               </div>
 
               {/* Back side (Content) */}
@@ -328,9 +330,9 @@ export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
               >
                 <p 
                   className={cn(
-                    "text-sm leading-tight",
+                    "text-sm md:text-base leading-tight font-bold",
                     card.type === "korean" 
-                      ? "font-medium text-primary" 
+                      ? "text-primary" 
                       : "text-accent-foreground"
                   )}
                 >

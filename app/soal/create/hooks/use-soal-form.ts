@@ -33,6 +33,7 @@ export const useSoalForm = () => {
   // Form states
   const [nama, setNama] = useState("")
   const [deskripsi, setDeskripsi] = useState("")
+  const [isPrivate, setIsPrivate] = useState(false)
   const [soals, setSoals] = useState<Soal[]>([])
   
   // Current soal being edited
@@ -53,6 +54,7 @@ export const useSoalForm = () => {
         if (result.success && result.data) {
           setNama(result.data.nama)
           setDeskripsi(result.data.deskripsi ?? "")
+          setIsPrivate(result.data.isPrivate)
           setSoals(result.data.soals.map(soal => ({
             pertanyaan: soal.pertanyaan,
             attachmentUrl: soal.attachmentUrl ?? undefined,
@@ -171,7 +173,7 @@ export const useSoalForm = () => {
     startTransition(async () => {
       try {
         if (isEdit && koleksiId) {
-          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals)
+          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals, isPrivate)
           if (result.success) {
             toast.success("Koleksi soal berhasil diperbarui")
             router.push("/soal")
@@ -180,7 +182,7 @@ export const useSoalForm = () => {
             toast.error(result.error || "Terjadi kesalahan")
           }
         } else {
-          const result = await createKoleksiSoal(nama, deskripsi, soals)
+          const result = await createKoleksiSoal(nama, deskripsi, soals, isPrivate)
           if (result.success) {
             toast.success("Koleksi soal berhasil ditambahkan")
             router.push("/soal")
@@ -301,6 +303,8 @@ export const useSoalForm = () => {
     setNama,
     deskripsi,
     setDeskripsi,
+    isPrivate,
+    setIsPrivate,
     soals,
     handleCopiedSoals,
     currentPertanyaan,

@@ -5,6 +5,7 @@ import { IconType } from "react-icons";
 import { FaKeyboard } from "react-icons/fa";
 import { VscTable } from "react-icons/vsc";
 import { TbPlayCardStarFilled } from "react-icons/tb";
+import { IoGameControllerOutline } from "react-icons/io5";
 
 export interface Game {
   id: string;
@@ -78,6 +79,14 @@ export const games: Game[] = [
     description: "Pelajari kosakata Korea dengan kartu flash interaktif",
     icon: TbPlayCardStarFilled,
     route: "/game/flashcard",
+    type: "Game"
+  },
+  {
+    id: "matchkor",
+    title: "MatchKor",
+    description: "Permainan memory untuk mencocokkan kata Korea dengan artinya",
+    icon: IoGameControllerOutline,
+    route: "/game/matchkor",
     type: "Game"
   }
 ];

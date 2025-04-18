@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardTitle } from "../ui/card"
 import { Difficulty, User } from "@prisma/client"
-import { UserIcon, Pencil, Trash2 } from "lucide-react"
+import { UserIcon, Pencil, Trash2, Lock } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import { UseCurrentUser } from "@/hooks/use-current-user"
@@ -17,6 +17,7 @@ interface SoalCardProps {
   description?: string | null
   user?: Pick<User, "name" | "id"> | null
   soals: SoalItem[]
+  isPrivate?: boolean
   onClick?: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -30,6 +31,7 @@ export function SoalCard({
   user,
   soals,
   onClick,
+  isPrivate,
   onEdit,
   onDelete
 }: SoalCardProps) {
@@ -68,20 +70,39 @@ export function SoalCard({
       <div className="relative h-28 w-full overflow-hidden">
         {/* Gradient Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/20">
+          <div className={`absolute inset-0 bg-gradient-to-br ${
+            isPrivate 
+              ? 'from-primary/30 via-primary/20 to-primary/30' 
+              : 'from-primary/20 via-primary/10 to-primary/20'
+          }`}>
             {/* Decorative Orbs */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
-            <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-primary/20 rounded-full blur-2xl" />
+            {isPrivate ? (
+              <>
+                <div className="absolute inset-0 flex flex-col items-center justify-center -translate-y-4">
+                  <Lock className="h-12 w-12 text-primary/20" />
+                  <p className="text-xs text-primary/30 mt-1">Soal ini tidak terlihat untuk Murid</p>
+                </div>
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/30 rounded-full blur-2xl" />
+                <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-primary/30 rounded-full blur-2xl" />
+              </>
+            ) : (
+              <>
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
+                <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-primary/20 rounded-full blur-2xl" />
+              </>
+            )}
           </div>
           {/* Info Bar */}
           <div className="absolute bottom-0 inset-x-0">
             <div className="flex justify-between items-center px-4 py-2 bg-background/50 backdrop-blur-sm">
-              <div className="flex items-center gap-1.5">
-                <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">
-                  {user?.name || 'Anonymous'}
-                </span>
-              </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-foreground">
+                {user?.name || 'Anonymous'}
+              </span>
+            </div>
+          </div>
               {mostFrequentDifficulty && (
                 <Badge 
                   variant="outline" 

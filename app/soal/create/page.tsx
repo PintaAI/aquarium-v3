@@ -4,12 +4,13 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Book, FileText, HelpCircle, ListPlus, Trash2, X } from "lucide-react"
+import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,6 +36,8 @@ export default function CreateSoalPage() {
     setNama,
     deskripsi,
     setDeskripsi,
+    isPrivate,
+    setIsPrivate,
     soals,
     isPending,
     isEdit,
@@ -126,6 +129,24 @@ export default function CreateSoalPage() {
                 placeholder="Deskripsi singkat tentang koleksi soal ini"
                 rows={3}
               />
+            </div>
+
+            <div>
+              <label 
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+              >
+                <Lock className="w-4 h-4" />
+                Status Privasi
+              </label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={isPrivate}
+                  onCheckedChange={setIsPrivate}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {isPrivate ? "Koleksi Privat" : "Koleksi Publik"}
+                </span>
+              </div>
             </div>
           </div>
 

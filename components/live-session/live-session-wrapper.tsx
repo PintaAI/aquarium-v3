@@ -12,7 +12,6 @@ import {
 // Chat SDK imports
 import { StreamChat, Channel } from 'stream-chat';
 import { createStreamUsers, generateStreamToken } from '@/app/actions/stream-actions';
-import { cleanupStreamUser } from '@/app/actions/stream-cleanup';
 import { UseCurrentUser } from '@/hooks/use-current-user';
 import { VideoComponent } from './video-component'; // Will be simplified
 import { SessionInfo } from './session-info';       // Will receive call prop
@@ -77,7 +76,7 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
     let currentChatClient: StreamChat | null = null;
     let currentChatChannel: Channel | null = null;
 
-    // Reset the leave handler flag
+    // Reset the flag
     leaveHandledByButton.current = false;
 
     if (!user?.id || !apiKey || !liveSessionData.streamCallId) {
@@ -231,41 +230,20 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
     return () => {
       isMounted = false; // Mark component as unmounted
       
-      const cleanupStream = async () => {
-        try {
-          // Only leave video call if not handled by button
-          if (currentCallInstance && !leaveHandledByButton.current) {
-            await currentCallInstance.leave();
-          }
-          // Stop watching chat channel
-          if (currentChatChannel) {
-            await currentChatChannel.stopWatching();
-          }
-
-      // Cleanup user data and disconnect clients
-      if (user?.id) {
-        await cleanupStreamUser(user.id);
-      }
       if (currentChatClient) {
-        await currentChatClient.disconnectUser();
+        currentChatClient.disconnectUser();
       }
       if (currentVideoClient) {
-        await currentVideoClient.disconnectUser();
+        currentVideoClient.disconnectUser();
       }
 
-          // Reset states only if component is still mounted (though unlikely here)
-          if (isMounted) {
-            setCall(null);
-            setVideoClient(null);
-            setChatClient(null);
-            setChatChannel(null);
-          }
-        } catch (err) {
-          console.error("Stream cleanup error:", err);
-        }
-      };
-
-      cleanupStream();
+      // Reset states if component is still mounted
+      if (isMounted) {
+        setCall(null);
+        setVideoClient(null);
+        setChatClient(null);
+        setChatChannel(null);
+      }
     };
     // Depend on stable user ID, name, image, streamCallId, session ID, session name, and isCreator status
   }, [user?.id, user?.name, user?.image, user?.role, liveSessionData.streamCallId, liveSessionData.id, liveSessionData.name, isCreator, guruUsers, liveSessionData.creator.id]);

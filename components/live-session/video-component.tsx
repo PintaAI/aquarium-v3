@@ -368,7 +368,8 @@ function CustomControls({
 }
 
 const SimpleLivestreamLayout = () => {
-  const { useParticipants, useParticipantCount } = useCallStateHooks();
+  const callHooks = useCallStateHooks();
+  const { useParticipants, useParticipantCount } = callHooks;
   const participants = useParticipants();
   const participantCount = useParticipantCount();
 
@@ -425,9 +426,19 @@ const SimpleLivestreamLayout = () => {
     } else if (participants.length === 0 && participantCount === 0) {
        console.log("No participants in the call.");
     }
-  }, [participantToShow, participants, participantCount, router]);
+  }, [participantToShow, participants, participantCount]);
+
+  useEffect(() => {
+    if (!participantToShow) {
+      const timer = setTimeout(() => {
+        router.push('/');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [participantToShow, router]);
 
   if (!participantToShow) {
+
     return (
        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
          Waiting for participant...

@@ -57,6 +57,7 @@ interface KoleksiSoal {
   id: number
   nama: string
   deskripsi: string | null
+  isPrivate: boolean
   createdAt: Date
   updatedAt: Date
   soals: Soal[]
@@ -100,6 +101,13 @@ export default function SoalPage() {
     )
   }
 
+  // Filter collections based on privacy and user role
+  const filteredCollections = collections.filter(collection => {
+    if (!collection.isPrivate) return true;
+    if (isGuru) return true;
+    return collection.soals[0]?.author?.id === currentUser?.id;
+  });
+
   return (
     <>
       <div className="container max-w-7xl mx-auto p-4 md:p-6">
@@ -131,7 +139,7 @@ export default function SoalPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {collections.map((collection) => (
+            {filteredCollections.map((collection) => (
               <SoalCard
                 key={collection.id}
                 id={collection.id}
@@ -139,6 +147,7 @@ export default function SoalPage() {
                 description={collection.deskripsi}
                 user={collection.soals[0]?.author}
                 soals={collection.soals}
+                isPrivate={collection.isPrivate}
                 onClick={() => router.push(`/soal/${collection.id}/test`)}
                 onEdit={() => router.push(`/soal/${collection.id}/edit`)}
                 onDelete={() => setDeleteId(collection.id)}

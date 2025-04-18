@@ -244,6 +244,7 @@ model KoleksiSoal {
   id         Int      @id @default(autoincrement())
   nama       String
   deskripsi  String?
+  isPrivate  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   soals      Soal[]

@@ -22,7 +22,8 @@ interface CreateSoal {
 export async function createKoleksiSoal(
   nama: string, 
   deskripsi: string | undefined,
-  soals: CreateSoal[] = []
+  soals: CreateSoal[] = [],
+  isPrivate: boolean = false
 ) {
   try {
     const user = await currentUser()
@@ -33,7 +34,8 @@ export async function createKoleksiSoal(
       const koleksi = await tx.koleksiSoal.create({
         data: { 
           nama, 
-          deskripsi
+          deskripsi,
+          isPrivate
         }
       })
 
@@ -140,7 +142,8 @@ export async function updateKoleksiSoal(
   id: number,
   nama: string,
   deskripsi?: string,
-  soals?: CreateSoal[]
+  soals?: CreateSoal[],
+  isPrivate: boolean = false
 ) {
   try {
     const user = await currentUser()
@@ -152,7 +155,8 @@ export async function updateKoleksiSoal(
         where: { id },
         data: { 
           nama, 
-          deskripsi
+          deskripsi,
+          isPrivate
         }
       })
 

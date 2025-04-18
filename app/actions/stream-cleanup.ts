@@ -1,13 +1,13 @@
 'use server'
 
-import { StreamClient } from '@stream-io/node-sdk';
+import { StreamChat } from 'stream-chat';
 import { currentUser } from '@/lib/auth';
 
 // Helper function to wait for task completion
-async function waitForTask(client: StreamClient, taskId: string, maxAttempts = 10): Promise<boolean> {
+async function waitForTask(client: StreamChat, taskId: string, maxAttempts = 30): Promise<boolean> {
   let attempts = 0;
   while (attempts < maxAttempts) {
-    const response = await client.getTask({ id: taskId });
+    const response = await client.getTask(taskId);
     if (response.status === 'completed') {
       return true;
     }
@@ -37,13 +37,19 @@ export async function cleanupAllStreamUsers() {
       throw new Error('Stream API credentials not found');
     }
 
-    const client = new StreamClient(apiKey, apiSecret);
+    const client = new StreamChat(apiKey, apiSecret);
+    let offset = 0;
+    const limit = 100;
     let hasMore = true;
     let totalDeleted = 0;
 
     while (hasMore) {
-      // Get batch of users
-      const response = await client.queryUsers({});
+      // Get batch of users using proper pagination
+      const response = await client.queryUsers(
+        {}, // Empty filter to get all users
+        { created_at: -1 }, // Sort by creation date descending
+        { limit, offset }
+      );
       const users = response.users;
 
       if (users.length === 0) {
@@ -55,7 +61,6 @@ export async function cleanupAllStreamUsers() {
       const userIds = users.map(user => user.id);
 
       // Delete users in batch
-      // @ts-expect-error - Stream SDK types don't match actual usage
       const deleteResponse = await client.deleteUsers(userIds, {
         user: 'hard',
         messages: 'hard'
@@ -67,6 +72,7 @@ export async function cleanupAllStreamUsers() {
         totalDeleted += userIds.length;
       }
 
+      offset += users.length;
     }
 
     return { success: true, totalDeleted };
@@ -86,10 +92,9 @@ export async function cleanupStreamUser(userId: string) {
       throw new Error('Stream API credentials not found');
     }
 
-    const client = new StreamClient(apiKey, apiSecret);
+    const client = new StreamChat(apiKey, apiSecret);
     
     // Delete user and wait for task completion
-    // @ts-expect-error - Stream SDK types don't match actual usage
     const response = await client.deleteUsers([userId], {
       user: 'hard',
       messages: 'hard'

@@ -1,6 +1,6 @@
 "use client"
 
-import { Settings, User, UserCircle, Mail, Star } from "lucide-react" // Added Star
+import { Settings, User, UserCircle, Mail, } from "lucide-react" // Added Star
 import { useSession } from "next-auth/react"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"

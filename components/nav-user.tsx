@@ -4,7 +4,7 @@ import {
   ChevronsUpDown,
   LogOut,
   Shield,
-  Star, // Added Star icon
+ 
   User,
 } from "lucide-react"
 

@@ -98,17 +98,17 @@ export function SubscribeButton({ planId, amount, planName }: SubscribeButtonPro
         window.snap?.embed(transactionToken, {
           embedId: 'snap-container',
           language: 'id',
-          onSuccess: (result: SnapSuccessResult) => {
+          onSuccess: () => {
             toast({ title: 'Sukses!', description: `Langganan ${planName} aktif.` });
             setIsOpen(false);
             setTransactionToken(null); // Clear token
             router.push('/profile'); // Redirect to profile page after success
           },
-          onPending: (result: SnapPendingResult) => {
+          onPending: () => {
             toast({ title: 'Menunggu', description: 'Menunggu pembayaran dikonfirmasi.' });
             // Keep dialog open during pending
           },
-          onError: (result: SnapErrorResult) => {
+          onError: () => {
             toast({ title: 'Error', description: 'Pembayaran gagal.', variant: 'destructive' });
             setIsOpen(false);
             setTransactionToken(null); // Clear token

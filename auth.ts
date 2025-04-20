@@ -3,7 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { db } from "./lib/db"
 import authConfig from "./auth.config"
 import { getUserById } from "./data/user"
-import { UserRoles } from "@prisma/client"
+import { UserRoles, UserPlan } from "@prisma/client" // Added UserPlan import
 
  
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -29,6 +29,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     if (token.role && session.user) {
     session.user.role = token.role as UserRoles;
     }
+    // Add plan to session from token
+    if (token.plan && session.user) {
+      session.user.plan = token.plan as UserPlan;
+    }
 
     return session
    },
@@ -39,6 +43,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
     if (existingUser) {
       token.role = existingUser.role;
+      // Add plan to token from database user
+      token.plan = existingUser.plan;
     }
 
     return token

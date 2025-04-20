@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/provider/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { MobileNavbar } from "@/components/ui/mobile-navbar";
+import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -120,6 +121,12 @@ export default function RootLayout({
             <SpeedInsights />
           </ThemeProvider>
         </SessionProvider>
+        {/* Midtrans Snap Script */}
+        <Script
+          src="https://app.sandbox.midtrans.com/snap/snap.js"
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="lazyOnload" // Load after the page is interactive
+        />
       </body>
     </html>
   );

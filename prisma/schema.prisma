@@ -31,6 +31,7 @@ model User {
   soals                 Soal[]                 @relation("SoalAuthor")
   drawings              ExcalidrawDrawing[]
   tryoutParticipations  TryoutParticipant[]
+  subscriptions         Subscription[] // Added relation to Subscription
 }
 
 model Course {
@@ -306,4 +307,21 @@ model TryoutParticipant {
   user        User      @relation(fields: [userId], references: [id])
 
   @@unique([tryoutId, userId])
+}
+
+// Added Subscription model for Midtrans tracking
+model Subscription {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  midtransOrderId String    @unique // Store the Midtrans order_id from createTransaction API
+  status          String    // e.g., PENDING, SUCCESS, FAILED, CHALLENGE (maps to Midtrans status)
+  plan            UserPlan  // The plan subscribed to (e.g., PREMIUM)
+  startDate       DateTime? // Set when payment is confirmed (settlement/capture+accept)
+  endDate         DateTime? // Optional: For recurring/timed subscriptions
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([midtransOrderId]) // Index for faster lookup via webhook
 }

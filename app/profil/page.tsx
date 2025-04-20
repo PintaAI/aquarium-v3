@@ -1,6 +1,6 @@
 "use client"
 
-import { Settings, User, UserCircle, Mail } from "lucide-react"
+import { Settings, User, UserCircle, Mail, Star } from "lucide-react" // Added Star
 import { useSession } from "next-auth/react"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -98,6 +98,15 @@ export default function ProfilPage() {
                       {user.plan || "Free"}
                     </Badge>
                   </div>
+                  {/* Add Upgrade button if user plan is FREE */}
+                  {user.plan === "FREE" && (
+                    <Button asChild size="sm" variant="outline" className="mt-3">
+                      <Link href="/upgrade">
+                        <Star className="w-4 h-4 mr-2 text-yellow-500" />
+                        Upgrade to Premium
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>

@@ -6,7 +6,6 @@ import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getMatchWords } from "../actions/get-match-words"; // Import the action
-import { Loader2, AlertTriangle } from "lucide-react"; // For loading/error states
 
 // Update Props
 interface MatchGameProps {
@@ -37,8 +36,6 @@ export default function MatchGame({ pairCount, collectionId, onGameEnd }: MatchG
 
   // Game state
   const [gameItems, setGameItems] = useState<GameItem[]>([]); // Use new type and name
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [flippedItemIds, setFlippedItemIds] = useState<string[]>([]); // Use string IDs
   const [matchedPairCount, setMatchedPairCount] = useState<number>(0); // Track matched pairs
   const [score, setScore] = useState<number>(0);
@@ -54,8 +51,6 @@ export default function MatchGame({ pairCount, collectionId, onGameEnd }: MatchG
   // Fetch words on component mount or when props change
   useEffect(() => {
     async function loadWords() {
-      setLoading(true);
-      setError(null);
       setGameItems([]); // Clear previous items
       setMatchedPairCount(0);
       setScore(0);
@@ -79,10 +74,8 @@ export default function MatchGame({ pairCount, collectionId, onGameEnd }: MatchG
         setTimeRemaining(TIME_LIMITS[pairCount] || 120); // Reset timer based on actual pair count
         setGameActive(true); // Activate game after successful load
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unknown error occurred");
+        console.error(err instanceof Error ? err.message : "An unknown error occurred");
         setGameActive(false);
-      } finally {
-        setLoading(false);
       }
     }
 
@@ -93,7 +86,7 @@ export default function MatchGame({ pairCount, collectionId, onGameEnd }: MatchG
   useEffect(() => {
     if (!gameActive || gameItems.length === 0) return; // Don't run timer if game not active or no items
 
-    let timeoutId: NodeJS.Timeout | null = null;
+    const timeoutId: NodeJS.Timeout | null = null;
 
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {

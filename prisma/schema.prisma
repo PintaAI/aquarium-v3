@@ -227,6 +227,7 @@ enum UserRoles {
 enum UserPlan {
   FREE
   PREMIUM
+  CUSTOM // Added Custom plan
 }
 
 enum CourseLevel {

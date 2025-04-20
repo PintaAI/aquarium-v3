@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse,NextRequest } from 'next/server';
 import midtransClient from 'midtrans-client';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
@@ -22,8 +22,23 @@ interface MidtransError extends Error {
 }
 
 
-export async function POST() { // Removed unused 'req' parameter
+export async function POST(req: NextRequest) { // Add req parameter with type
   try {
+    // Read data from request body
+    const body = await req.json();
+    const { planId, amount, planName } = body;
+
+    // Basic validation
+    if (!planId || typeof amount !== 'number' || amount <= 0 || !planName) {
+      return new NextResponse('Invalid plan details provided', { status: 400 });
+    }
+
+    // Validate planId against UserPlan enum (optional but good practice)
+    if (!Object.values(UserPlan).includes(planId as UserPlan)) {
+       return new NextResponse(`Invalid planId: ${planId}`, { status: 400 });
+    }
+    const userPlanEnum = planId as UserPlan; // Cast to enum type
+
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
@@ -37,25 +52,25 @@ export async function POST() { // Removed unused 'req' parameter
       return new NextResponse('User not found', { status: 404 });
     }
 
-    // --- TODO: Define subscription details ---
-    const subscriptionPlan = 'PREMIUM'; // Or get from request body if multiple plans exist
-    const price = 100000; // Example price in IDR (e.g., 100,000 IDR) - Replace with actual price
-    const itemName = 'Premium Subscription - 1 Month'; // Example item name
-    // ---
+    // Use dynamic details from request body
+    const price = amount;
+    const itemName = planName;
+    const subscriptionPlan = planId; // Use planId from request
 
-    // Generate a unique order ID
-    const orderId = `SUB-${subscriptionPlan}-${user.id}-${Date.now()}`;
+    // Generate a unique order ID (shortened to avoid length limits)
+    // Include planId in orderId for potential future reference
+    const orderId = `SUB-${planId}-${user.id.substring(0, 8)}-${Date.now()}`;
 
     const parameter = {
       transaction_details: {
         order_id: orderId,
-        gross_amount: price,
+        gross_amount: price, // Use dynamic price
       },
       item_details: [{
-        id: `PLAN-${subscriptionPlan}`,
-        price: price,
+        id: `PLAN-${subscriptionPlan}`, // Use dynamic planId
+        price: price, // Use dynamic price
         quantity: 1,
-        name: itemName,
+        name: itemName, // Use dynamic itemName
       }],
       customer_details: {
         first_name: user.name?.split(' ')[0] || 'User',
@@ -80,7 +95,7 @@ export async function POST() { // Removed unused 'req' parameter
         userId: user.id,
         midtransOrderId: orderId,
         status: 'PENDING', // Initial status
-        plan: UserPlan.PREMIUM, // Use the enum value
+        plan: userPlanEnum, // Use the dynamic enum value from request
         // startDate will be set on successful webhook notification
       }
     });

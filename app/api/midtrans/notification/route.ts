@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import midtransClient from 'midtrans-client';
 import { db } from '@/lib/db'; // Assuming you use db.ts for Prisma client
-import { UserPlan } from '@prisma/client'; // Import UserPlan enum
+// Removed unused UserPlan import to fix linting
 
 // Initialize Midtrans Core API client (needed for notification verification)
 // Note: Use CoreApi for notification verification as per docs/examples
@@ -33,74 +33,72 @@ export async function POST(req: Request) {
     const fraudStatus = statusResponse.fraud_status;
     const paymentType = statusResponse.payment_type;
 
-    console.log(`Notification verified. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}. Payment Type: ${paymentType}`);
+    console.log(`Notification received & verified. Order ID: ${orderId}, Transaction Status: ${transactionStatus}, Fraud Status: ${fraudStatus}, Payment Type: ${paymentType}`);
 
-    // --- TODO: Implement robust logic based on transaction status ---
-    let userPlanUpdate: UserPlan | null = null;
-    let subscriptionStatusUpdate: string | null = null; // Added for Subscription model status
-    let setStartDate: boolean = false; // Flag to set start date on success
+    // Find the existing subscription record
+    const subscription = await db.subscription.findUnique({
+      where: { midtransOrderId: orderId },
+    });
 
-    if (transactionStatus === 'capture') {
-      // For card payments, capture means payment is successful, but check fraud status
-      if (fraudStatus === 'accept') {
-        // Payment successful and accepted
-        userPlanUpdate = UserPlan.PREMIUM;
-        subscriptionStatusUpdate = 'SUCCESS';
-        setStartDate = true;
-        console.log(`Order ID ${orderId}: Payment captured and accepted. Updating status to SUCCESS.`);
-      } else if (fraudStatus === 'challenge') {
-        // Payment requires manual review (challenge)
-        subscriptionStatusUpdate = 'CHALLENGE';
-        console.log(`Order ID ${orderId}: Payment captured but requires challenge. Updating status to CHALLENGE.`);
-      }
-    } else if (transactionStatus === 'settlement') {
-      // For non-card payments, settlement means payment is successful
-      userPlanUpdate = UserPlan.PREMIUM;
-      subscriptionStatusUpdate = 'SUCCESS';
-      setStartDate = true;
-      console.log(`Order ID ${orderId}: Payment settled. Updating status to SUCCESS.`);
-    } else if (transactionStatus === 'pending') {
-      // Payment is pending (e.g., waiting for bank transfer)
-      subscriptionStatusUpdate = 'PENDING';
-      console.log(`Order ID ${orderId}: Payment pending. Status remains PENDING.`);
-    } else if (transactionStatus === 'cancel' || transactionStatus === 'expire' || transactionStatus === 'deny') {
-      // Payment failed or was cancelled/expired
-      subscriptionStatusUpdate = 'FAILED'; // Map all these to FAILED
-      console.log(`Order ID ${orderId}: Payment failed/cancelled/expired (${transactionStatus}). Updating status to FAILED.`);
+    if (!subscription) {
+      console.error(`Subscription not found for Order ID: ${orderId}. Ignoring notification.`);
+      // Return 200 OK to Midtrans even if we can't find the order,
+      // otherwise they might keep retrying.
+      return new NextResponse('Subscription not found, notification ignored.', { status: 200 });
     }
 
-    // If payment was successful, update the user's plan
-    if (userPlanUpdate) {
-      // Extract userId from orderId (assuming format SUB-PLAN-userId-timestamp)
-      const parts = orderId.split('-');
-      if (parts.length >= 4 && parts[0] === 'SUB') {
-        const userId = parts[2]; // Adjust index if your format differs
+    // --- Determine the target status based on Midtrans notification ---
+    let targetSubscriptionStatus = subscription.status; // Default to current status
+    let isPaymentSuccess = false;
 
-        // Update Subscription model status
-        if (subscriptionStatusUpdate) {
-          await db.subscription.update({
-            where: { midtransOrderId: orderId },
-            data: {
-              status: subscriptionStatusUpdate,
-              startDate: setStartDate ? new Date() : undefined, // Set start date only on success
-            },
-          });
-           console.log(`Subscription ${orderId} status updated to ${subscriptionStatusUpdate}.`);
-        }
-
-        // Update User model only if payment was successful
-        if (userPlanUpdate) {
-          await db.user.update({
-          where: { id: userId },
-            data: { plan: userPlanUpdate },
-          });
-          console.log(`User ${userId} plan updated to ${userPlanUpdate}.`);
-        }
-
-      } else {
-        console.error(`Could not extract userId from orderId: ${orderId}. User plan not updated.`);
-        // Potentially return a different status if orderId format is critical
+    if (transactionStatus === 'capture') {
+      if (fraudStatus === 'accept') {
+        targetSubscriptionStatus = 'SUCCESS';
+        isPaymentSuccess = true;
+      } else if (fraudStatus === 'challenge') {
+        targetSubscriptionStatus = 'CHALLENGE';
       }
+      // If fraudStatus is 'deny', Midtrans might send 'deny' transaction_status later
+    } else if (transactionStatus === 'settlement') {
+      targetSubscriptionStatus = 'SUCCESS';
+      isPaymentSuccess = true;
+    } else if (transactionStatus === 'pending') {
+      targetSubscriptionStatus = 'PENDING';
+    } else if (transactionStatus === 'cancel' || transactionStatus === 'expire' || transactionStatus === 'deny') {
+      targetSubscriptionStatus = 'FAILED';
+    }
+    // Add handling for other statuses like 'refund', 'partial_refund' if needed
+
+    console.log(`Order ID ${orderId}: Determined target status: ${targetSubscriptionStatus}`);
+
+    // --- Update Database if status changed or payment is successful ---
+
+    // Only proceed with updates if the status is changing OR if it's a success notification
+    // and the subscription isn't already marked as SUCCESS (idempotency)
+    if (targetSubscriptionStatus !== subscription.status || (isPaymentSuccess && subscription.status !== 'SUCCESS')) {
+
+      // Update Subscription status and potentially startDate
+      await db.subscription.update({
+        where: { id: subscription.id }, // Use primary key for update
+        data: {
+          status: targetSubscriptionStatus,
+          // Set startDate only when transitioning to SUCCESS for the first time
+          startDate: (isPaymentSuccess && subscription.status !== 'SUCCESS') ? new Date() : subscription.startDate,
+        },
+      });
+      console.log(`Subscription ${orderId} status updated to ${targetSubscriptionStatus}.`);
+
+      // Update User plan ONLY if payment is successful and subscription wasn't already SUCCESS
+      if (isPaymentSuccess && subscription.status !== 'SUCCESS') {
+        await db.user.update({
+          where: { id: subscription.userId },
+          data: { plan: subscription.plan }, // Use the plan stored in the subscription record
+        });
+        console.log(`User ${subscription.userId} plan updated to ${subscription.plan}.`);
+      }
+
+    } else {
+       console.log(`Order ID ${orderId}: No status change needed or already processed. Current: ${subscription.status}, Target: ${targetSubscriptionStatus}`);
     }
 
     // Respond to Midtrans with 200 OK to acknowledge receipt

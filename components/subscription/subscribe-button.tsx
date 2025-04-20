@@ -59,7 +59,14 @@ declare global {
   }
 }
 
-export function SubscribeButton() {
+// Define props for the button
+interface SubscribeButtonProps {
+  planId: string;
+  amount: number; // Amount in the smallest currency unit (e.g., IDR)
+  planName: string; // For display purposes in messages/logs
+}
+
+export function SubscribeButton({ planId, amount, planName }: SubscribeButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [isSnapScriptLoaded, setIsSnapScriptLoaded] = useState(false);
@@ -86,12 +93,13 @@ export function SubscribeButton() {
 
     setIsLoading(true);
     try {
-      // 1. Fetch the transaction token from your backend API
+      // 1. Fetch the transaction token from your backend API, sending plan details
       const response = await fetch('/api/midtrans/create-transaction', {
         method: 'POST',
-        // Add headers if needed, e.g., for content type or auth
-        // headers: { 'Content-Type': 'application/json' },
-        // body: JSON.stringify({ plan: 'PREMIUM' }) // Send plan details if needed
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ planId, amount, planName }), // Send plan details
       });
 
       if (!response.ok) {
@@ -114,10 +122,10 @@ export function SubscribeButton() {
       window.snap.pay(token, {
         onSuccess: function (result: SnapSuccessResult) {
           /* You may add your own implementation here */
-          console.log('Payment Success:', result);
+          console.log(`Payment Success for ${planName}:`, result);
           toast({
             title: 'Payment Successful!',
-            description: 'Your subscription has been activated.',
+            description: `Your subscription for ${planName} has been activated.`,
           });
           // Optionally redirect or update UI state
           // window.location.href = '/dashboard'; // Example redirect
@@ -167,7 +175,7 @@ export function SubscribeButton() {
           Processing...
         </>
       ) : (
-        'Upgrade to Premium'
+        `Upgrade to ${planName}` // Use dynamic plan name
       )}
     </Button>
   );

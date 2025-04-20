@@ -95,21 +95,21 @@ export default function ProfilPage() {
                       {user.role?.toLowerCase() || "User"}
                     </Badge>
                     <Badge variant="secondary" className="capitalize">
-                      {user.plan || "Free"}
-                    </Badge>
-                  </div>
-                  {/* Add Upgrade button if user plan is FREE */}
-                  {user.plan === "FREE" && (
-                    <Button asChild size="sm" variant="outline" className="mt-3">
-                      <Link href="/upgrade">
-                        <Star className="w-4 h-4 mr-2 text-yellow-500" />
-                        Upgrade to Premium
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
+                       {user.plan || "Free"}
+                     </Badge>
+                   </div>
+                   {/* Temporarily hide Upgrade button */}
+                   {/* {user.plan === "FREE" && ( */}
+                   {/*   <Button asChild size="sm" variant="outline" className="mt-3"> */}
+                   {/*     <Link href="/upgrade"> */}
+                   {/*       <Star className="w-4 h-4 mr-2 text-yellow-500" /> */}
+                   {/*       Upgrade to Premium */}
+                   {/*     </Link> */}
+                   {/*   </Button> */}
+                   {/* )} */}
+                 </div>
+               </div>
+             </CardHeader>
             <CardContent className="py-6">
               <div className="grid gap-6">
                 <div className="space-y-4 pb-5">

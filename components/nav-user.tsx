@@ -93,15 +93,15 @@ export function NavUser() {
                   Profile
                 </Link>
               </DropdownMenuItem>
-              {/* Add Upgrade link only if user plan is FREE */}
-              {user.plan === "FREE" && (
-                 <DropdownMenuItem asChild>
-                    <Link href="/upgrade">
-                      <Star className="mr-2 text-yellow-500" /> {/* Added Upgrade link */}
-                      Upgrade Plan
-                    </Link>
-                  </DropdownMenuItem>
-              )}
+              {/* Temporarily hide Upgrade link */}
+              {/* {user.plan === "FREE" && ( */}
+              {/*    <DropdownMenuItem asChild> */}
+              {/*       <Link href="/upgrade"> */}
+              {/*         <Star className="mr-2 text-yellow-500" /> */}
+              {/*         Upgrade Plan */}
+              {/*       </Link> */}
+              {/*     </DropdownMenuItem> */}
+              {/* )} */}
             </DropdownMenuGroup>
             {user.role === "ADMIN" && (
               <>

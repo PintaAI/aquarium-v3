@@ -12,10 +12,12 @@ export default async function UpgradePage() {
 
   // Redirect to login if user is not authenticated
   if (!session?.user) {
-    redirect("/auth/login?callbackUrl=/upgrade"); // Redirect back after login
-  }
-
-  // Optional: Check if user is already premium and display different content
+     redirect("/auth/login?callbackUrl=/upgrade"); // Redirect back after login
+   }
+ 
+   // --- The rest of the original code remains below ---
+ 
+   // Optional: Check if user is already premium and display different content
   // const user = await db.user.findUnique({ where: { id: session.user.id } });
   // if (user?.plan === 'PREMIUM') {
   //   return (

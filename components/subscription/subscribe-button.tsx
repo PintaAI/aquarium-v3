@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button'; // Assuming you use Shadcn UI Button
-import { useToast } from '@/hooks/use-toast'; // Assuming you have a toast hook
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'; // Import Dialog components including DialogTitle
+import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-// Define the type for the Snap window object if not already globally defined
+// Define the type for the Snap window object
 // Define interfaces for Midtrans Snap and its callback results
 interface SnapSuccessResult {
   status_code: string;
@@ -46,11 +49,15 @@ interface SnapOptions {
   onError?(result: SnapErrorResult): void;
   onClose?(): void;
   // embedId?: string; // Example: Add other options if you use them
-  // language?: string;
+  language?: string; // Add language option
+  embedId?: string; // Add embedId for embed mode
+
 }
 
 interface Snap {
   pay(token: string, options?: SnapOptions): void;
+  embed(token: string, options: SnapOptions & { embedId: string }): void;
+  hide(): void; // Add hide method signature
 }
 
 declare global {
@@ -68,10 +75,13 @@ interface SubscribeButtonProps {
 
 export function SubscribeButton({ planId, amount, planName }: SubscribeButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // State for Dialog
+  const [transactionToken, setTransactionToken] = useState<string | null>(null); // State for the token
   const { toast } = useToast();
+  const router = useRouter(); // Initialize router
   const [isSnapScriptLoaded, setIsSnapScriptLoaded] = useState(false);
 
-  // Check if Snap script is loaded (can be improved with better state management)
+  // Check if Snap script is loaded
   useEffect(() => {
     // Simple check if the snap object exists
     if (window.snap) {
@@ -79,6 +89,50 @@ export function SubscribeButton({ planId, amount, planName }: SubscribeButtonPro
     }
     // More robust check might involve listening to script load events
   }, []);
+
+  // Effect to embed Snap when dialog opens and token is ready
+  useEffect(() => {
+    // Only run if dialog is open, token exists, and snap is loaded
+    if (isOpen && transactionToken && window.snap) {
+      const embedSnap = () => {
+        window.snap?.embed(transactionToken, {
+          embedId: 'snap-container',
+          language: 'id',
+          onSuccess: (result: SnapSuccessResult) => {
+            toast({ title: 'Sukses!', description: `Langganan ${planName} aktif.` });
+            setIsOpen(false);
+            setTransactionToken(null); // Clear token
+            router.push('/profile'); // Redirect to profile page after success
+          },
+          onPending: (result: SnapPendingResult) => {
+            toast({ title: 'Menunggu', description: 'Menunggu pembayaran dikonfirmasi.' });
+            // Keep dialog open during pending
+          },
+          onError: (result: SnapErrorResult) => {
+            toast({ title: 'Error', description: 'Pembayaran gagal.', variant: 'destructive' });
+            setIsOpen(false);
+            setTransactionToken(null); // Clear token
+          },
+          onClose: () => {
+            // User closed the embed UI prematurely
+            // NOTE: This callback may not fire for all internal close actions in embed mode.
+            setIsOpen(false);
+            setTransactionToken(null); // Clear token
+          }
+        });
+      };
+      // Slight delay might still be needed if the container isn't ready immediately after isOpen=true
+      const timer = setTimeout(embedSnap, 100); // Shorter delay, adjust if needed
+
+      // Cleanup function for the effect
+      return () => {
+        clearTimeout(timer);
+        // Attempt to hide Snap UI if the effect cleans up while dialog might still be considered open
+        // This is less critical now with the onOpenChange handler, but good practice
+        // window.snap?.hide();
+      };
+    }
+  }, [isOpen, transactionToken, planName, router, toast]); // Dependencies
 
 
   const handleSubscribe = async () => {
@@ -114,52 +168,15 @@ export function SubscribeButton({ planId, amount, planName }: SubscribeButtonPro
         throw new Error('Transaction token not received from server.');
       }
 
-      // 2. Use the token to open the Snap payment popup
-      // Check if window.snap exists before calling pay
-      if (!window.snap) {
-        throw new Error('Midtrans Snap script not loaded correctly.');
-      }
-      window.snap.pay(token, {
-        onSuccess: function (result: SnapSuccessResult) {
-          /* You may add your own implementation here */
-          console.log(`Payment Success for ${planName}:`, result);
-          toast({
-            title: 'Payment Successful!',
-            description: `Your subscription for ${planName} has been activated.`,
-          });
-          // Optionally redirect or update UI state
-          // window.location.href = '/dashboard'; // Example redirect
-        },
-        onPending: function (result: SnapPendingResult) {
-          /* You may add your own implementation here */
-          console.log('Payment Pending:', result);
-          toast({
-            title: 'Payment Pending',
-            description: 'Waiting for payment confirmation.',
-          });
-        },
-        onError: function (result: SnapErrorResult) {
-          /* You may add your own implementation here */
-          console.error('Payment Error:', result);
-          toast({
-            title: 'Payment Error',
-            description: 'An error occurred during payment. Please try again.',
-            variant: 'destructive',
-          });
-        },
-        onClose: function () {
-          /* You may add your own implementation here */
-          console.log('Payment popup closed');
-          // Customer closed the popup without finishing the payment
-          // Optionally show a message or do nothing
-        }
-      });
+      // 2. Store the token and open the dialog. The useEffect will handle embedding.
+      setTransactionToken(token);
+      setIsOpen(true);
 
     } catch (error) {
-      console.error('Subscription Error:', error);
+      setTransactionToken(null); // Clear token on error
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred.',
+        title: 'Gagal',
+        description: error instanceof Error ? error.message : 'Gagal memulai transaksi.',
         variant: 'destructive',
       });
     } finally {
@@ -168,15 +185,35 @@ export function SubscribeButton({ planId, amount, planName }: SubscribeButtonPro
   };
 
   return (
-    <Button onClick={handleSubscribe} disabled={isLoading || !isSnapScriptLoaded}>
-      {isLoading ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Processing...
-        </>
-      ) : (
-        `Upgrade to ${planName}` // Use dynamic plan name
-      )}
-    </Button>
+    <>
+      <Button onClick={handleSubscribe} disabled={isLoading || !isSnapScriptLoaded}>
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          `Upgrade to ${planName}` // Use dynamic plan name
+        )}
+      </Button>
+
+      {/* Dialog component */}
+      <Dialog open={isOpen} onOpenChange={(open) => {
+        setIsOpen(open); // Update dialog state based on external interaction (click outside, etc.)
+        if (!open) {
+          // If dialog is closing externally, clear token and try to hide Snap UI
+          setTransactionToken(null);
+          window.snap?.hide(); // Attempt to hide/cleanup Snap UI
+        }
+      }}>
+        <DialogContent className="max-w-md p-0">
+          <VisuallyHidden>
+            <DialogTitle>Payment Gateway</DialogTitle>
+          </VisuallyHidden>
+          {/* Container for Midtrans Snap Embed */}
+          <div id="snap-container" className="w-full h-screen md:h-[600px]" />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

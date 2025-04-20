@@ -67,8 +67,10 @@ declare global {
 }
 
 // Define props for the button
+import { UserPlan } from "@prisma/client";
+
 interface SubscribeButtonProps {
-  planId: string;
+  planId: UserPlan;
   amount: number; // Amount in the smallest currency unit (e.g., IDR)
   planName: string; // For display purposes in messages/logs
 }
@@ -206,12 +208,12 @@ export function SubscribeButton({ planId, amount, planName }: SubscribeButtonPro
           window.snap?.hide(); // Attempt to hide/cleanup Snap UI
         }
       }}>
-        <DialogContent className="max-w-md p-0">
+        <DialogContent className="max-w-md p-0 border-none">
           <VisuallyHidden>
             <DialogTitle>Payment Gateway</DialogTitle>
           </VisuallyHidden>
           {/* Container for Midtrans Snap Embed */}
-          <div id="snap-container" className="w-full h-screen md:h-[600px]" />
+          <div id="snap-container" className="w-full h-screen md:h-[800px]" />
         </DialogContent>
       </Dialog>
     </>

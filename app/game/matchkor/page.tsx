@@ -9,21 +9,33 @@ import MatchGame from "./components/MatchGame";
 import GameSettings from "./components/GameSettings";
 import StartScreen from "./components/StartScreen"
 
+// Define pair counts based on difficulty
+const PAIR_COUNTS: Record<"easy" | "medium" | "hard", number> = {
+  easy: 6,
+  medium: 8,
+  hard: 10,
+};
+
 export default function MatchKorPage() {
-  const [gameState, setGameState] = useState<"start" | "settings" | "playing" | "finished">("start")
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy")
-  const [score, setScore] = useState(0)
-  
+  const [gameState, setGameState] = useState<"start" | "settings" | "playing" | "finished">("start");
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
+  const [score, setScore] = useState(0);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<number | undefined>(undefined); // Add state for collection ID
+  const [pairCount, setPairCount] = useState(PAIR_COUNTS.easy); // Add state for pair count
+
   const startGame = () => {
-    setGameState("settings")
-  }
-  
-  const beginGame = (selectedDifficulty: "easy" | "medium" | "hard") => {
-    setDifficulty(selectedDifficulty)
-    setGameState("playing")
-    setScore(0)
-  }
-  
+    setGameState("settings");
+  };
+
+  // Update beginGame to accept collectionId and set pairCount
+  const beginGame = (selectedDifficulty: "easy" | "medium" | "hard", collectionId?: number) => {
+    setDifficulty(selectedDifficulty);
+    setSelectedCollectionId(collectionId); // Store the selected collection ID
+    setPairCount(PAIR_COUNTS[selectedDifficulty]); // Set pair count based on difficulty
+    setGameState("playing");
+    setScore(0); // Reset score
+  };
+
   const endGame = (finalScore: number) => {
     setScore(finalScore)
     setGameState("finished")
@@ -46,9 +58,10 @@ export default function MatchKorPage() {
           )}
           
           {gameState === "playing" && (
-            <MatchGame 
-              difficulty={difficulty} 
-              onGameEnd={endGame} 
+            <MatchGame
+              pairCount={pairCount} // Pass pairCount
+              collectionId={selectedCollectionId} // Pass collectionId
+              onGameEnd={endGame}
             />
           )}
 
@@ -78,7 +91,8 @@ export default function MatchKorPage() {
                   </p>
                   <div className="flex justify-center gap-4 pt-6">
                     <Button
-                      onClick={() => beginGame(difficulty)}
+                      // Pass difficulty and collectionId when restarting
+                      onClick={() => beginGame(difficulty, selectedCollectionId)}
                       size="lg"
                       className="bg-primary hover:bg-primary/90 px-6 py-3 text-base"
                     >

@@ -1,235 +1,226 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Progress } from "@/components/ui/progress"
-import confetti from "canvas-confetti"
-import { cn } from "@/lib/utils"
-import Image from "next/image"
+import { Progress } from "@/components/ui/progress";
+import confetti from "canvas-confetti";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { getMatchWords } from "../actions/get-match-words"; // Import the action
+import { Loader2, AlertTriangle } from "lucide-react"; // For loading/error states
 
-
+// Update Props
 interface MatchGameProps {
-  difficulty: "easy" | "medium" | "hard"
-  onGameEnd: (score: number) => void
+  pairCount: number; // Use pairCount directly
+  collectionId?: number; // Add collectionId
+  onGameEnd: (score: number) => void;
 }
 
-type Card = {
-  id: number
-  content: string
-  type: "korean" | "indonesian"
-  matchId: number
-  isFlipped: boolean
-  isMatched: boolean
-}
+// Update Type for fetched items
+type GameItem = {
+  id: string; // Use string ID from action ('{dbId}-ko' or '{dbId}-id')
+  content: string;
+  type: "korean" | "indonesian";
+  pairId: number; // Use pairId from action
+  isFlipped: boolean;
+  isMatched: boolean;
+};
 
-// Sample vocabulary data (would be better to fetch from API in real application)
-const vocabularyPairs = [
-  { korean: "안녕하세요", indonesian: "Halo" },
-  { korean: "감사합니다", indonesian: "Terima kasih" },
-  { korean: "사랑해요", indonesian: "Saya cinta kamu" },
-  { korean: "미안해요", indonesian: "Maaf" },
-  { korean: "잘 먹겠습니다", indonesian: "Selamat makan" },
-  { korean: "잘 자요", indonesian: "Selamat tidur" },
-  { korean: "이름", indonesian: "Nama" },
-  { korean: "학생", indonesian: "Murid" },
-  { korean: "선생님", indonesian: "Guru" },
-  { korean: "친구", indonesian: "Teman" },
-  { korean: "가족", indonesian: "Keluarga" },
-  { korean: "책", indonesian: "Buku" },
-  { korean: "학교", indonesian: "Sekolah" },
-  { korean: "집", indonesian: "Rumah" },
-  { korean: "음식", indonesian: "Makanan" },
-  { korean: "물", indonesian: "Air" },
-  { korean: "커피", indonesian: "Kopi" },
-  { korean: "시간", indonesian: "Waktu" },
-  { korean: "날씨", indonesian: "Cuaca" },
-  { korean: "좋아요", indonesian: "Suka" }
-]
+// Define time limits (can be adjusted)
+const TIME_LIMITS: Record<number, number> = {
+  6: 90,  // 1 min 30 sec for 6 pairs
+  8: 120, // 2 min for 8 pairs
+  10: 150, // 2 min 30 sec for 10 pairs
+};
 
-export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
-  // Game configuration based on difficulty
-  const getDifficultySettings = () => {
-    switch (difficulty) {
-      case "easy":
-        return { pairs: 8, timeLimit: 120 } // 2 minutes
-      case "medium":
-        return { pairs: 12, timeLimit: 180 } // 3 minutes
-      case "hard":
-        return { pairs: 16, timeLimit: 240 } // 4 minutes
-    }
-  }
-
-  const { pairs, timeLimit } = getDifficultySettings()
+export default function MatchGame({ pairCount, collectionId, onGameEnd }: MatchGameProps) {
+  const timeLimit = TIME_LIMITS[pairCount] || 120; // Default time limit if pairCount is unusual
 
   // Game state
-  const [cards, setCards] = useState<Card[]>([])
-  const [flippedCards, setFlippedCards] = useState<number[]>([])
-  const [matchedPairs, setMatchedPairs] = useState<number>(0)
-  const [score, setScore] = useState<number>(0)
-  const [timeRemaining, setTimeRemaining] = useState<number>(timeLimit)
-  const [gameActive, setGameActive] = useState<boolean>(true)
-  
+  const [gameItems, setGameItems] = useState<GameItem[]>([]); // Use new type and name
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [flippedItemIds, setFlippedItemIds] = useState<string[]>([]); // Use string IDs
+  const [matchedPairCount, setMatchedPairCount] = useState<number>(0); // Track matched pairs
+  const [score, setScore] = useState<number>(0);
+  const [timeRemaining, setTimeRemaining] = useState<number>(timeLimit);
+  const [gameActive, setGameActive] = useState<boolean>(false); // Start inactive until words are loaded
+
   // End game function wrapped in useCallback
   const endGame = useCallback(() => {
-    setGameActive(false)
-    onGameEnd(score)
-  }, [score, onGameEnd])
-  
-  // Initialize game
+    setGameActive(false);
+    onGameEnd(score);
+  }, [score, onGameEnd]);
+
+  // Fetch words on component mount or when props change
   useEffect(() => {
-    const selectedVocab = [...vocabularyPairs]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, pairs)
-    
-    const gameCards: Card[] = []
-    
-    selectedVocab.forEach((pair, index) => {
-      // Korean card
-      gameCards.push({
-        id: index * 2,
-        content: pair.korean,
-        type: "korean",
-        matchId: index,
-        isFlipped: false,
-        isMatched: false
-      })
-      
-      // Indonesian card
-      gameCards.push({
-        id: index * 2 + 1,
-        content: pair.indonesian,
-        type: "indonesian",
-        matchId: index,
-        isFlipped: false,
-        isMatched: false
-      })
-    })
-    
-    // Shuffle cards
-    setCards(gameCards.sort(() => Math.random() - 0.5))
-  }, [pairs])
-  
+    async function loadWords() {
+      setLoading(true);
+      setError(null);
+      setGameItems([]); // Clear previous items
+      setMatchedPairCount(0);
+      setScore(0);
+      setFlippedItemIds([]);
+      setGameActive(false); // Ensure game is inactive while loading
+
+      try {
+        const result = await getMatchWords(pairCount, collectionId);
+        if (!result.success || !result.data) {
+          throw new Error(result.error || "Failed to load words for the game.");
+         }
+         // Initialize game items with isFlipped and isMatched set to false
+         // Explicitly cast item.type to satisfy GameItem['type']
+         const initialItems: GameItem[] = result.data.map((item) => ({
+           ...item,
+           type: item.type as "korean" | "indonesian", // Explicit cast here
+           isFlipped: false,
+           isMatched: false,
+        }));
+        setGameItems(initialItems);
+        setTimeRemaining(TIME_LIMITS[pairCount] || 120); // Reset timer based on actual pair count
+        setGameActive(true); // Activate game after successful load
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
+        setGameActive(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadWords();
+  }, [pairCount, collectionId]); // Rerun effect if pairCount or collectionId changes
+
   // Game timer
   useEffect(() => {
-    if (!gameActive) return
-    
-    let timeoutId: NodeJS.Timeout
+    if (!gameActive || gameItems.length === 0) return; // Don't run timer if game not active or no items
+
+    let timeoutId: NodeJS.Timeout | null = null;
 
     const timer = setInterval(() => {
-      setTimeRemaining(prev => {
+      setTimeRemaining((prev) => {
         if (prev <= 1) {
-          clearInterval(timer)
-          // Schedule endGame to run after state update
-          timeoutId = setTimeout(endGame, 0)
-          return 0
+          clearInterval(timer);
+          // Use a microtask to ensure state update before calling endGame
+          queueMicrotask(endGame);
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
-    
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Cleanup function
     return () => {
-      clearInterval(timer)
-      if (timeoutId) clearTimeout(timeoutId)
-    }
-  }, [gameActive, endGame])
-  
+      clearInterval(timer);
+      if (timeoutId) clearTimeout(timeoutId); // Clear timeout if component unmounts before it runs
+    };
+  }, [gameActive, endGame, gameItems.length]); // Add gameItems.length dependency
+
   // Store final score for win condition
-  const [finalScore, setFinalScore] = useState<number | null>(null)
+  const [finalScore, setFinalScore] = useState<number | null>(null);
 
-  // Check for win condition
+  // Check for win condition (all pairs matched)
   useEffect(() => {
-    if (matchedPairs === pairs && pairs > 0) {
-      const timeBonus = Math.floor(timeRemaining * 0.5)
-      const newFinalScore = score + timeBonus
-      
-      // Trigger confetti effect
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      })
-      
-      setGameActive(false)
-      setFinalScore(newFinalScore)
-    }
-  }, [matchedPairs, pairs, score, timeRemaining])
+    // Ensure pairCount is positive and matches the number of pairs derived from gameItems
+    const actualPairCount = gameItems.length / 2;
+    if (actualPairCount > 0 && matchedPairCount === actualPairCount) {
+      const timeBonus = Math.floor(timeRemaining * 0.5); // Example time bonus
+      const newFinalScore = score + timeBonus;
 
-  // Handle game end separately
+      // Trigger confetti effect
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+      setGameActive(false); // Stop the game
+      setFinalScore(newFinalScore); // Set final score to trigger end transition
+    }
+  }, [matchedPairCount, gameItems.length, score, timeRemaining]); // Depend on matchedPairCount and gameItems length
+
+  // Handle game end transition after final score is set
   useEffect(() => {
     if (finalScore !== null) {
       const timer = setTimeout(() => {
-        onGameEnd(finalScore)
-      }, 2000)
-      return () => clearTimeout(timer)
+        onGameEnd(finalScore); // Call the prop function passed from parent
+      }, 1500); // Short delay before calling onGameEnd
+      return () => clearTimeout(timer);
     }
-  }, [finalScore, onGameEnd])
-  
-  // Helper functions for card management
-  const markAsMatched = (a: number, b: number) => {
-    setCards(cs => cs.map(c =>
-      (c.id === a || c.id === b)
-        ? { ...c, isMatched: true, isFlipped: true }
-        : c
-    ))
-    setMatchedPairs(prev => prev + 1)
-    setScore(prev => prev + 10) // Award 10 points per match
-  }
+  }, [finalScore, onGameEnd]);
 
-  const flipBack = (a: number, b: number) =>
-    setCards(cs => cs.map(c =>
-      (c.id === a || c.id === b)
-        ? { ...c, isFlipped: false }
-        : c
-    ))
-
-  const resetFlips = () =>
-    setFlippedCards([])
-
-  // Check for matches whenever flippedCards changes
-  useEffect(() => {
-    if (flippedCards.length !== 2) return
-    
-    const [a, b] = flippedCards
-    const cardA = cards.find(c => c.id === a)!
-    const cardB = cards.find(c => c.id === b)!
-    
-    if (cardA.matchId === cardB.matchId) {
-      // matched!
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
-      setTimeout(() => {
-        markAsMatched(a, b)
-        resetFlips()
-      }, 500)
-    } else {
-      // not a match: flip back
-      setTimeout(() => {
-        flipBack(a, b)
-        resetFlips()
-      }, 1000)
-    }
-  }, [flippedCards, cards])
-
-  // Handle card click
-  const handleCardClick = (id: number) => {
-    if (!gameActive) return
-    
-    // Prevent clicking on already flipped or matched cards
-    if (
-      flippedCards.length >= 2 || 
-      flippedCards.includes(id) || 
-      cards.find(card => card.id === id)?.isMatched
-    ) {
-      return
-    }
-    
-    // Flip the card
-    setCards(prev => 
-      prev.map(card => 
-        card.id === id ? { ...card, isFlipped: true } : card
+  // Helper functions for item management
+  const markAsMatched = (id1: string, id2: string) => {
+    setGameItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id1 || item.id === id2
+          ? { ...item, isMatched: true, isFlipped: true } // Keep matched items flipped
+          : item
       )
-    )
-    
-    // Add to flipped cards
-    setFlippedCards(prev => [...prev, id])
+    );
+    setMatchedPairCount((prev) => prev + 1);
+    setScore((prev) => prev + 10); // Award points
+  };
+
+  const flipBack = (id1: string, id2: string) => {
+    setGameItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id1 || item.id === id2 ? { ...item, isFlipped: false } : item
+      )
+    );
+  };
+
+  const resetFlips = () => {
+    setFlippedItemIds([]);
+  };
+
+  // Check for matches whenever flippedItemIds changes
+  useEffect(() => {
+    if (flippedItemIds.length !== 2) return;
+
+    const [id1, id2] = flippedItemIds;
+    const item1 = gameItems.find((item) => item.id === id1);
+    const item2 = gameItems.find((item) => item.id === id2);
+
+    if (!item1 || !item2) return; // Should not happen, but safety check
+
+    if (item1.pairId === item2.pairId) {
+      // Matched!
+      // Optional: Add a small visual cue like confetti or highlight
+      // confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
+      // Use setTimeout to allow user to see the match before items might visually change
+      setTimeout(() => {
+        markAsMatched(id1, id2);
+        resetFlips();
+      }, 300); // Short delay
+    } else {
+      // Not a match: flip back after a delay
+      setTimeout(() => {
+        flipBack(id1, id2);
+        resetFlips();
+      }, 800); // Longer delay to see the mismatch
+    }
+  }, [flippedItemIds, gameItems]); // Rerun when flipped items or game items change
+
+  // Handle item click
+  const handleItemClick = (id: string) => {
+    if (!gameActive) return;
+
+    const clickedItem = gameItems.find((item) => item.id === id);
+
+    // Prevent clicking on already matched items or more than 2 items
+    if (
+      !clickedItem ||
+      clickedItem.isMatched ||
+      clickedItem.isFlipped || // Prevent clicking already flipped item
+      flippedItemIds.length >= 2
+    ) {
+      return;
+    }
+
+    // Flip the item
+    setGameItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id ? { ...item, isFlipped: true } : item
+      )
+    );
+
+    // Add to flipped items
+    setFlippedItemIds((prev) => [...prev, id]);
   }
   
   // Format time remaining
@@ -249,8 +240,8 @@ export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-4">
                 <p>
-                  <span className="text-primary font-bold">{matchedPairs}</span>
-                  <span className="text-muted-foreground">/{pairs}</span>
+                  <span className="text-primary font-bold">{matchedPairCount}</span>
+                  <span className="text-muted-foreground">/{pairCount}</span>
                 </p>
                 <span className="font-mono">
                   {formatTime(timeRemaining)}
@@ -269,31 +260,30 @@ export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
       
       {/* Game board */}
       <div className="flex-grow flex items-center justify-center px-2">
-        <div className={`grid gap-3 md:gap-4 place-items-center ${ // Increased base gap from gap-2 to gap-3
-          difficulty === "easy" 
-            ? "grid-cols-4 max-w-[360px] md:max-w-[600px] grid-rows-5" 
-            : difficulty === "medium" 
-            ? "grid-cols-4 sm:grid-cols-6 max-w-[320px] md:max-w-[800px]" 
-            : "grid-cols-4 sm:grid-cols-6 md:grid-cols-8 max-w-[320px] md:max-w-[1000px]"
-        } mx-auto`}>
-        {cards.map((card) => (
+        {/* Always 4 columns on mobile, adjust for medium screens based on count */}
+        <div className={cn(
+          "grid gap-2 md:gap-3 place-items-center mx-auto",
+          "grid-cols-4 max-w-[360px]", // Base: 4 columns for mobile
+          pairCount <= 8 ? "md:max-w-[520px]" : "md:grid-cols-5 md:max-w-[650px]" // Medium+ screens: 4 cols for easy/medium, 5 for hard
+        )}>
+        {gameItems.map((item) => (
           <div
-            key={card.id}
+            key={item.id}
             className={cn(
-              "w-[84px] h-[102px] md:w-[120px] md:h-[144px] [perspective:1000px] group transition-all duration-200 ease-out",
-              !card.isMatched && "cursor-pointer hover:-translate-y-1 hover:scale-[1.02]",
-              card.isMatched && "cursor-default" // Change cursor for matched cards
+              "w-[84px] h-[100px] md:w-[100px] md:h-[120px] [perspective:1000px] group transition-all duration-200 ease-out", // Increased base size for mobile
+              !item.isMatched && "cursor-pointer hover:-translate-y-1 hover:scale-[1.02]",
+              item.isMatched && "cursor-default" // Change cursor for matched cards
             )}
-            onClick={() => handleCardClick(card.id)}
+            onClick={() => handleItemClick(item.id)}
             role="button"
-            tabIndex={card.isMatched ? -1 : 0} // Remove from tab order when matched
-            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCardClick(card.id)}
-            aria-label={`Card: ${card.content}. Click to flip.`}
+            tabIndex={item.isMatched ? -1 : 0} // Remove from tab order when matched
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleItemClick(item.id)}
+            aria-label={`Card: ${item.content}. Click to flip.`}
           >
             <div
               className={cn(
                 "relative w-full h-full transition-all duration-300 ease-in-out [transform-style:preserve-3d]",
-                card.isFlipped ? "[transform:rotateY(180deg)]" : "[transform:rotateY(0deg)]"
+                item.isFlipped ? "[transform:rotateY(180deg)]" : "[transform:rotateY(0deg)]"
                 // Removed: card.isMatched && "opacity-60"
               )}
             >
@@ -322,21 +312,21 @@ export default function MatchGame({ difficulty, onGameEnd }: MatchGameProps) {
                   "absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)]",
                   "flex items-center justify-center text-center p-2",
                   "rounded-lg shadow-md",
-                  card.isMatched
+                  item.isMatched
                     ? "bg-primary/10 border-2 border-primary opacity-75" // Keep distinct style, maybe add slight opacity here?
                     : "bg-card border-2 border-border/50",
-                  !card.isMatched && "group-hover:shadow-lg group-hover:shadow-accent/20 transition-all" // Disable hover shadow if matched
+                  !item.isMatched && "group-hover:shadow-lg group-hover:shadow-accent/20 transition-all" // Disable hover shadow if matched
                 )}
               >
-                <p 
+                <p
                   className={cn(
                     "text-sm md:text-base leading-tight font-bold",
-                    card.type === "korean" 
-                      ? "text-primary" 
+                    item.type === "korean"
+                      ? "text-primary"
                       : "text-accent-foreground"
                   )}
                 >
-                  {card.content}
+                  {item.content}
                 </p>
               </div>
             </div>

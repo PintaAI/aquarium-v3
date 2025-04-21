@@ -208,7 +208,7 @@ export function RandomFlashcardQuiz() {
               </span>
               {isCorrect === false && (
                 <div className="text-sm text-red-500 dark:text-red-400">
-                  Jawabanmu: {userInput}
+                  Salah!
                 </div>
               )}
             </div>

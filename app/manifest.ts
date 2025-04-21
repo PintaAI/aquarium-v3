@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     background_color: '#ffffff', // Light mode background
     theme_color: '#095443', // Primary brand color
-    orientation: 'any',
+    orientation: 'portrait',
     icons: [
       {
         src: '/images/circle-logo.png',

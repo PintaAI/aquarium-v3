@@ -40,7 +40,7 @@ export default async function HomePage() {
           <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-2 pb-24 md:pb-0">
             <div>
               <header className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3 pb-2">
-                <div className="flex items-center">
+                <div className="flex items-center group cursor-pointer">
                   <Image
                     src="/images/logoo.png"
                     alt="Pejuangkorea Logo"
@@ -49,7 +49,9 @@ export default async function HomePage() {
                     className="h-12 w-12"
                     priority
                   />
-                  <span className="text-md font-bold">Pejuangkorea Academy</span>
+                  <span className="md:text-lg text-xl font-extrabold bg-gradient-to-r from-primary to-primary/70 group-hover:from-primary/90 group-hover:to-primary/60 bg-clip-text text-transparent drop-shadow-sm tracking-tight transition-[background] duration-300">
+                    Pejuangkorea Academy
+                  </span>
                 </div>
                 <div className="w-full md:w-[600px] space-y-2">
                   <UpcomingLiveSessionBanner />
@@ -57,8 +59,8 @@ export default async function HomePage() {
                 </div>
               </header>
               <SearchBox
-                placeholder="Cari artikel, kursus, game..."
-                className="mb-0 bg-primary/35 rounded-lg pb-1"
+                placeholder="Cari artikel, kursus, kosakata, game..."
+                className="mb-0 bg-gradient-to-b from-primary/20 via-primary/5 to-background/60 hover:from-primary/20 hover:via-primary/10 hover:to-background/80 focus-within:from-primary/30 focus-within:via-primary/20 focus-within:to-background border border-border/40 hover:border-border/60 focus-within:border-border rounded-lg shadow-sm hover:shadow-md focus-within:shadow-md transition-all duration-200"
               />
             </div>
             

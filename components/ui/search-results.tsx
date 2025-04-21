@@ -4,7 +4,7 @@ import Link from "next/link";
 import React from "react";
 import { SearchResult } from "@/app/actions/search-actions";
 import { cn } from "@/lib/utils";
-import { Book, Gamepad2, Newspaper } from "lucide-react";
+import { Book, Gamepad2, Newspaper, BookText } from "lucide-react";
 
 interface SearchResultsProps {
   results: SearchResult[];
@@ -18,6 +18,7 @@ export function SearchResults({ results, onClose }: SearchResultsProps) {
     article: Newspaper,
     course: Book,
     game: Gamepad2,
+    vocabulary: BookText,
   };
 
   return (
@@ -36,7 +37,14 @@ export function SearchResults({ results, onClose }: SearchResultsProps) {
               )}
             >
               <Icon className="h-4 w-4 text-muted-foreground" />
-              <span>{result.title}</span>
+              <div className="flex-1">
+                <span>{result.title}</span>
+                {result.subtitle && (
+                  <span className="block text-xs text-muted-foreground">
+                    {result.subtitle}
+                  </span>
+                )}
+              </div>
               <span className="ml-auto text-xs text-muted-foreground capitalize">
                 {result.type}
               </span>

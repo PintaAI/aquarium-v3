@@ -38,7 +38,7 @@ export default async function HomePage() {
       <SidebarInset className="flex min-h-screen">
         <main className="flex-1 overflow-y-auto ">
           <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-2 pb-24 md:pb-0">
-            <div className="space-y-4">
+            <div>
               <header className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3 pb-2">
                 <div className="flex items-center">
                   <Image

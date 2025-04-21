@@ -227,7 +227,7 @@ export default function MatchGame({ pairCount, collectionId, onGameEnd }: MatchG
     <div className="h-full flex flex-col p-6">
       {/* Game stats */}
       <div className="flex justify-between items-center px-4 py-3 bg-gradient-to-r from-muted/30 via-transparent to-muted/30 rounded-xl mb-8">
-        <div className="flex-1 max-w-lg">
+        <div className="flex-1">
           <div className="flex justify-between items-center text-sm font-medium mb-1.5">
             <p>Progress & Waktu</p>
             <div className="flex items-center gap-4">

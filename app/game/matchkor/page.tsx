@@ -47,7 +47,7 @@ export default function MatchKorPage() {
   
   return (
     <div className="container mx-auto max-w-5xl">
-      <Card className="h-[calc(100vh-140px)] md:h-[calc(100vh-230px)] border-0">
+      <Card className="h-[calc(100vh-140px)] md:h-[calc(100vh-80px)] border-0">
         <CardContent className="h-full p-0">
           {gameState === "start" && (
             <StartScreen onStart={startGame} />

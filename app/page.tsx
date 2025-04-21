@@ -13,6 +13,7 @@ import { SearchBox } from "@/components/ui/search-box";
 import { AppSidebar } from "@/components/app-sidebar";
 import { LandingHero } from "@/components/landingpage";
 import { GuruTools } from "@/components/menu/guru-tools";
+import { RandomFlashcardQuiz } from "@/components/vocabulary/RandomFlashcardQuiz"; // Import the new component
 
 export default async function HomePage() {
   const user = await currentUser();
@@ -66,8 +67,8 @@ export default async function HomePage() {
               <div className="col-span-12 lg:col-span-3 space-y-2">
               <GuruTools role={user?.role} />
                 <GameShortcuts />
+                <RandomFlashcardQuiz /> {/* Moved component here */}
                 <VocabularyCollection />
-                
               </div>
               
               {/* Main Content */}

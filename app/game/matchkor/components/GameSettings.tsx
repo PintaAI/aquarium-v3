@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react"; // Add useEffect and useMemo
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -80,6 +80,28 @@ export default function GameSettings({ onStart }: GameSettingsProps) {
     }
     fetchWordPairs();
   }, [selectedCollectionId, difficulty, difficultySettings]);
+
+  // Group word pairs by pairId for aligned preview
+  const groupedWordPairs = useMemo(() => {
+    const pairsMap = new Map<number, { korean?: string; indonesian?: string }>();
+    wordPairs.forEach(word => {
+      const existingPair = pairsMap.get(word.pairId) || {};
+      if (word.type === 'korean') {
+        existingPair.korean = word.content;
+      } else if (word.type === 'indonesian') {
+        existingPair.indonesian = word.content;
+      }
+      pairsMap.set(word.pairId, existingPair);
+    });
+    // Convert map to array of objects with pairId, sorting by pairId for consistent order
+    return Array.from(pairsMap.entries())
+      .sort(([a], [b]) => a - b) // Sort by pairId
+      .map(([pairId, words]) => ({
+        pairId,
+        korean: words.korean || '?', // Handle missing words gracefully
+        indonesian: words.indonesian || '?',
+      }));
+  }, [wordPairs]);
 
   // useEffect to fetch collections on mount
   useEffect(() => {
@@ -275,36 +297,27 @@ export default function GameSettings({ onStart }: GameSettingsProps) {
         <div className="max-w-2xl mx-auto mt-8 px-4 mb-24 md:mb-0">
           <div className="text-center mb-4">
             <h3 className="text-sm font-medium text-muted-foreground">
-              Kata-kata yang akan dimainkan:
+              Kata-kata yang akan dimainkan ({groupedWordPairs.length} pasang):
             </h3>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-center mb-3 text-muted-foreground">Korea</p>
-              {wordPairs
-                .filter(pair => pair.type === 'korean')
-                .map(pair => (
-                  <div
-                    key={pair.id}
-                    className="p-2 rounded-md bg-accent/50 text-center text-sm"
-                  >
-                    {pair.content}
-                  </div>
-                ))}
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-center mb-3 text-muted-foreground">Indonesia</p>
-              {wordPairs
-                .filter(pair => pair.type === 'indonesian')
-                .map(pair => (
-                  <div
-                    key={pair.id}
-                    className="p-2 rounded-md bg-accent/50 text-center text-sm"
-                  >
-                    {pair.content}
-                  </div>
-                ))}
-            </div>
+          {/* Aligned Word Pair Preview */}
+          <div className="space-y-2">
+             <div className="flex justify-between gap-4 mb-2">
+                <p className="text-xs font-medium text-center flex-1 text-muted-foreground">Korea</p>
+                <p className="text-xs font-medium text-center flex-1 text-muted-foreground">Indonesia</p>
+             </div>
+            {groupedWordPairs.map(pair => (
+              <div key={pair.pairId} className="flex justify-between gap-4">
+                {/* Korean Word */}
+                <div className="p-2 rounded-md bg-accent/50 text-center text-sm flex-1 truncate">
+                  {pair.korean}
+                </div>
+                {/* Indonesian Word */}
+                <div className="p-2 rounded-md bg-accent/50 text-center text-sm flex-1 truncate">
+                  {pair.indonesian}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

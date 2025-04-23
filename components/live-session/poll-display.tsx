@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // For single choice
 import { Checkbox } from '@/components/ui/checkbox'; // For multiple choice
 import { Label } from '@/components/ui/label';
-import { StreamChat, Channel } from 'stream-chat'; // Import necessary types
+import { StreamChat } from 'stream-chat'; // Import necessary types
 import { useToast } from '@/hooks/use-toast';
 
 interface PollOption {
@@ -36,13 +36,12 @@ interface Poll {
 interface PollDisplayProps {
     pollData: Poll;
     messageId: string; // Needed to cast vote
-    channel: Channel; // Needed for context, maybe future actions
     chatClient: StreamChat; // Needed to cast vote
     currentUserId: string | undefined; // ID of the logged-in user
     isCreator: boolean; // Is the current user the host?
 }
 
-export function PollDisplay({ pollData, messageId, channel, chatClient, currentUserId, isCreator }: PollDisplayProps) {
+export function PollDisplay({ pollData, messageId, chatClient, currentUserId, isCreator }: PollDisplayProps) {
     const { toast } = useToast();
     const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // Store IDs of selected options
     const [displayPollData, setDisplayPollData] = useState<Poll>(pollData); // Local state for rendering

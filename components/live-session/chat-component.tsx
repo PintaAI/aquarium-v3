@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'; // Added useMemo
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
-// Import StreamChat type. We'll infer the user type from the hook.
 import { Channel, Event, StreamChat } from 'stream-chat';
 import { Send, BarChartHorizontalBig } from 'lucide-react'; // Added PollChart icon
 
@@ -18,22 +17,48 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { CreatePollForm, PollFormData } from './create-poll-form'; // Import the form and its data type
+import { CreatePollForm, PollFormData } from './create-poll-form'; 
 import { useToast } from '@/hooks/use-toast'; // Import useToast
-// Import the hook to infer its return type
+
 import { UseCurrentUser } from '@/hooks/use-current-user';
 import { PollDisplay } from './poll-display'; // Import the PollDisplay component
+
+import { DefaultGenerics, PollResponse, PollVote as StreamPollVote } from 'stream-chat';
 
 // Infer the user type from the hook's return value
 type CurrentUserType = ReturnType<typeof UseCurrentUser>;
 
+// Define Poll types to match PollDisplay component
+interface PollOption {
+  id: string;
+  text: string;
+  vote_count?: number;
+}
+
+interface LocalPollVote {
+  option_id: string;
+  user_id?: string;
+}
+
+type Poll = {
+  id: string;
+  name: string;
+  options: PollOption[];
+  enforce_unique_vote: boolean;
+  vote_count?: number;
+  own_votes?: LocalPollVote[];
+  vote_counts_by_option?: Record<string, number>;
+  is_closed?: boolean;
+  voting_visibility?: 'public' | 'anonymous';
+};
+
 interface Message {
-  id: string
-  text: string
-  sender: string
-  senderImage?: string
+  id: string;
+  text: string;
+  sender: string;
+  senderImage?: string;
   timestamp: Date;
-  poll?: any; // Add optional poll property to message type
+  poll?: Poll;
 }
 
 interface ChatComponentProps {
@@ -60,8 +85,17 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
       const { message } = event
       if (!message) return;
 
-      // Check if the message has a poll attached
-      const pollData = message.poll; // Stream message object might have a 'poll' property
+      // Check if the message has a poll attached and cast it to our Poll type
+      // Convert Stream poll data to our local Poll type
+      const streamPoll = message.poll as PollResponse<DefaultGenerics> | undefined;
+      const pollData = streamPoll ? {
+        ...streamPoll,
+        enforce_unique_vote: streamPoll.enforce_unique_vote ?? false,
+        own_votes: streamPoll.own_votes?.map(vote => ({
+          option_id: vote.option_id || '',
+          user_id: vote.user_id
+        }))
+      } as Poll : undefined;
       const newMessageData: Message = {
         id: message.id,
         text: message.text || '',
@@ -98,7 +132,18 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
             sender: msg.user?.name || msg.user?.id || 'Unknown User',
             senderImage: msg.user?.image as string | undefined,
             timestamp: msg.created_at ? parseISO(msg.created_at) : new Date(),
-            poll: msg.poll, // Include poll data when loading existing messages
+            poll: (msg.poll as PollResponse<DefaultGenerics> | undefined) ? {
+              ...(msg.poll as PollResponse<DefaultGenerics>),
+              enforce_unique_vote: (msg.poll as PollResponse<DefaultGenerics>).enforce_unique_vote ?? false,
+              own_votes: (msg.poll as PollResponse<DefaultGenerics>).own_votes
+                ?.filter((vote): vote is StreamPollVote<DefaultGenerics> => 
+                  'option_id' in vote && vote.option_id !== undefined
+                )
+                .map(vote => ({
+                  option_id: vote.option_id,
+                  user_id: vote.user_id
+                }))
+            } as Poll : undefined
           };
           // Track the latest message with a poll
           if (msg.poll && msg.id) {
@@ -142,7 +187,7 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
       console.log('[handleMessageUpdated] Received event:', event); // Log the full event
 
       let messageId: string | undefined;
-      let pollData: any | undefined;
+      let pollData: PollResponse<DefaultGenerics> | undefined;
       let updatedTimestamp: Date | undefined;
 
       // Case 1: Event has a full message object (e.g., message.updated)
@@ -156,14 +201,24 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
         const text = event.message.text || '';
         updatedTimestamp = event.message.updated_at ? parseISO(event.message.updated_at) : new Date();
 
-        // Use upsertMessage for full message updates
+        // Convert Stream poll data to our local Poll type before updating
+        const convertedPollData = pollData ? {
+          ...pollData,
+          enforce_unique_vote: pollData.enforce_unique_vote ?? false,
+          own_votes: pollData.own_votes?.map(vote => ({
+            option_id: vote.option_id || '',
+            user_id: vote.user_id
+          }))
+        } as Poll : undefined;
+
+        // Use upsertMessage with converted poll data
         upsertMessage({
           id: messageId,
           text: text,
           sender: sender,
           senderImage: senderImage,
           timestamp: updatedTimestamp,
-          poll: pollData,
+          poll: convertedPollData,
         });
 
       // Case 2: Event has poll data and message_id (e.g., poll.updated, poll.closed)
@@ -180,7 +235,15 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
               console.log(`[handleMessageUpdated] Updating poll for message ID: ${messageId}`);
               return {
                 ...msg, // Keep existing message data
-                poll: pollData, // Update only the poll part
+                // Convert Stream poll data to our local Poll type
+                poll: pollData ? {
+                  ...pollData,
+                  enforce_unique_vote: pollData.enforce_unique_vote ?? false,
+                  own_votes: pollData.own_votes?.map(vote => ({
+                    option_id: vote.option_id || '',
+                    user_id: vote.user_id
+                  }))
+                } as Poll : undefined,
                 timestamp: updatedTimestamp || msg.timestamp // Update timestamp if available
               };
             }
@@ -218,16 +281,16 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
 
      channel.on('message.updated', handleMessageUpdated);
      // Stream kadang juga emit 'poll.updated' / 'poll.closed' — amankan:
-     channel.on('poll.updated', handleMessageUpdated as any);
-     channel.on('poll.closed', handleMessageUpdated as any);
+     channel.on('poll.updated', handleMessageUpdated as (event: Event) => void);
+     channel.on('poll.closed', handleMessageUpdated as (event: Event) => void);
      // Add listener for message deletion
      channel.on('message.deleted', handleMessageDeleted);
 
 
      return () => {
        channel.off('message.updated', handleMessageUpdated);
-       channel.off('poll.updated', handleMessageUpdated as any);
-       channel.off('poll.closed', handleMessageUpdated as any);
+       channel.off('poll.updated', handleMessageUpdated as (event: Event) => void);
+       channel.off('poll.closed', handleMessageUpdated as (event: Event) => void);
        // Remove listener for message deletion
        channel.off('message.deleted', handleMessageDeleted);
      };
@@ -334,7 +397,7 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
               <p className="text-sm mt-0.5 text-black dark:text-muted-foreground break-words whitespace-pre-wrap">
                 {message.text}
               </p>
-              {/* PollDisplay is now rendered separately below */}
+            
             </div>
           </div>
         </div>
@@ -348,7 +411,6 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
            <PollDisplay
               pollData={activePoll.poll}
               messageId={activePoll.id}
-              channel={channel}
               chatClient={chatClient}
               currentUserId={currentUser?.id}
               isCreator={isCreator}

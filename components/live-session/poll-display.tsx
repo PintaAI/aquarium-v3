@@ -8,8 +8,6 @@ import { Label } from '@/components/ui/label';
 import { StreamChat, Channel } from 'stream-chat'; // Import necessary types
 import { useToast } from '@/hooks/use-toast';
 
-// Define more specific types for poll data based on Stream's structure
-// These might need refinement based on actual API response
 interface PollOption {
     id: string;
     text: string;
@@ -19,7 +17,7 @@ interface PollOption {
 interface PollVote {
     option_id: string;
     user_id?: string; // May not always be present depending on visibility
-    // Add other vote properties if needed (id, created_at, etc.)
+
 }
 
 interface Poll {
@@ -32,7 +30,7 @@ interface Poll {
     vote_counts_by_option?: Record<string, number>; // Vote counts per option
     is_closed?: boolean;
     voting_visibility?: 'public' | 'anonymous'; // Add visibility
-    // Add other relevant fields like created_by_id etc. if needed
+
 }
 
 interface PollDisplayProps {
@@ -47,30 +45,40 @@ interface PollDisplayProps {
 export function PollDisplay({ pollData, messageId, channel, chatClient, currentUserId, isCreator }: PollDisplayProps) {
     const { toast } = useToast();
     const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // Store IDs of selected options
+    const [displayPollData, setDisplayPollData] = useState<Poll>(pollData); // Local state for rendering
     const [hasVoted, setHasVoted] = useState(false);
     const [isClosing, setIsClosing] = useState(false); // State for closing action
+    const [isDeleting, setIsDeleting] = useState(false); // State for deleting action
     const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double clicks
 
-    // Determine if the current user has already voted on this poll
+
+    useEffect(() => {
+        setDisplayPollData(pollData);
+    }, [pollData]);
+
+ 
     useEffect(() => {
         if (pollData.own_votes && pollData.own_votes.length > 0 && currentUserId) {
             setHasVoted(true);
-            // Pre-select options if user has voted
+            // Pre-select options if user has voted (using prop data for initial load)
             setSelectedOptions(pollData.own_votes.map(vote => vote.option_id));
         } else {
-            setHasVoted(false);
-            setSelectedOptions([]);
+
+            if (!pollData.own_votes || pollData.own_votes.length === 0) {
+                 setHasVoted(false);
+                 setSelectedOptions([]);
+            }
         }
-        // Reset submitting state if poll data changes (e.g., due to external update)
+
         setIsSubmitting(false);
-    }, [pollData.own_votes, currentUserId]);
+    }, [pollData.own_votes, currentUserId]); // Depend on prop data
 
     const handleVote = async () => {
         if (!currentUserId || selectedOptions.length === 0 || !pollData.id || !messageId || isSubmitting) {
             return; // Don't vote if no selection, not logged in, or already submitting
         }
 
-        // Prevent voting if poll is closed
+
         if (pollData.is_closed) {
              toast({ title: 'Poll Closed', description: 'Voting is no longer allowed for this poll.' });
              return;
@@ -79,30 +87,47 @@ export function PollDisplay({ pollData, messageId, channel, chatClient, currentU
         setIsSubmitting(true);
 
         try {
-            // Stream's castPollVote handles one option ID at a time.
-            // For multiple choice, we need to call it for each selected option *that wasn't previously selected*.
-            // And potentially remove votes for options that were deselected (though Stream might handle this).
-            // Let's refine this:
+
 
             const previousVotes = pollData.own_votes?.map(v => v.option_id) || [];
             const votesToAdd = selectedOptions.filter(id => !previousVotes.includes(id));
-            // Votes to remove might be needed if Stream doesn't handle deselection automatically
-            // const votesToRemove = previousVotes.filter(id => !selectedOptions.includes(id));
-
-            // Cast new votes
-            // Use Promise.all to send votes concurrently
+  
             await Promise.all(
                 votesToAdd.map(optionId =>
                     chatClient.castPollVote(messageId, pollData.id, { option_id: optionId })
-                )
-            );
+                 )
+             );
 
-            // Handle removing votes if necessary (check Stream docs/behavior)
-            // await Promise.all(votesToRemove.map(... removePollVote ...));
+             setHasVoted(true);
+             setDisplayPollData(currentPollData => {
+                if (!currentPollData) return currentPollData; // Should not happen here
 
-            toast({ title: 'Vote Cast', description: 'Your vote has been recorded.' });
-            // The component should re-render with updated pollData via WebSocket events,
-            // which will update `hasVoted` state in the useEffect hook.
+                const newVoteCounts = { ...(currentPollData.vote_counts_by_option || {}) };
+                let newTotalVotes = currentPollData.vote_count || 0;
+                const newOwnVotes = [...(currentPollData.own_votes || [])];
+
+                votesToAdd.forEach(optionId => {
+                    newVoteCounts[optionId] = (newVoteCounts[optionId] || 0) + 1;
+                    newTotalVotes++;
+                    // Add to own_votes optimistically
+                    if (!newOwnVotes.some(v => v.option_id === optionId) && currentUserId) {
+                         newOwnVotes.push({ option_id: optionId, user_id: currentUserId });
+                    }
+                });
+
+
+
+                return {
+                    ...currentPollData,
+                    vote_count: newTotalVotes,
+                    vote_counts_by_option: newVoteCounts,
+                    own_votes: newOwnVotes,
+                };
+             });
+
+
+             toast({ title: 'Vote Cast', description: 'Your vote has been recorded.' });
+
 
         } catch (error) {
             console.error('Error casting poll vote:', error);
@@ -112,14 +137,34 @@ export function PollDisplay({ pollData, messageId, channel, chatClient, currentU
                 description: error instanceof Error ? error.message : 'Could not cast your vote.',
             });
         } finally {
-             // Ensure submitting state is reset even if there's an error
-             // Add a small delay to prevent immediate re-click if UI update is slow
+
              setTimeout(() => setIsSubmitting(false), 300);
+         }
+     };
+
+    const handleDeletePoll = async () => {
+        if (!isCreator || isDeleting) return;
+
+        setIsDeleting(true);
+        try {
+            // We use the messageId associated with this poll display
+            await chatClient.deleteMessage(messageId);
+            toast({ title: 'Poll Deleted', description: 'The poll message has been removed.' });
+            // The message.deleted event should handle removing it from the ChatComponent state
+        } catch (error) {
+            console.error('Error deleting poll message:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not delete the poll message.',
+            });
+        } finally {
+            setIsDeleting(false);
         }
     };
 
-    // Handler for RadioGroup (single choice)
-    const handleRadioChange = (optionId: string) => {
+     // Handler for RadioGroup (single choice)
+     const handleRadioChange = (optionId: string) => {
         if (!pollData.is_closed && !hasVoted) {
             setSelectedOptions([optionId]);
         }
@@ -157,23 +202,30 @@ export function PollDisplay({ pollData, messageId, channel, chatClient, currentU
     };
 
 
-    // Determine when to show results
-    // Show if poll is closed OR if user has voted (regardless of visibility for simplicity here)
-    // More complex logic could check pollData.voting_visibility
-    const showResultsView = pollData.is_closed || hasVoted;
-    const canVote = !pollData.is_closed && !hasVoted;
+    // Determine when to show results using local state for optimistic updates
+    // Show results ONLY if poll is closed OR if the current user is the host.
+    // Regular users see results only after the poll is closed.
+    const showResultsView = displayPollData.is_closed || isCreator;
+    // Voting is allowed if the poll is not closed AND the user hasn't voted yet.
+    const canVote = !displayPollData.is_closed && !hasVoted;
 
-    const totalVotes = pollData.vote_count || 0;
+    // Use local state for displaying counts
+    const totalVotes = displayPollData.vote_count || 0;
+
+
+    if (!displayPollData) return null;
 
     return (
         <div className="my-2 p-3 border rounded-md bg-muted/20 shadow-sm">
-            <p className="font-semibold mb-2 text-sm">{pollData.name}</p>
+            <p className="font-semibold mb-2 text-sm">{displayPollData.name}</p>
             <div className="space-y-1 mb-3">
-                {pollData.options.map(option => {
-                    const votesForOption = pollData.vote_counts_by_option?.[option.id] || 0;
+                {displayPollData.options.map(option => {
+                    // Use local state for counts and percentages
+                    const votesForOption = displayPollData.vote_counts_by_option?.[option.id] || 0;
                     const percentage = totalVotes > 0 ? Math.round((votesForOption / totalVotes) * 100) : 0;
-                    const isSelectedInForm = selectedOptions.includes(option.id); // Currently selected in UI
-                    const isOwnPastVote = pollData.own_votes?.some(v => v.option_id === option.id) ?? false; // User's actual vote
+                    const isSelectedInForm = selectedOptions.includes(option.id); // Currently selected in UI form
+                    // Use local state to check for own vote optimistically
+                    const isOwnPastVote = displayPollData.own_votes?.some(v => v.option_id === option.id && v.user_id === currentUserId) ?? false;
 
                     return (
                         <div key={option.id} className="text-sm">
@@ -194,20 +246,22 @@ export function PollDisplay({ pollData, messageId, channel, chatClient, currentU
                             ) : (
                                 // Voting View
                                 <div className="flex items-center space-x-2 py-1">
-                                    {pollData.enforce_unique_vote ? (
+                                    {/* Use displayPollData for rendering properties */}
+                                    {displayPollData.enforce_unique_vote ? (
                                         <RadioGroup value={selectedOptions[0]} onValueChange={handleRadioChange} className="flex items-center w-full">
-                                            <RadioGroupItem value={option.id} id={`poll-${pollData.id}-option-${option.id}`} disabled={!canVote || isSubmitting} />
-                                            <Label htmlFor={`poll-${pollData.id}-option-${option.id}`} className="flex-1 cursor-pointer">{option.text}</Label>
+                                            {/* Use displayPollData.id for unique IDs */}
+                                            <RadioGroupItem value={option.id} id={`poll-${displayPollData.id}-option-${option.id}`} disabled={!canVote || isSubmitting} />
+                                            <Label htmlFor={`poll-${displayPollData.id}-option-${option.id}`} className="flex-1 cursor-pointer transition-colors duration-150 ease-in-out">{option.text}</Label> {/* Added transition */}
                                         </RadioGroup>
                                     ) : (
                                         <>
                                             <Checkbox
-                                                id={`poll-${pollData.id}-option-${option.id}`}
+                                                id={`poll-${displayPollData.id}-option-${option.id}`}
                                                 checked={isSelectedInForm}
                                                 onCheckedChange={(checked) => handleCheckboxChange(option.id, !!checked)}
                                                 disabled={!canVote || isSubmitting}
                                             />
-                                            <Label htmlFor={`poll-${pollData.id}-option-${option.id}`} className="flex-1 cursor-pointer">{option.text}</Label>
+                                            <Label htmlFor={`poll-${displayPollData.id}-option-${option.id}`} className="flex-1 cursor-pointer transition-colors duration-150 ease-in-out">{option.text}</Label> {/* Added transition */}
                                         </>
                                     )}
                                 </div>
@@ -217,7 +271,7 @@ export function PollDisplay({ pollData, messageId, channel, chatClient, currentU
                 })}
             </div>
 
-            {canVote && ( // Show vote button only if user can vote
+            {canVote && !isCreator && ( // Show vote button only if user can vote AND is not the creator
                 <Button
                     size="sm"
                     onClick={handleVote}
@@ -227,16 +281,18 @@ export function PollDisplay({ pollData, messageId, channel, chatClient, currentU
                     {isSubmitting ? 'Voting...' : 'Vote'}
                 </Button>
             )}
-             {pollData.is_closed && (
-                 <p className="text-xs text-muted-foreground mt-2 font-medium">Voting is closed.</p>
+             {/* Use displayPollData for conditional rendering based on status */}
+             {displayPollData.is_closed && (
+                 <p className="text-xs text-muted-foreground mt-2 font-medium">Quiz berakhir 🎉</p>
              )}
-             {hasVoted && !pollData.is_closed && (
-                 <p className="text-xs text-muted-foreground mt-2 font-medium">✅ You have voted.</p>
+             {hasVoted && !displayPollData.is_closed && (
+                 <p className="text-xs text-muted-foreground mt-2 font-medium">✅ Sudah menjawab</p>
              )}
-             <p className="text-xs text-muted-foreground mt-1">Total votes: {totalVotes}</p>
+             {/* Display total votes from local state */}
+             <p className="text-xs text-muted-foreground mt-1">Partisipan: {totalVotes}</p>
 
-             {/* Add Close Poll button for creator if poll is open */}
-             {isCreator && !pollData.is_closed && (
+             {/* Add Close Poll button for creator if poll is open (using local state) */}
+             {isCreator && !displayPollData.is_closed && (
                 <Button
                     variant="outline"
                     size="sm"
@@ -244,9 +300,21 @@ export function PollDisplay({ pollData, messageId, channel, chatClient, currentU
                     disabled={isClosing}
                     className="mt-2 w-full sm:w-auto"
                 >
-                    {isClosing ? 'Closing...' : 'Close Poll'}
-                </Button>
-             )}
-        </div>
-    );
+                     {isClosing ? 'Closing...' : 'Close Poll'}
+                 </Button>
+              )}
+              {/* Add Delete Poll button for creator */}
+              {isCreator && (
+                 <Button
+                     variant="destructive"
+                     size="sm"
+                     onClick={handleDeletePoll}
+                     disabled={isDeleting}
+                     className="mt-2 ml-2 w-full sm:w-auto" // Added ml-2 for spacing
+                 >
+                     {isDeleting ? 'Deleting...' : 'Delete Poll'}
+                 </Button>
+              )}
+         </div>
+     );
 }

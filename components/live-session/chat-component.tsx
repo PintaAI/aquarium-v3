@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react'; // Added useMemo
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
@@ -13,7 +13,7 @@ import { DateDisplay } from '../shared';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
+
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -47,6 +47,7 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [activePollMessageId, setActivePollMessageId] = useState<string | null>(null); // State for active poll
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false); // State for dialog
   const { toast } = useToast(); // Initialize toast
 
@@ -61,35 +62,55 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
 
       // Check if the message has a poll attached
       const pollData = message.poll; // Stream message object might have a 'poll' property
+      const newMessageData: Message = {
+        id: message.id,
+        text: message.text || '',
+        sender: message.user?.name || message.user?.id || 'Unknown User',
+        senderImage: message.user?.image as string | undefined,
+        timestamp: message.created_at ? parseISO(message.created_at) : new Date(),
+        poll: pollData, // Store poll data with the message
+      };
 
       setMessages((prev) => [
         ...prev,
-        {
-          id: message.id,
-          text: message.text || '',
-          sender: message.user?.name || message.user?.id || 'Unknown User',
-          senderImage: message.user?.image as string | undefined,
-          timestamp: message.created_at ? parseISO(message.created_at) : new Date(),
-          poll: pollData, // Store poll data with the message
-        },
+        newMessageData,
       ]);
+
+      // If the new message has a poll, set it as the active one
+      if (pollData && message.id) {
+        setActivePollMessageId(message.id);
+      }
     };
 
     // Load existing messages
     const loadMessages = async () => {
       try {
         const response = await channel.watch()
-        const channelMessages = response.messages || []
-        setMessages(
-          channelMessages.map(msg => ({
+        const channelMessages = response.messages || [];
+        let latestPollMsgId: string | null = null;
+        // Filter out deleted messages before mapping
+        const loadedMessages = channelMessages
+          .filter(msg => !msg.deleted_at) // Add this filter
+          .map(msg => {
+          const messageData: Message = {
             id: msg.id,
             text: msg.text || '',
             sender: msg.user?.name || msg.user?.id || 'Unknown User',
             senderImage: msg.user?.image as string | undefined,
             timestamp: msg.created_at ? parseISO(msg.created_at) : new Date(),
             poll: msg.poll, // Include poll data when loading existing messages
-          })),
-        );
+          };
+          // Track the latest message with a poll
+          if (msg.poll && msg.id) {
+            latestPollMsgId = msg.id;
+          }
+          return messageData;
+        });
+        setMessages(loadedMessages);
+        // Set the latest poll found during loading as the active one
+        if (latestPollMsgId) {
+          setActivePollMessageId(latestPollMsgId);
+        }
       } catch (error) {
         console.error('Error loading messages:', error)
       }
@@ -102,9 +123,122 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
 
     // Cleanup
     return () => {
-      channel.off('message.new', handleNewMessage)
-    }
-  }, [channel])
+      channel.off('message.new', handleNewMessage);
+    };
+  }, [channel]); // Dependencies remain the same
+
+  // Add listeners for poll updates
+  useEffect(() => {
+    if (!channel) return;
+
+    const upsertMessage = (msg: Message) =>
+      setMessages(prev =>
+        prev.some(m => m.id === msg.id)
+          ? prev.map(m => (m.id === msg.id ? msg : m))
+          : [...prev, msg],
+      );
+
+    const handleMessageUpdated = (event: Event) => {
+      console.log('[handleMessageUpdated] Received event:', event); // Log the full event
+
+      let messageId: string | undefined;
+      let pollData: any | undefined;
+      let updatedTimestamp: Date | undefined;
+
+      // Case 1: Event has a full message object (e.g., message.updated)
+      if (event.message) {
+        console.log('[handleMessageUpdated] Processing event.message:', event.message);
+        messageId = event.message.id;
+        pollData = event.message.poll;
+        // Attempt to get user details from the message if available
+        const sender = event.message.user?.name || event.message.user?.id || 'Unknown User';
+        const senderImage = event.message.user?.image as string | undefined;
+        const text = event.message.text || '';
+        updatedTimestamp = event.message.updated_at ? parseISO(event.message.updated_at) : new Date();
+
+        // Use upsertMessage for full message updates
+        upsertMessage({
+          id: messageId,
+          text: text,
+          sender: sender,
+          senderImage: senderImage,
+          timestamp: updatedTimestamp,
+          poll: pollData,
+        });
+
+      // Case 2: Event has poll data and message_id (e.g., poll.updated, poll.closed)
+      } else if (event.poll && event.message_id) {
+        console.log('[handleMessageUpdated] Processing event.poll:', event.poll);
+        messageId = event.message_id;
+        pollData = event.poll;
+        updatedTimestamp = event.created_at ? parseISO(event.created_at) : new Date(); // Use event's created_at for timestamp
+
+        // Directly update the specific message's poll data in the state
+        setMessages(prevMessages =>
+          prevMessages.map(msg => {
+            if (msg.id === messageId) {
+              console.log(`[handleMessageUpdated] Updating poll for message ID: ${messageId}`);
+              return {
+                ...msg, // Keep existing message data
+                poll: pollData, // Update only the poll part
+                timestamp: updatedTimestamp || msg.timestamp // Update timestamp if available
+              };
+            }
+            return msg;
+          })
+        );
+
+      // Case 3: Unknown event structure
+      } else {
+        console.log('[handleMessageUpdated] Event structure not recognized, returning.');
+        return;
+      }
+
+      // If we processed a poll update for a specific message, set it as active
+      if (messageId && pollData) {
+        console.log(`[handleMessageUpdated] Setting active poll message ID: ${messageId}`);
+       setActivePollMessageId(messageId);
+       }
+     };
+
+    const handleMessageDeleted = (event: Event) => {
+        console.log('[handleMessageDeleted] Received event:', event);
+        const deletedMessageId = event.message?.id;
+        if (deletedMessageId) {
+            console.log(`[handleMessageDeleted] Removing message ID: ${deletedMessageId}`);
+            setMessages(prevMessages => prevMessages.filter(msg => msg.id !== deletedMessageId));
+            // If the deleted message was the active poll, clear the active poll display
+            setActivePollMessageId(prevActiveId =>
+                prevActiveId === deletedMessageId ? null : prevActiveId
+            );
+        } else {
+             console.log('[handleMessageDeleted] No message ID found in event.');
+        }
+    };
+
+     channel.on('message.updated', handleMessageUpdated);
+     // Stream kadang juga emit 'poll.updated' / 'poll.closed' — amankan:
+     channel.on('poll.updated', handleMessageUpdated as any);
+     channel.on('poll.closed', handleMessageUpdated as any);
+     // Add listener for message deletion
+     channel.on('message.deleted', handleMessageDeleted);
+
+
+     return () => {
+       channel.off('message.updated', handleMessageUpdated);
+       channel.off('poll.updated', handleMessageUpdated as any);
+       channel.off('poll.closed', handleMessageUpdated as any);
+       // Remove listener for message deletion
+       channel.off('message.deleted', handleMessageDeleted);
+     };
+   }, [channel]); // Still depends only on channel
+
+  // Find the active poll data based on the ID
+  const activePoll = useMemo(() => {
+    if (!activePollMessageId) return null;
+    return messages.find(msg => msg.id === activePollMessageId);
+  }, [activePollMessageId, messages]);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -200,23 +334,28 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
               <p className="text-sm mt-0.5 text-black dark:text-muted-foreground break-words whitespace-pre-wrap">
                 {message.text}
               </p>
-              {/* Conditionally render PollDisplay if poll data exists */}
-              {message.poll && (
-                <PollDisplay
-                  pollData={message.poll}
-                  messageId={message.id}
-                  channel={channel}
-                  chatClient={chatClient}
-                  currentUserId={currentUser?.id}
-                  isCreator={isCreator} // Pass isCreator down
-                />
-              )}
+              {/* PollDisplay is now rendered separately below */}
             </div>
           </div>
         </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
+
+       {/* Active Poll Display Area */}
+       {activePoll && activePoll.poll && (
+        <div className="p-3 border-t bg-muted/20">
+           <PollDisplay
+              pollData={activePoll.poll}
+              messageId={activePoll.id}
+              channel={channel}
+              chatClient={chatClient}
+              currentUserId={currentUser?.id}
+              isCreator={isCreator}
+            />
+        </div>
+      )}
+
 
       {/* Input Area - Wrapped by Dialog for the Trigger */}
       <Dialog open={isPollDialogOpen} onOpenChange={setIsPollDialogOpen}>
@@ -245,10 +384,8 @@ export function ChatComponent({ channel, chatClient, isCreator, currentUser }: C
         {/* Poll Creation Dialog Content */}
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Create a New Poll</DialogTitle>
-            <DialogDescription>
-              Fill in the details below to create a poll for the chat.
-            </DialogDescription>
+            <DialogTitle>Buat Quiz</DialogTitle>
+
           </DialogHeader>
           <CreatePollForm
             onSubmit={handleCreatePollSubmit}

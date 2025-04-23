@@ -419,10 +419,13 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
            </div>
           <div className="md:h-screen md:sticky md:top-0">
             <div className="h-[calc(100vh-495px)] md:h-[570px] px-3 mt-1">
-              {/* Pass channel to ChatComponent */}
-              {chatChannel && (
+              {/* Pass channel, chatClient, isCreator, and user to ChatComponent */}
+              {chatChannel && chatClient && user && ( // Ensure all needed props are available
                 <ChatComponent
                   channel={chatChannel}
+                  chatClient={chatClient} // Pass chatClient
+                  isCreator={isCreator}   // Pass isCreator status
+                  currentUser={user}      // Pass the current user object
                 />
               )}
             </div>

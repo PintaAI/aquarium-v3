@@ -1,6 +1,6 @@
 "use client"
 
-import { Settings, User, UserCircle, Mail, } from "lucide-react" // Added Star
+import { Settings, User, UserCircle, Mail, Sparkles } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -174,6 +174,23 @@ export default function ProfilPage() {
                   </div>
                   <NotificationToggle />
                 </div>
+
+                {user.role === "GURU" && (
+                  <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center pt-6 border-t">
+                    <div className="space-y-0.5">
+                      <h4 className="font-medium">Beta Features</h4>
+                      <p className="text-muted-foreground text-sm">
+                        Access experimental features in development
+                      </p>
+                    </div>
+                    <Button variant="outline" asChild>
+                      <Link href="/beta">
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Try Beta Features
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

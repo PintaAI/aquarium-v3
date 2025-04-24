@@ -7,6 +7,7 @@ declare module 'scroll-snap' {
     threshold?: number
     snapStop?: boolean
     easing?: (t: number) => number
+    enableKeyboard?: boolean
   }
 
   interface ScrollSnapAPI {

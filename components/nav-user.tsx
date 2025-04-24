@@ -1,10 +1,10 @@
 "use client"
 
 import {
+  BeakerIcon,
   ChevronsUpDown,
   LogOut,
   Shield,
- 
   User,
 } from "lucide-react"
 
@@ -103,6 +103,19 @@ export function NavUser() {
               {/*     </DropdownMenuItem> */}
               {/* )} */}
             </DropdownMenuGroup>
+            {user.role === "GURU" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link href="/beta">
+                      <BeakerIcon className="mr-2" />
+                      Beta Features
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
             {user.role === "ADMIN" && (
               <>
                 <DropdownMenuSeparator />

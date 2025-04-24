@@ -71,6 +71,7 @@
     "react-markdown": "^10.1.0",
     "react-player": "^2.16.0",
     "sass": "^1.85.1",
+    "scroll-snap": "^5.0.2",
     "sonner": "^2.0.3",
     "stream-chat": "^8.59.0",
     "stream-chat-react": "^12.14.0",

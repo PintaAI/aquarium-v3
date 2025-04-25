@@ -41,22 +41,22 @@ export function ExcalidrawControls({
             placeholder="Drawing name"
             value={drawingName}
             onChange={(e) => setDrawingName(e.target.value)}
-            className="w-full h-10 pl-9"
+            className="w-full h-10 pl-9 bg-background"
           />
         </div>
         <Button 
           onClick={onSave}
           disabled={isSaving || !session?.user}
-          className="h-10"
-          variant="secondary"
+          className="h-9 p-0 m-0"
+          variant="outline"
           size="sm"
         >
           {isSaving ? (
             "Saving..."
           ) : (
             <>
-              <Save className="h-4 w-4 " />
-              Save
+              <Save className="h-6 w-4" />
+              
             </>
           )}
         </Button>
@@ -66,7 +66,7 @@ export function ExcalidrawControls({
           value={selectedDrawingId}
           onValueChange={onDrawingSelect}
         >
-          <SelectTrigger className="w-[250px] h-10">
+          <SelectTrigger className="w-[250px] h-10 bg-background">
             <SelectValue placeholder="Canvas" />
           </SelectTrigger>
           <SelectContent>

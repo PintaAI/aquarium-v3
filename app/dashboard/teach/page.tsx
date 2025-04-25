@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 
+import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import dynamic from "next/dynamic"
 import Image from "next/image"
@@ -26,19 +27,20 @@ export default function TeachPage() {
 
   return (
     <>
-      <header className="fixed top-0 w-full h-16 px-4 z-50 flex justify-between items-center bg-gradient-to-b from-primary to-background dark:from-secondary dark:to-neutral-900">
-        <div className="w-10" /> {/* Spacer for symmetry */}
-        <div className="flex items-center gap-2">
+      <header className="fixed top-0 w-full h-12 px-3 z-50 flex justify-between items-center bg-background border-b dark:border-gray-700">
+        {/* Placeholder div to balance the layout */}
+        <div className="w-10" />
+        <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="Logo" width={32} height={32} />
           <span className="font-semibold text-lg">Pejuangkorea</span>
-        </div>
+        </Link>
         <div className="w-10">
           <ThemeToggle />
         </div>
       </header>
       <main className="h-screen w-screen">
 
-        <div className="pt-16 h-full w-full">
+        <div className="pt-12 h-full w-full">
           <ExcalidrawWrapper />
         </div>
       </main>

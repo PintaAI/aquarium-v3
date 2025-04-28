@@ -7,11 +7,11 @@ import { DateDisplay } from "@/components/shared"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { notFound } from "next/navigation"
-import { FaTrophy } from "react-icons/fa"
+import { FaCrown, FaTrophy } from "react-icons/fa"
 import { IoArrowBack, IoStopwatchOutline } from "react-icons/io5"
 
 // Format time taken in MM:SS format
-const formatTime = (seconds: number | null) => {
+const formatTime = (seconds: number | null): string => {
   if (!seconds) return "-" // Default to 30 minutes if null
   const mins = Math.floor(seconds / 60)
   const secs = seconds % 60
@@ -38,12 +38,20 @@ export default async function LeaderboardPage(props: Props) {
   const leaderboard = await getTryoutLeaderboard(tryoutId)
   if (!leaderboard) return null
 
-  const userRank = leaderboard.findIndex(entry => entry.userId === user.id) + 1
+  const userRank = leaderboard.findIndex(entry => entry.userId === user.id) + 1; // Re-added userRank calculation
+  const topThree = leaderboard.slice(0, 3);
+  const rest = leaderboard.slice(3);
+
+  // Find the specific ranks for easier access
+  const firstPlace = topThree.find((_, index) => index === 0);
+  const secondPlace = topThree.find((_, index) => index === 1);
+  const thirdPlace = topThree.find((_, index) => index === 2);
 
   return (
-    <div className="max-w-4xl mx-auto" >
-      <div className="mb-8 flex flex-col  items-center text-center">
-        <div className="w-24 h-24 mb-4 relative">
+    <div className="max-w-4xl mx-auto px-4 py-8" >
+      {/* Tryout Info Header */}
+      <div className="mb-4 sm:mb-8 flex flex-col items-center text-center">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 mb-2 sm:mb-3 relative">
           <Image
             src="/images/circle-logo.png"
             alt="Logo"
@@ -51,143 +59,130 @@ export default async function LeaderboardPage(props: Props) {
             className="object-contain"
           />
         </div>
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">{tryout.koleksiSoal.nama}</h1>
-          <p className="text-sm text-muted-foreground">
-            <DateDisplay date={tryout.startTime} format="PPP p" /> - <DateDisplay date={tryout.endTime} format="PPP p" />
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">{tryout.koleksiSoal.nama}</h1>
+          <p className="text-xs text-muted-foreground">
+            <DateDisplay date={tryout.startTime} format="dd MMM yyyy HH:mm" /> - <DateDisplay date={tryout.endTime} format="dd MMM yyyy HH:mm" />
           </p>
         </div>
       </div>
-
-      {user.role === "MURID" && userRank > 0 && (
-        <Card className="p-4 mb-6 bg-primary text-primary-foreground">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="text-2xl font-bold">#{userRank}</div>
-              <Avatar>
-                <AvatarImage src={user.image || undefined} />
-                <AvatarFallback>
-                  {user.name?.[0] || user.email?.[0]?.toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">{user.name || user.email || 'Anonymous'}</p>
-                <p className="text-sm opacity-90">Your Rank</p>
-              </div>
-            </div>
-            <div className="text-right flex flex-col">
-              <p className="text-2xl font-bold">{leaderboard[userRank - 1].score}</p>
-              <p className="text-sm opacity-90">Points</p>
-            </div>
+      {/* Top 3 Section */}
+      {leaderboard.length > 0 && (
+        <div className="grid grid-cols-3 md:grid-cols-3 gap-0 md:gap-2 items-end mb-10">
+          {/* 2nd Place */}
+          <div className="md:order-1 flex justify-center">
+            {secondPlace && (
+              <Card className="p-2 pt-6 md:p-4 md:pt-8 w-full max-w-[110px] md:max-w-xs bg-gray-100 border border-gray-200 rounded-lg md:rounded-xl text-center relative transform transition-transform hover:scale-105"> {/* Adjusted padding, max-width, rounded */}
+                <div className="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 bg-gray-300 text-gray-700 text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-3 md:py-1 rounded-full">2nd</div> {/* Adjusted position, font size, padding */}
+                <Avatar className="w-12 h-12 md:w-20 md:h-20 mx-auto mb-1 md:mb-3 border-2 md:border-4 border-white shadow-sm md:shadow-md"> {/* Adjusted size, margin, border */}
+                  <AvatarImage src={secondPlace.user.image || undefined} />
+                  <AvatarFallback>{secondPlace.user.name?.[0] || '?'}</AvatarFallback>
+                </Avatar>
+                <p className="text-xs md:text-base font-semibold text-gray-800 truncate">{secondPlace.user.name || 'Anonymous'}</p> {/* Adjusted font size */}
+                <p className="text-lg md:text-2xl font-bold text-gray-900 my-0.5 md:my-1">{secondPlace.score}</p> {/* Adjusted font size, margin */}
+                <p className="text-[10px] md:text-xs text-gray-500 flex items-center justify-center gap-0.5 md:gap-1"> {/* Adjusted font size, gap */}
+                  <IoStopwatchOutline className="w-3 h-3 md:w-auto md:h-auto"/> {/* Adjusted icon size */} {formatTime(secondPlace.timeTakenSeconds)}
+                </p>
+              </Card>
+            )}
           </div>
-        </Card>
+
+          {/* 1st Place */}
+          <div className="md:order-2 flex justify-center">
+            {firstPlace && (
+              <Card className="p-3 pt-8 md:p-6 md:pt-10 w-full max-w-[130px] md:max-w-xs bg-yellow-100 border border-yellow-300 rounded-lg md:rounded-xl text-center relative shadow-xl transform transition-transform hover:scale-110 z-10 first-place-glow"> {/* Added first-place-glow class */}
+                <div className="absolute -top-4 md:-top-5 left-1/2 transform -translate-x-1/2 text-yellow-500">
+                  <FaCrown size={24} className="md:size-auto"/> {/* Adjusted icon size */}
+                </div>
+                <Avatar className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-2 md:mb-4 border-2 md:border-4 border-white shadow-md md:shadow-lg"> {/* Adjusted size, margin, border, shadow */}
+                  <AvatarImage src={firstPlace.user.image || undefined} />
+                  <AvatarFallback>{firstPlace.user.name?.[0] || '?'}</AvatarFallback>
+                </Avatar>
+                <p className="text-sm md:text-base font-semibold text-yellow-900 truncate">{firstPlace.user.name || 'Anonymous'}</p> {/* Adjusted font size */}
+                <p className="text-xl md:text-3xl font-bold text-yellow-950 my-0.5 md:my-1">{firstPlace.score}</p> {/* Adjusted font size, margin */}
+                <p className="text-xs md:text-sm text-yellow-700 flex items-center justify-center gap-0.5 md:gap-1"> {/* Adjusted font size, gap */}
+                  <IoStopwatchOutline className="w-3 h-3 md:w-auto md:h-auto"/> {/* Adjusted icon size */} {formatTime(firstPlace.timeTakenSeconds)}
+                </p>
+              </Card>
+            )}
+          </div>
+
+          {/* 3rd Place */}
+          <div className="md:order-3 flex justify-center">
+            {thirdPlace && (
+              <Card className="p-2 pt-6 md:p-4 md:pt-8 w-full max-w-[110px] md:max-w-xs bg-orange-100 border border-orange-200 rounded-lg md:rounded-xl text-center relative transform transition-transform hover:scale-105"> {/* Adjusted padding, max-width, rounded */}
+                <div className="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 bg-orange-300 text-orange-800 text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-3 md:py-1 rounded-full">3rd</div> {/* Adjusted position, font size, padding */}
+                <Avatar className="w-12 h-12 md:w-20 md:h-20 mx-auto mb-1 md:mb-3 border-2 md:border-4 border-white shadow-sm md:shadow-md"> {/* Adjusted size, margin, border */}
+                  <AvatarImage src={thirdPlace.user.image || undefined} />
+                  <AvatarFallback>{thirdPlace.user.name?.[0] || '?'}</AvatarFallback>
+                </Avatar>
+                <p className="text-xs md:text-base font-semibold text-orange-800 truncate">{thirdPlace.user.name || 'Anonymous'}</p> {/* Adjusted font size */}
+                <p className="text-lg md:text-2xl font-bold text-orange-900 my-0.5 md:my-1">{thirdPlace.score}</p> {/* Adjusted font size, margin */}
+                <p className="text-[10px] md:text-xs text-orange-500 flex items-center justify-center gap-0.5 md:gap-1"> {/* Adjusted font size, gap */}
+                  <IoStopwatchOutline className="w-3 h-3 md:w-auto md:h-auto"/> {/* Adjusted icon size */} {formatTime(thirdPlace.timeTakenSeconds)}
+                </p>
+              </Card>
+            )}
+          </div>
+        </div>
       )}
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mx-2">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <FaTrophy className="text-yellow-500" />
+      {/* Ranks 4+ List */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold flex items-center gap-2">
+            <FaTrophy className="text-gray-500" />
             Ranking
-          </h2>
+          </h3>
           <Link href={`/tryout/`}>
-            <Button variant="outline" size="sm">
-              <IoArrowBack className="mr-2 h-4 w-4" />
+            <Button variant="ghost" size="sm">
+              <IoArrowBack className="mr-1 h-4 w-4" />
               Kembali
             </Button>
           </Link>
         </div>
-        
+
         {leaderboard.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground">
-            Belum ada yang berpartisipasi dalam tryout ini
-          </p>
+          <Card className="text-center py-12 text-muted-foreground">
+            Belum ada yang berpartisipasi dalam tryout ini.
+          </Card>
+        ) : rest.length === 0 && topThree.length > 0 ? (
+           <Card className="text-center py-12 text-muted-foreground">
+            Hanya ada {topThree.length} peserta dalam leaderboard.
+          </Card>
         ) : (
-          <div className="space-y-2 m-2">
-            {leaderboard.map((entry, index) => (
-              <Card 
-                key={entry.userId} 
-                className={`p-4 transition-all duration-300 ${
-                  index === 0 ? 'bg-gradient-to-r from-yellow-500/10 via-yellow-500/5 to-yellow-500/10 border-yellow-500/30 hover:border-yellow-500/50' :
-                  index === 1 ? 'bg-gradient-to-r from-gray-400/10 via-gray-400/5 to-gray-400/10 border-gray-400/30 hover:border-gray-400/50' :
-                  index === 2 ? 'bg-gradient-to-r from-amber-600/10 via-amber-600/5 to-amber-600/10 border-amber-600/30 hover:border-amber-600/50' : ''
-                } ${
-                  index <= 2 ? 'hover:shadow-lg transform hover:-translate-y-0.5' : ''
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 flex items-center justify-center">
-                      <div className={`text-xl font-bold flex items-center justify-center ${
-                        index === 0 ? 'text-yellow-500' :
-                        index === 1 ? 'text-gray-400' :
-                        index === 2 ? 'text-amber-600' : ''
-                      }`}>
-                        {index === 0 ? (
-                          <div className="flex flex-col items-center">
-                            <span className="text-2xl">🥇</span>
-                            <span className="text-sm">1st</span>
-                          </div>
-                        ) : index === 1 ? (
-                          <div className="flex flex-col items-center">
-                            <span className="text-2xl">🥈</span>
-                            <span className="text-sm">2nd</span>
-                          </div>
-                        ) : index === 2 ? (
-                          <div className="flex flex-col items-center">
-                            <span className="text-2xl">🥉</span>
-                            <span className="text-sm">3rd</span>
-                          </div>
-                        ) : (
-                          <span>#{index + 1}</span>
-                        )}
-                      </div>
-                    </div>
-                    <Avatar>
+          <Card className="p-2 sm:p-4">
+            <div className="space-y-2">
+              {rest.map((entry, index) => (
+                <div
+                  key={entry.userId}
+                  className={`flex items-center justify-between p-3 rounded-lg transition-colors duration-150 border shadow-sm ${ // Added border and shadow-sm
+                    (index + 4) === userRank ? 'bg-blue-100 border-blue-300' : 'bg-white hover:bg-gray-50 border-gray-200' // Adjusted conditional classes
+                  }`}
+                >
+                  <div className="flex items-start gap-3 sm:gap-4"> {/* Changed items-center to items-start */}
+                    <div className="w-8 text-left text-lg font-bold text-primary">#{index + 4}</div> {/* Increased width and changed text-center to text-left */}
+                    <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                       <AvatarImage src={entry.user.image || undefined} />
                       <AvatarFallback>
                         {entry.user.name?.[0] || entry.user.email?.[0]?.toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium flex flex-wrap items-center gap-2 min-w-0">
-                        <span className={`text-sm sm:text-lg truncate ${index <= 2 ? 'font-bold' : ''}`}>
-                          {entry.user.name || entry.user.email || 'Anonymous'}
-                        </span>
-                        {index === 0 ? (
-                          <span className="text-[10px] sm:text-xs font-medium text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap">
-                            👑 Champion!
-                          </span>
-                        ) : index === 1 ? (
-                          <span className="text-[10px] sm:text-xs font-medium text-gray-400 bg-gray-400/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            Runner Up
-                          </span>
-                        ) : index === 2 ? (
-                          <span className="text-[10px] sm:text-xs font-medium text-amber-600 bg-amber-600/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            Third Place
-                          </span>
-                        ) : null}
-                      </p>
-                      <p className={`text-sm flex items-center gap-1 ${
-                        index <= 2 ? 'font-bold' : 'text-muted-foreground'
-                      }`}>
-                        <IoStopwatchOutline className="h-4 w-4 mt-0.5" /> {formatTime(entry.timeTakenSeconds)}
+                    <div className="flex-1 min-w-0 flex flex-col"> {/* Added flex flex-col */}
+                      <p className="font-bold text-sm sm:text-base truncate">{entry.user.name || entry.user.email || 'Anonymous'}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
+                         <IoStopwatchOutline className="h-3.5 w-3.5" /> {formatTime(entry.timeTakenSeconds)}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right flex flex-col">
-                    <p className={`text-lg mr-2 sm:text-xl font-bold ${
-                      index === 0 ? 'text-yellow-500' :
-                      index === 1 ? 'text-gray-400' :
-                      index === 2 ? 'text-amber-600' : ''
-                    }`}>
-                      {entry.score}
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Points</p>
+                  <div className="text-right ml-2">
+                    <p className="text-base sm:text-lg font-bold text-gray-800">{entry.score}</p>
+                    <p className="text-xs text-muted-foreground">Points</p>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          </Card>
         )}
       </div>
     </div>

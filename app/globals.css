@@ -518,3 +518,20 @@ mark[style] > strong {
 .animate-running-border-left {
   animation: running-border-left 2s linear infinite 1.5s; /* Delay start */
 }
+
+/* Glowing border animation for 1st place */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px 2px rgba(255, 215, 0, 0.4); /* Thicker glow */
+  }
+  50% {
+    box-shadow: 0 0 20px 3px rgba(255, 215, 0, 0.8); /* Thicker glow */
+  }
+  100% {
+    box-shadow: 0 0 5px 2px rgba(255, 215, 0, 0.4); /* Thicker glow */
+  }
+}
+
+.first-place-glow {
+  animation: glow 2s ease-in-out infinite;
+}

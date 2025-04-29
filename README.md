@@ -1,4 +1,4 @@
-# Aquarium v3
+## Aquarium v3
 
 Sebuah platform pembelajaran bahasa Korea yang dibangun dengan [Next.js 14](https://nextjs.org) dan App Router.
 

@@ -110,15 +110,15 @@ export default async function LeaderboardPage(props: Props) {
           {/* 3rd Place */}
           <div className="md:order-3 flex justify-center">
             {thirdPlace && (
-              <Card className="p-2 pt-6 md:p-4 md:pt-8 w-full max-w-[110px] md:max-w-xs bg-orange-100 border border-orange-200 rounded-lg md:rounded-xl text-center relative transform transition-transform hover:scale-105"> {/* Adjusted padding, max-width, rounded */}
-                <div className="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 bg-orange-300 text-orange-800 text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-3 md:py-1 rounded-full">3rd</div> {/* Adjusted position, font size, padding */}
-                <Avatar className="w-12 h-12 md:w-20 md:h-20 mx-auto mb-1 md:mb-3 border-2 md:border-4 border-white shadow-sm md:shadow-md"> {/* Adjusted size, margin, border */}
+              <Card className="p-2 pt-6 md:p-4 md:pt-8 w-full max-w-[110px] md:max-w-xs bg-muted/50 dark:bg-muted/10 border-border rounded-lg md:rounded-xl text-center relative transform transition-transform hover:scale-105">
+                <div className="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 bg-muted dark:bg-muted/20 text-muted-foreground text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-3 md:py-1 rounded-full">3rd</div>
+                <Avatar className="w-12 h-12 md:w-20 md:h-20 mx-auto mb-1 md:mb-3 border-2 md:border-4 border-muted shadow-sm md:shadow-md">
                   <AvatarImage src={thirdPlace.user.image || undefined} />
                   <AvatarFallback>{thirdPlace.user.name?.[0] || '?'}</AvatarFallback>
                 </Avatar>
-                <p className="text-xs md:text-base font-semibold text-orange-800 truncate">{thirdPlace.user.name || 'Anonymous'}</p> {/* Adjusted font size */}
-                <p className="text-lg md:text-2xl font-bold text-orange-900 my-0.5 md:my-1">{thirdPlace.score}</p> {/* Adjusted font size, margin */}
-                <p className="text-[10px] md:text-xs text-orange-500 flex items-center justify-center gap-0.5 md:gap-1"> {/* Adjusted font size, gap */}
+                <p className="text-xs md:text-base font-semibold text-foreground truncate">{thirdPlace.user.name || 'Anonymous'}</p>
+                <p className="text-lg md:text-2xl font-bold text-foreground my-0.5 md:my-1">{thirdPlace.score}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground flex items-center justify-center gap-0.5 md:gap-1">
                   <IoStopwatchOutline className="w-3 h-3 md:w-auto md:h-auto"/> {/* Adjusted icon size */} {formatTime(thirdPlace.timeTakenSeconds)}
                 </p>
               </Card>
@@ -131,7 +131,7 @@ export default async function LeaderboardPage(props: Props) {
       <div className="space-y-3">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold flex items-center gap-2">
-            <FaTrophy className="text-gray-500" />
+            <FaTrophy className="text-muted-foreground" />
             Ranking
           </h3>
           <Link href={`/tryout/`}>
@@ -157,7 +157,7 @@ export default async function LeaderboardPage(props: Props) {
                 <div
                   key={entry.userId}
                   className={`flex items-center justify-between p-3 rounded-lg transition-colors duration-150 border shadow-sm ${ // Added border and shadow-sm
-                    (index + 4) === userRank ? 'bg-blue-100 border-blue-300' : 'bg-white hover:bg-gray-50 border-gray-200' // Adjusted conditional classes
+                    (index + 4) === userRank ? 'bg-primary/10 dark:bg-primary/5 border-primary/20' : 'bg-card hover:bg-muted/50 border-border' // Adjusted for dark mode
                   }`}
                 >
                   <div className="flex items-start gap-3 sm:gap-4"> {/* Changed items-center to items-start */}
@@ -170,13 +170,13 @@ export default async function LeaderboardPage(props: Props) {
                     </Avatar>
                     <div className="flex-1 min-w-0 flex flex-col"> {/* Added flex flex-col */}
                       <p className="font-bold text-sm sm:text-base truncate">{entry.user.name || entry.user.email || 'Anonymous'}</p>
-                      <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
                          <IoStopwatchOutline className="h-3.5 w-3.5" /> {formatTime(entry.timeTakenSeconds)}
                       </p>
                     </div>
                   </div>
                   <div className="text-right ml-2">
-                    <p className="text-base sm:text-lg font-bold text-gray-800">{entry.score}</p>
+                    <p className="text-base sm:text-lg font-bold text-foreground">{entry.score}</p>
                     <p className="text-xs text-muted-foreground">Points</p>
                   </div>
                 </div>

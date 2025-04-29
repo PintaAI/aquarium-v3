@@ -72,15 +72,15 @@ export default async function LeaderboardPage(props: Props) {
           {/* 2nd Place */}
           <div className="md:order-1 flex justify-center">
             {secondPlace && (
-              <Card className="p-2 pt-6 md:p-4 md:pt-8 w-full max-w-[110px] md:max-w-xs bg-gray-100 border border-gray-200 rounded-lg md:rounded-xl text-center relative transform transition-transform hover:scale-105"> {/* Adjusted padding, max-width, rounded */}
-                <div className="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 bg-gray-300 text-gray-700 text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-3 md:py-1 rounded-full">2nd</div> {/* Adjusted position, font size, padding */}
+              <Card className="p-2 pt-6 md:p-4 md:pt-8 w-full max-w-[110px] md:max-w-xs bg-secondary/20 dark:bg-secondary/10 border-border rounded-lg md:rounded-xl text-center relative transform transition-transform hover:scale-105"> {/* Adjusted for dark mode */}
+                <div className="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 bg-secondary/30 dark:bg-secondary/20 text-secondary-foreground text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-3 md:py-1 rounded-full">2nd</div> {/* Adjusted for dark mode */}
                 <Avatar className="w-12 h-12 md:w-20 md:h-20 mx-auto mb-1 md:mb-3 border-2 md:border-4 border-white shadow-sm md:shadow-md"> {/* Adjusted size, margin, border */}
                   <AvatarImage src={secondPlace.user.image || undefined} />
                   <AvatarFallback>{secondPlace.user.name?.[0] || '?'}</AvatarFallback>
                 </Avatar>
-                <p className="text-xs md:text-base font-semibold text-gray-800 truncate">{secondPlace.user.name || 'Anonymous'}</p> {/* Adjusted font size */}
-                <p className="text-lg md:text-2xl font-bold text-gray-900 my-0.5 md:my-1">{secondPlace.score}</p> {/* Adjusted font size, margin */}
-                <p className="text-[10px] md:text-xs text-gray-500 flex items-center justify-center gap-0.5 md:gap-1"> {/* Adjusted font size, gap */}
+                <p className="text-xs md:text-base font-semibold text-foreground truncate">{secondPlace.user.name || 'Anonymous'}</p>
+                <p className="text-lg md:text-2xl font-bold text-foreground my-0.5 md:my-1">{secondPlace.score}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground flex items-center justify-center gap-0.5 md:gap-1">
                   <IoStopwatchOutline className="w-3 h-3 md:w-auto md:h-auto"/> {/* Adjusted icon size */} {formatTime(secondPlace.timeTakenSeconds)}
                 </p>
               </Card>
@@ -90,17 +90,17 @@ export default async function LeaderboardPage(props: Props) {
           {/* 1st Place */}
           <div className="md:order-2 flex justify-center">
             {firstPlace && (
-              <Card className="p-3 pt-8 md:p-6 md:pt-10 w-full max-w-[130px] md:max-w-xs bg-yellow-100 border border-yellow-300 rounded-lg md:rounded-xl text-center relative shadow-xl transform transition-transform hover:scale-110 z-10 first-place-glow"> {/* Added first-place-glow class */}
-                <div className="absolute -top-4 md:-top-5 left-1/2 transform -translate-x-1/2 text-yellow-500">
-                  <FaCrown size={24} className="md:size-auto"/> {/* Adjusted icon size */}
+              <Card className="p-3 pt-8 md:p-6 md:pt-10 w-full max-w-[130px] md:max-w-xs bg-primary/10 dark:bg-primary/5 border-primary/20 rounded-lg md:rounded-xl text-center relative shadow-xl transform transition-transform hover:scale-110 z-10 first-place-glow">
+                <div className="absolute -top-4 md:-top-5 left-1/2 transform -translate-x-1/2 text-primary">
+                  <FaCrown size={24} className="md:size-auto"/>
                 </div>
-                <Avatar className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-2 md:mb-4 border-2 md:border-4 border-white shadow-md md:shadow-lg"> {/* Adjusted size, margin, border, shadow */}
+                <Avatar className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-2 md:mb-4 border-2 md:border-4 border-primary shadow-md md:shadow-lg">
                   <AvatarImage src={firstPlace.user.image || undefined} />
                   <AvatarFallback>{firstPlace.user.name?.[0] || '?'}</AvatarFallback>
                 </Avatar>
-                <p className="text-sm md:text-base font-semibold text-yellow-900 truncate">{firstPlace.user.name || 'Anonymous'}</p> {/* Adjusted font size */}
-                <p className="text-xl md:text-3xl font-bold text-yellow-950 my-0.5 md:my-1">{firstPlace.score}</p> {/* Adjusted font size, margin */}
-                <p className="text-xs md:text-sm text-yellow-700 flex items-center justify-center gap-0.5 md:gap-1"> {/* Adjusted font size, gap */}
+                <p className="text-sm md:text-base font-semibold text-foreground truncate">{firstPlace.user.name || 'Anonymous'}</p>
+                <p className="text-xl md:text-3xl font-bold text-foreground my-0.5 md:my-1">{firstPlace.score}</p>
+                <p className="text-xs md:text-sm text-muted-foreground flex items-center justify-center gap-0.5 md:gap-1">
                   <IoStopwatchOutline className="w-3 h-3 md:w-auto md:h-auto"/> {/* Adjusted icon size */} {formatTime(firstPlace.timeTakenSeconds)}
                 </p>
               </Card>

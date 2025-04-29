@@ -6,6 +6,7 @@ import {
   LogOut,
   Shield,
   User,
+  Users, // Import Users icon
 } from "lucide-react"
 
 
@@ -116,9 +117,22 @@ export function NavUser() {
                 </DropdownMenuGroup>
               </>
             )}
-            {user.role === "ADMIN" && (
+            {(user.role === "GURU" || user.role === "ADMIN") && ( // Show for GURU or ADMIN
               <>
                 <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/users">
+                      <Users className="mr-2" />
+                      User Management
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
+            {user.role === "ADMIN" && (
+              <>
+                {/* Separator is handled by the preceding GURU/ADMIN block */}
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/control-panel-x8472">

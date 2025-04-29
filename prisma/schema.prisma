@@ -32,6 +32,7 @@ model User {
   drawings              ExcalidrawDrawing[]
   tryoutParticipations  TryoutParticipant[]
   subscriptions         Subscription[] // Added relation to Subscription
+  isCertificateEligible Boolean                @default(false) // Added for certificate eligibility
 }
 
 model Course {

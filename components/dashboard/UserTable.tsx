@@ -40,7 +40,7 @@ export function UserTable({ initialUsers, isGuru }: UserTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'totalScore', direction: 'descending' });
 
   const sortedUsers = useMemo(() => {
-    let sortableItems = [...initialUsers];
+    const sortableItems = [...initialUsers];
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
         let aValue: string | number | null = null;

@@ -6,7 +6,14 @@ import { auth } from "@/auth";
 import { UserTable } from '@/components/dashboard/UserTable'; // Import the new table component
 
 // Function to calculate total score (placeholder)
-const calculateTotalScore = (participations: any[]) => {
+type TryoutParticipation = {
+  score: number | null;
+  tryout: {
+    nama: string | null;
+  };
+};
+
+const calculateTotalScore = (participations: TryoutParticipation[]) => {
   // Ensure score is treated as a number, default to 0 if null/undefined
   return participations.reduce((sum, p) => sum + (Number(p.score) || 0), 0);
 };

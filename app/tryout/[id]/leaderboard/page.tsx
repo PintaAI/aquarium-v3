@@ -42,7 +42,7 @@ export default async function LeaderboardPage(props: Props) {
   const topThree = leaderboard.slice(0, 3);
   const rest = leaderboard.slice(3);
 
-  // Find the specific ranks for easier access
+  // Find tthe specific ranks for easier access
   const firstPlace = topThree.find((_, index) => index === 0);
   const secondPlace = topThree.find((_, index) => index === 1);
   const thirdPlace = topThree.find((_, index) => index === 2);

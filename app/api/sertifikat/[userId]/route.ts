@@ -8,11 +8,11 @@ import path from 'path'
 
 export async function GET(
   request: NextRequest,
-  context: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Get and validate params
-    const { userId } = context.params
+    const { userId } = await params;
     if (!userId) {
       return new Response("Invalid user ID", { status: 400 })
     }

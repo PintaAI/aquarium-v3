@@ -57,7 +57,7 @@ export async function GET(
     
     // Read both font files
     const seasonsPath = path.join(process.cwd(), 'public', 'fonts', 'the-seasons-font-family', 'the-seasons-bold.ttf')
-    const poppinsPath = path.join(process.cwd(), 'node_modules', '@fontsource', 'poppins', 'files', 'poppins-latin-400-normal.woff')
+    const poppinsPath = path.join(process.cwd(), 'public', 'fonts', 'poppins-latin-400-normal.woff')
     const [seasonsBytes, poppinsBytes] = await Promise.all([
       fs.readFile(seasonsPath),
       fs.readFile(poppinsPath)

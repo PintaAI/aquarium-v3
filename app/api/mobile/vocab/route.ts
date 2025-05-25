@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Filter out collections with no items
-    const filteredCollections = collections.filter(collection => collection.items.length > 0);
+
     
     return NextResponse.json({ success: true, data: collections });
   } catch (error) {

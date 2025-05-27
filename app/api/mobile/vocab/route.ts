@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     // Filter out collections with no items
     const filteredCollections = collections.filter(collection => collection.items.length > 0);
     
-    return NextResponse.json({ success: true, data: collections });
+    return NextResponse.json({ success: true, data: filteredCollections });
   } catch (error) {
     console.error("[API_VOCABULARY_GET]", error);
     return NextResponse.json(

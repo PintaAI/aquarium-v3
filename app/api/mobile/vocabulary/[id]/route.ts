@@ -12,10 +12,11 @@ import {
 // Fetch specific vocabulary collection with items
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📖 Starting specific collection fetch for ID: ${params.id}`);
+    const { id } = await params;
+    console.log(`📖 Starting specific collection fetch for ID: ${id}`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
@@ -34,7 +35,7 @@ export async function GET(
     // Validate collection ID
     let collectionId;
     try {
-      collectionId = validateCollectionId(params.id);
+      collectionId = validateCollectionId(id);
     } catch (validationError) {
       const statusCode = validationError instanceof AuthenticationError ? validationError.statusCode : 400;
       return NextResponse.json(
@@ -111,10 +112,11 @@ export async function GET(
 // Update vocabulary collection metadata
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`✏️ Starting collection update for ID: ${params.id}`);
+    const { id } = await params;
+    console.log(`✏️ Starting collection update for ID: ${id}`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
@@ -133,7 +135,7 @@ export async function PATCH(
     // Validate collection ID
     let collectionId;
     try {
-      collectionId = validateCollectionId(params.id);
+      collectionId = validateCollectionId(id);
     } catch (validationError) {
       const statusCode = validationError instanceof AuthenticationError ? validationError.statusCode : 400;
       return NextResponse.json(
@@ -249,10 +251,11 @@ export async function PATCH(
 // Delete vocabulary collection
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`🗑️ Starting collection deletion for ID: ${params.id}`);
+    const { id } = await params;
+    console.log(`🗑️ Starting collection deletion for ID: ${id}`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
@@ -271,7 +274,7 @@ export async function DELETE(
     // Validate collection ID
     let collectionId;
     try {
-      collectionId = validateCollectionId(params.id);
+      collectionId = validateCollectionId(id);
     } catch (validationError) {
       const statusCode = validationError instanceof AuthenticationError ? validationError.statusCode : 400;
       return NextResponse.json(

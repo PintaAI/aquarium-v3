@@ -157,10 +157,11 @@ export async function PATCH(
 
     try {
       checkCollectionAccess(existingCollection, user, true); // requireOwnership = true for updates
-    } catch (accessError: any) {
+    } catch (accessError: unknown) {
       const statusCode = accessError instanceof AuthorizationError ? accessError.statusCode : 403;
+      const errorMessage = accessError instanceof Error ? accessError.message : 'Access denied';
       return NextResponse.json(
-        { success: false, error: accessError.message || 'Access denied' },
+        { success: false, error: errorMessage },
         { status: statusCode }
       );
     }
@@ -169,7 +170,11 @@ export async function PATCH(
     const { title, description, isPublic } = body;
 
     // Validate updates
-    const updates: any = {};
+    const updates: {
+      title?: string;
+      description?: string | null;
+      isPublic?: boolean;
+    } = {};
 
     if (title !== undefined) {
       if (typeof title !== 'string' || title.trim().length === 0) {
@@ -298,10 +303,11 @@ export async function DELETE(
 
     try {
       checkCollectionAccess(existingCollection, user, true); // requireOwnership = true for deletion
-    } catch (accessError: any) {
+    } catch (accessError: unknown) {
       const statusCode = accessError instanceof AuthorizationError ? accessError.statusCode : 403;
+      const errorMessage = accessError instanceof Error ? accessError.message : 'Access denied';
       return NextResponse.json(
-        { success: false, error: accessError.message || 'Access denied' },
+        { success: false, error: errorMessage },
         { status: statusCode }
       );
     }

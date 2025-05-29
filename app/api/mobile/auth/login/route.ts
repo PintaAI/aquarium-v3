@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signIn } from "@/auth";
-import { AuthError } from "next-auth";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getUserByEmail } from "@/data/user";

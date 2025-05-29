@@ -29,7 +29,11 @@ export async function GET(req: NextRequest) {
     console.log(`📊 Query params - publicOnly: ${publicOnly}, mine: ${mine}`);
 
     // Build where conditions based on query parameters
-    let whereConditions: any = {};
+    let whereConditions: {
+      OR?: Array<{ isPublic?: boolean; userId?: string }>;
+      isPublic?: boolean;
+      userId?: string;
+    } = {};
 
     if (publicOnly && mine) {
       // Both publicOnly and mine - get public collections OR user's collections

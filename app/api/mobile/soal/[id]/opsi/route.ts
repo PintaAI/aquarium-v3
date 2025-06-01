@@ -6,10 +6,11 @@ import { verifyMobileToken, AuthenticationError } from "@/lib/mobile-auth-middle
 // Add option to question
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📝 Starting opsi creation for soal ID: ${params.id}...`);
+    const { id } = await params;
+    console.log(`📝 Starting opsi creation for soal ID: ${id}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
@@ -26,7 +27,7 @@ export async function POST(
     }
 
     // Validate ID
-    const soalId = parseInt(params.id);
+    const soalId = parseInt(id);
     if (isNaN(soalId) || soalId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid soal ID' },

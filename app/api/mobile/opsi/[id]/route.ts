@@ -6,10 +6,11 @@ import { verifyMobileToken, AuthenticationError } from "@/lib/mobile-auth-middle
 // Update option
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📝 Starting opsi update for ID: ${params.id}...`);
+    const { id } = await params;
+    console.log(`📝 Starting opsi update for ID: ${id}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
@@ -26,7 +27,7 @@ export async function PATCH(
     }
 
     // Validate ID
-    const opsiId = parseInt(params.id);
+    const opsiId = parseInt(id);
     if (isNaN(opsiId) || opsiId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid opsi ID' },
@@ -80,7 +81,7 @@ export async function PATCH(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: Record<string, string | boolean> = {};
     if (opsiText !== undefined) updateData.opsiText = opsiText.trim();
     if (isCorrect !== undefined) updateData.isCorrect = isCorrect;
 
@@ -111,10 +112,11 @@ export async function PATCH(
 // Delete option
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`🗑️ Starting opsi deletion for ID: ${params.id}...`);
+    const { id } = await params;
+    console.log(`🗑️ Starting opsi deletion for ID: ${id}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
@@ -131,7 +133,7 @@ export async function DELETE(
     }
 
     // Validate ID
-    const opsiId = parseInt(params.id);
+    const opsiId = parseInt(id);
     if (isNaN(opsiId) || opsiId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid opsi ID' },

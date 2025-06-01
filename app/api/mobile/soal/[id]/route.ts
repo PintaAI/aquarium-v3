@@ -7,17 +7,18 @@ import { Difficulty } from "@prisma/client";
 // Get specific question with options
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📚 Starting soal fetch for ID: ${params.id}...`);
+    const { id } = await params;
+    console.log(`📚 Starting soal fetch for ID: ${id}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function GET(
     }
 
     // Validate ID
-    const soalId = parseInt(params.id);
+    const soalId = parseInt(id);
     if (isNaN(soalId) || soalId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid soal ID' },
@@ -121,17 +122,18 @@ export async function GET(
 // Update question
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📝 Starting soal update for ID: ${params.id}...`);
+    const { id } = await params;
+    console.log(`📝 Starting soal update for ID: ${id}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -141,7 +143,7 @@ export async function PATCH(
     }
 
     // Validate ID
-    const soalId = parseInt(params.id);
+    const soalId = parseInt(id);
     if (isNaN(soalId) || soalId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid soal ID' },
@@ -221,7 +223,7 @@ export async function PATCH(
     }
 
     // Check if user is the author of the soal
-    if (existingSoal.authorId !== user.sub) {
+    if (existingSoal.authorId !== _user.sub) {
       return NextResponse.json(
         { success: false, error: 'You can only modify your own soals' },
         { status: 403 }
@@ -229,7 +231,7 @@ export async function PATCH(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: Record<string, string | boolean | Difficulty | null> = {};
     if (pertanyaan !== undefined) updateData.pertanyaan = pertanyaan.trim();
     if (attachmentUrl !== undefined) updateData.attachmentUrl = attachmentUrl?.trim() || null;
     if (attachmentType !== undefined) updateData.attachmentType = attachmentType?.trim() || null;
@@ -280,17 +282,18 @@ export async function PATCH(
 // Delete question
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`🗑️ Starting soal deletion for ID: ${params.id}...`);
+    const { id } = await params;
+    console.log(`🗑️ Starting soal deletion for ID: ${id}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -300,7 +303,7 @@ export async function DELETE(
     }
 
     // Validate ID
-    const soalId = parseInt(params.id);
+    const soalId = parseInt(id);
     if (isNaN(soalId) || soalId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid soal ID' },
@@ -329,7 +332,7 @@ export async function DELETE(
     }
 
     // Check if user is the author of the soal
-    if (existingSoal.authorId !== user.sub) {
+    if (existingSoal.authorId !== _user.sub) {
       return NextResponse.json(
         { success: false, error: 'You can only delete your own soals' },
         { status: 403 }

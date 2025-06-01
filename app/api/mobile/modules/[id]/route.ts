@@ -35,7 +35,7 @@ export async function GET(
       );
     }
 
-    const module = await db.module.findUnique({
+    const moduleData = await db.module.findUnique({
       where: { id: moduleId },
       include: {
         course: {
@@ -60,7 +60,7 @@ export async function GET(
       }
     });
 
-    if (!module) {
+    if (!moduleData) {
       return NextResponse.json(
         { success: false, error: 'Module not found' },
         { status: 404 }
@@ -68,8 +68,8 @@ export async function GET(
     }
 
     // Check if user has access to this module (is course member or author)
-    const isCourseAuthor = module.course.authorId === user.sub;
-    const isCourseMember = module.course.members.length > 0;
+    const isCourseAuthor = moduleData.course.authorId === user.sub;
+    const isCourseMember = moduleData.course.members.length > 0;
     
     if (!isCourseAuthor && !isCourseMember) {
       return NextResponse.json(
@@ -79,32 +79,32 @@ export async function GET(
     }
 
     // Get user's completion status for this module
-    const userCompletion = module.completions[0];
+    const userCompletion = moduleData.completions[0];
 
     // Transform data to match expected format
     const transformedModule = {
-      id: module.id,
-      title: module.title,
-      description: module.description,
-      jsonDescription: module.jsonDescription,
-      htmlDescription: module.htmlDescription,
-      order: module.order,
-      isCompleted: module.isCompleted,
-      isLocked: module.isLocked,
-      courseId: module.courseId,
+      id: moduleData.id,
+      title: moduleData.title,
+      description: moduleData.description,
+      jsonDescription: moduleData.jsonDescription,
+      htmlDescription: moduleData.htmlDescription,
+      order: moduleData.order,
+      isCompleted: moduleData.isCompleted,
+      isLocked: moduleData.isLocked,
+      courseId: moduleData.courseId,
       course: {
-        id: module.course.id,
-        title: module.course.title
+        id: moduleData.course.id,
+        title: moduleData.course.title
       },
       userCompletion: userCompletion ? {
         isCompleted: userCompletion.isCompleted,
         completedAt: userCompletion.updatedAt
       } : null,
-      createdAt: module.createdAt,
-      updatedAt: module.updatedAt
+      createdAt: moduleData.createdAt,
+      updatedAt: moduleData.updatedAt
     };
 
-    console.log(`✅ Retrieved module: ${module.title}`);
+    console.log(`✅ Retrieved module: ${moduleData.title}`);
     
     return NextResponse.json({ 
       success: true, 
@@ -254,7 +254,7 @@ export async function PUT(
     }
 
     // Check if module exists and user has access
-    const module = await db.module.findUnique({
+    const moduleData = await db.module.findUnique({
       where: { id: moduleId },
       include: {
         course: {
@@ -270,7 +270,7 @@ export async function PUT(
       }
     });
 
-    if (!module) {
+    if (!moduleData) {
       return NextResponse.json(
         { success: false, error: 'Module not found' },
         { status: 404 }
@@ -278,8 +278,8 @@ export async function PUT(
     }
 
     // Check if user has access to this module
-    const isCourseAuthor = module.course.authorId === user.sub;
-    const isCourseMember = module.course.members.length > 0;
+    const isCourseAuthor = moduleData.course.authorId === user.sub;
+    const isCourseMember = moduleData.course.members.length > 0;
     
     if (!isCourseAuthor && !isCourseMember) {
       return NextResponse.json(
@@ -307,7 +307,7 @@ export async function PUT(
       }
     });
 
-    console.log(`✅ Updated completion status for module: ${module.title}`);
+    console.log(`✅ Updated completion status for module: ${moduleData.title}`);
     
     return NextResponse.json({
       success: true,

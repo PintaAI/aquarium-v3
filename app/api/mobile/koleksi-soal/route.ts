@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyMobileToken, AuthenticationError } from "@/lib/mobile-auth-middleware";
-import { Difficulty } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 // GET /api/mobile/koleksi-soal
 // Fetch question collections with query parameter support
-
-interface WhereConditions {
-  authorId?: string;
-  isPrivate?: boolean;
-}
+// Note: KoleksiSoal doesn't have an authorId field in schema, so "mine" filter
+// isn't applicable with the current schema design
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,10 +14,10 @@ export async function GET(req: NextRequest) {
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -30,38 +27,20 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const mine = searchParams.get("mine") === "true";
+    // "mine" filter removed as KoleksiSoal doesn't have an authorId field
     const publicOnly = searchParams.get("publicOnly") === "true";
 
-    console.log(`📊 Query params - mine: ${mine}, publicOnly: ${publicOnly}`);
+    console.log(`📊 Query params - publicOnly: ${publicOnly}`);
 
     // Build where conditions based on query parameters
-    let whereConditions: WhereConditions = {};
+    let whereConditions: Prisma.KoleksiSoalWhereInput = {};
 
-    if (publicOnly && mine) {
-      // Both publicOnly and mine - get public collections OR user's collections
-      whereConditions = {
-        OR: [
-          { isPrivate: false },
-          { authorId: user.sub }
-        ]
-      } as any;
-    } else if (publicOnly) {
+    if (publicOnly) {
       // Only public collections
       whereConditions = { isPrivate: false };
-    } else if (mine) {
-      // Only user's collections
-      whereConditions = { authorId: user.sub };
     }
-    // If neither publicOnly nor mine is specified, return all public collections + user's collections
-    if (!publicOnly && !mine) {
-      whereConditions = {
-        OR: [
-          { isPrivate: false },
-          { authorId: user.sub }
-        ]
-      } as any;
-    }
+    // If publicOnly is not specified, return all collections since 
+    // we can't filter by user ownership with the current schema
 
     const koleksiSoals = await db.koleksiSoal.findMany({
       where: whereConditions,
@@ -120,10 +99,10 @@ export async function POST(req: NextRequest) {
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(

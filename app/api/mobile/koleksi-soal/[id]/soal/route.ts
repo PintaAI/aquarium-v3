@@ -7,17 +7,18 @@ import { Difficulty } from "@prisma/client";
 // Get questions in a collection
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📚 Starting soals fetch for koleksi ID: ${params.id}...`);
+    const { id: koleksiIdParam } = await params;
+    console.log(`📚 Starting soals fetch for koleksi ID: ${koleksiIdParam}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function GET(
     }
 
     // Validate ID
-    const koleksiId = parseInt(params.id);
+    const koleksiId = parseInt(koleksiIdParam);
     if (isNaN(koleksiId) || koleksiId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid koleksi soal ID' },
@@ -53,7 +54,7 @@ export async function GET(
     }
 
     // Build where conditions
-    let whereConditions: any = {
+    const whereConditions: Record<string, unknown> = {
       koleksiId: koleksiId
     };
 
@@ -131,17 +132,18 @@ export async function GET(
 // Add question to collection
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📝 Starting soal creation for koleksi ID: ${params.id}...`);
+    const { id: koleksiIdParam } = await params;
+    console.log(`📝 Starting soal creation for koleksi ID: ${koleksiIdParam}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -151,7 +153,7 @@ export async function POST(
     }
 
     // Validate ID
-    const koleksiId = parseInt(params.id);
+    const koleksiId = parseInt(koleksiIdParam);
     if (isNaN(koleksiId) || koleksiId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid koleksi soal ID' },
@@ -235,7 +237,7 @@ export async function POST(
       }
 
       // Check if at least one option is correct
-      const hasCorrectOption = opsis.some((opsi: any) => opsi.isCorrect);
+      const hasCorrectOption = opsis.some((opsi: { isCorrect: boolean }) => opsi.isCorrect);
       if (!hasCorrectOption) {
         return NextResponse.json(
           { success: false, error: 'At least one option must be marked as correct' },
@@ -264,7 +266,7 @@ export async function POST(
       const newSoal = await tx.soal.create({
         data: {
           koleksiId: koleksiId,
-          authorId: user.sub,
+          authorId: _user.sub,
           pertanyaan: pertanyaan.trim(),
           attachmentUrl: attachmentUrl?.trim() || null,
           attachmentType: attachmentType?.trim() || null,
@@ -276,7 +278,7 @@ export async function POST(
       // Create opsis if provided
       if (opsis && opsis.length > 0) {
         await tx.opsi.createMany({
-          data: opsis.map((opsi: any) => ({
+          data: opsis.map((opsi: { opsiText: string; isCorrect: boolean }) => ({
             soalId: newSoal.id,
             opsiText: opsi.opsiText.trim(),
             isCorrect: opsi.isCorrect

@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyMobileToken, AuthenticationError } from "@/lib/mobile-auth-middleware";
-import { Difficulty } from "@prisma/client";
+// Removed unused import
 
 // GET /api/mobile/koleksi-soal/[id]
 // Fetch specific question collection with questions
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📚 Starting koleksi soal fetch for ID: ${params.id}...`);
+    const { id: koleksiIdParam } = await params;
+    console.log(`📚 Starting koleksi soal fetch for ID: ${koleksiIdParam}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function GET(
     }
 
     // Validate ID
-    const koleksiId = parseInt(params.id);
+    const koleksiId = parseInt(koleksiIdParam);
     if (isNaN(koleksiId) || koleksiId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid koleksi soal ID' },
@@ -135,17 +136,18 @@ export async function GET(
 // Update question collection metadata
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`📝 Starting koleksi soal update for ID: ${params.id}...`);
+    const { id: koleksiIdParam } = await params;
+    console.log(`📝 Starting koleksi soal update for ID: ${koleksiIdParam}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -155,7 +157,7 @@ export async function PATCH(
     }
 
     // Validate ID
-    const koleksiId = parseInt(params.id);
+    const koleksiId = parseInt(koleksiIdParam);
     if (isNaN(koleksiId) || koleksiId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid koleksi soal ID' },
@@ -201,7 +203,7 @@ export async function PATCH(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: Record<string, string | boolean | null> = {};
     if (nama !== undefined) updateData.nama = nama.trim();
     if (deskripsi !== undefined) updateData.deskripsi = deskripsi?.trim() || null;
     if (isPrivate !== undefined) updateData.isPrivate = isPrivate;
@@ -233,17 +235,18 @@ export async function PATCH(
 // Delete question collection
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`🗑️ Starting koleksi soal deletion for ID: ${params.id}...`);
+    const { id: koleksiIdParam } = await params;
+    console.log(`🗑️ Starting koleksi soal deletion for ID: ${koleksiIdParam}...`);
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
+    let _user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      _user = await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(
@@ -253,7 +256,7 @@ export async function DELETE(
     }
 
     // Validate ID
-    const koleksiId = parseInt(params.id);
+    const koleksiId = parseInt(koleksiIdParam);
     if (isNaN(koleksiId) || koleksiId <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid koleksi soal ID' },

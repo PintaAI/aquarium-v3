@@ -47,13 +47,13 @@ export async function GET(
         },
         modules: {
           orderBy: { order: 'asc' },
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            order: true,
-            isCompleted: true,
-            isLocked: true
+          include: {
+            completions: {
+              where: { userId: user.sub },
+              select: {
+                isCompleted: true
+              }
+            }
           }
         },
         members: {
@@ -91,7 +91,14 @@ export async function GET(
       isCompleted: course.isCompleted,
       isLocked: course.isLocked,
       author: course.author,
-      modules: course.modules,
+      modules: course.modules.map(module => ({
+        id: module.id,
+        title: module.title,
+        description: module.description,
+        order: module.order,
+        isCompleted: module.completions.length > 0 ? module.completions[0].isCompleted : false,
+        isLocked: module.isLocked
+      })),
       isJoined: course.members.length > 0,
       totalMembers: course._count.members,
       totalModules: course._count.modules,
@@ -99,7 +106,8 @@ export async function GET(
       updatedAt: course.updatedAt
     };
 
-    console.log(`✅ Retrieved course: ${course.title}`);
+    console.log(`✅ Retrieved course: ${course.title} with ${transformedCourse.modules.length} modules`);
+    console.log('Module completion status:', transformedCourse.modules.map(m => ({ id: m.id, title: m.title, isCompleted: m.isCompleted })));
     
     return NextResponse.json({ 
       success: true, 

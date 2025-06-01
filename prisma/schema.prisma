@@ -18,6 +18,13 @@ model User {
   password              String?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+  // Streak related fields
+  currentStreak         Int                    @default(0)
+  maxStreak             Int                    @default(0) 
+  lastActivityDate      DateTime?
+  // XP and Level fields
+  xp                    Int                    @default(0)
+  level                 Int                    @default(1)
   accounts              Account[]
   sessions              Session[]
   authoredArticles      Article[]              @relation("ArticleAuthor")
@@ -326,4 +333,38 @@ model Subscription {
 
   @@index([userId])
   @@index([midtransOrderId]) // Index for faster lookup via webhook
+}
+
+// Activity log for tracking user activities, streaks, and XP changes
+model ActivityLog {
+  id             String           @id @default(cuid())
+  userId         String
+  type           ActivityType
+  description    String?
+  xpEarned       Int?             // XP earned from this activity
+  streakUpdated  Boolean          @default(false)
+  previousStreak Int?
+  newStreak      Int?
+  previousLevel  Int?
+  newLevel       Int?
+  metadata       String?          @db.Text // JSON string for additional metadata
+  createdAt      DateTime         @default(now())
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Activity types for logging
+enum ActivityType {
+  LOGIN
+  COMPLETE_MODULE
+  COMPLETE_COURSE
+  COMPLETE_QUIZ
+  VOCABULARY_PRACTICE
+  DAILY_CHALLENGE
+  SUBMIT_ASSIGNMENT
+  PARTICIPATE_LIVE_SESSION
+  OTHER
 }

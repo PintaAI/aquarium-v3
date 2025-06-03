@@ -39,6 +39,7 @@ model User {
   drawings              ExcalidrawDrawing[]
   tryoutParticipations  TryoutParticipant[]
   subscriptions         Subscription[] // Added relation to Subscription
+  activityLogs          ActivityLog[]  // Added relation to ActivityLog
   isCertificateEligible Boolean                @default(false) // Added for certificate eligibility
 }
 
@@ -366,5 +367,6 @@ enum ActivityType {
   DAILY_CHALLENGE
   SUBMIT_ASSIGNMENT
   PARTICIPATE_LIVE_SESSION
+  PLAY_GAME
   OTHER
 }

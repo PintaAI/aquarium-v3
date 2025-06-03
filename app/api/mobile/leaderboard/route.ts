@@ -9,10 +9,9 @@ export async function GET(req: NextRequest) {
     
     // Verify authentication
     const authHeader = req.headers.get('authorization');
-    let user;
     
     try {
-      user = await verifyMobileToken(authHeader);
+      await verifyMobileToken(authHeader);
     } catch (authError) {
       const statusCode = authError instanceof AuthenticationError ? authError.statusCode : 401;
       return NextResponse.json(

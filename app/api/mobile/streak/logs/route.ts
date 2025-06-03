@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { verifyMobileToken, AuthenticationError } from '@/lib/mobile-auth-middleware';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     const response = {
       success: true,
-      data: activityLogs.map((log: any) => ({
+      data: activityLogs.map((log) => ({
         id: log.id,
         userId: log.userId,
         type: log.type,

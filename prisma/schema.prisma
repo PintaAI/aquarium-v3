@@ -280,13 +280,15 @@ model Soal {
 }
 
 model Opsi {
-  id         Int      @id @default(autoincrement())
-  soalId     Int
-  opsiText   String
-  isCorrect  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  soal       Soal     @relation(fields: [soalId], references: [id])
+  id             Int      @id @default(autoincrement())
+  soalId         Int
+  opsiText       String
+  attachmentUrl  String?
+  attachmentType String?
+  isCorrect      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  soal           Soal     @relation(fields: [soalId], references: [id])
 }
 
 model Tryout {

@@ -10,6 +10,8 @@ import { uploadAudio } from "@/app/actions/upload-audio"
 
 interface Opsi {
   opsiText: string
+  attachmentUrl?: string
+  attachmentType?: "IMAGE" | "AUDIO"
   isCorrect: boolean
 }
 
@@ -63,6 +65,8 @@ export const useSoalForm = () => {
             explanation: soal.explanation ?? undefined,
             opsis: soal.opsis.map(opsi => ({
               opsiText: opsi.opsiText,
+              attachmentUrl: opsi.attachmentUrl ?? undefined,
+              attachmentType: opsi.attachmentType as "IMAGE" | "AUDIO" | undefined,
               isCorrect: opsi.isCorrect
             }))
           })))
@@ -99,8 +103,8 @@ export const useSoalForm = () => {
 
   // Add opsi handler
   const handleAddOpsi = () => {
-    if (!newOpsiText) return
-    setCurrentOpsis([...currentOpsis, { opsiText: newOpsiText, isCorrect: false }])
+    // Allow empty text for attachment-only opsi
+    setCurrentOpsis([...currentOpsis, { opsiText: newOpsiText || "", isCorrect: false }])
     setNewOpsiText("")
   }
 
@@ -232,6 +236,8 @@ export const useSoalForm = () => {
             explanation: soal.explanation ?? undefined,
             opsis: soal.opsis.map(opsi => ({
               opsiText: opsi.opsiText,
+              attachmentUrl: opsi.attachmentUrl ?? undefined,
+              attachmentType: opsi.attachmentType as "IMAGE" | "AUDIO" | undefined,
               isCorrect: opsi.isCorrect
             }))
           })))

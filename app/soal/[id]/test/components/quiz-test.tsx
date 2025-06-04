@@ -9,6 +9,8 @@ interface Opsi {
   updatedAt: Date
   soalId: number
   opsiText: string
+  attachmentUrl: string | null
+  attachmentType: string | null
   isCorrect: boolean
 }
 
@@ -273,18 +275,44 @@ export function QuizTest({ collectionId }: QuizTestProps) {
 
                     return (
                       <div key={index} className={buttonClass}>
-                        <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${
-                          isSelected
-                            ? isCorrect
-                              ? "border-primary-foreground"
-                              : "border-destructive-foreground"
-                            : isCorrect
-                              ? "border-primary"
-                              : "border-foreground"
-                        }`}>
-                          {index + 1}
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${
+                            isSelected
+                              ? isCorrect
+                                ? "border-primary-foreground"
+                                : "border-destructive-foreground"
+                              : isCorrect
+                                ? "border-primary"
+                                : "border-foreground"
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div className="flex-1">
+                      <div>{option.opsiText || (option.attachmentUrl ? "[Lampiran]" : "[Opsi kosong]")}</div>
+                            {option.attachmentUrl && (
+                              <div className="mt-2">
+                                {option.attachmentType === "IMAGE" || option.attachmentType?.toUpperCase() === "IMAGE" ? (
+                                  <div className="relative h-[120px] w-[120px] rounded-lg overflow-hidden">
+                                    <Image
+                                      src={option.attachmentUrl}
+                                      alt="Option attachment"
+                                      fill
+                                      className="object-contain border border-muted rounded-lg"
+                                      loading="lazy"
+                                      sizes="120px"
+                                    />
+                                  </div>
+                                ) : option.attachmentType === "AUDIO" || option.attachmentType?.toUpperCase() === "AUDIO" ? (
+                                  <audio
+                                    src={option.attachmentUrl}
+                                    controls
+                                    className="w-full max-w-[200px]"
+                                  />
+                                ) : null}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        {option.opsiText}
                       </div>
                     );
                   })}
@@ -359,16 +387,42 @@ export function QuizTest({ collectionId }: QuizTestProps) {
                   onClick={() => handleAnswerClick(index)}
                   disabled={selectedOption !== null}
                 >
-                  <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${
-                    selectedOption === index
-                      ? option.isCorrect
-                        ? "border-primary-foreground"
-                        : "border-destructive-foreground" 
-                      : "border-foreground"
-                  }`}>
-                    {index + 1}
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${
+                      selectedOption === index
+                        ? option.isCorrect
+                          ? "border-primary-foreground"
+                          : "border-destructive-foreground" 
+                        : "border-foreground"
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <div>{option.opsiText || (option.attachmentUrl ? "[Lampiran]" : "[Opsi kosong]")}</div>
+                      {option.attachmentUrl && (
+                        <div className="mt-2">
+                          {option.attachmentType === "IMAGE" || option.attachmentType?.toUpperCase() === "IMAGE" ? (
+                            <div className="relative h-[120px] w-[120px] rounded-lg overflow-hidden">
+                              <Image
+                                src={option.attachmentUrl}
+                                alt="Option attachment"
+                                fill
+                                className="object-contain border border-muted rounded-lg"
+                                loading="lazy"
+                                sizes="120px"
+                              />
+                            </div>
+                          ) : option.attachmentType === "AUDIO" || option.attachmentType?.toUpperCase() === "AUDIO" ? (
+                            <audio
+                              src={option.attachmentUrl}
+                              controls
+                              className="w-full max-w-[200px]"
+                            />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {option.opsiText}
                 </button>
               ))}
             </div>

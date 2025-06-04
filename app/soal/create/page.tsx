@@ -296,8 +296,31 @@ export default function CreateSoalPage() {
                                 : "text-muted-foreground"
                             }`}
                           >
-                            {opsi.opsiText}
-                            {opsi.isCorrect && " ✓"}
+                            <div className="flex items-start gap-2">
+                              <span className="flex-1">
+                                {opsi.opsiText || (opsi.attachmentUrl ? "[Lampiran]" : "[Opsi kosong]")}
+                                {opsi.isCorrect && " ✓"}
+                              </span>
+                            </div>
+                            {opsi.attachmentUrl && (
+                              <div className="mt-2 ml-4">
+                                {opsi.attachmentType === "IMAGE" ? (
+                                  <Image 
+                                    src={opsi.attachmentUrl} 
+                                    alt="Opsi attachment" 
+                                    width={120}
+                                    height={120}
+                                    className="rounded-md object-contain"
+                                  />
+                                ) : (
+                                  <audio 
+                                    src={opsi.attachmentUrl} 
+                                    controls 
+                                    className="w-full max-w-[200px]"
+                                  />
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>

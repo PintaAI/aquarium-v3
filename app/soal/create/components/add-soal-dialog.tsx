@@ -38,8 +38,8 @@ interface AddSoalDialogProps {
   setCurrentDifficulty: (value: Difficulty | undefined) => void
   currentExplanation: string
   setCurrentExplanation: (value: string) => void
-  currentOpsis: { opsiText: string; isCorrect: boolean }[]
-  setCurrentOpsis: (value: { opsiText: string; isCorrect: boolean }[]) => void
+  currentOpsis: { opsiText: string; attachmentUrl?: string; attachmentType?: "IMAGE" | "AUDIO"; isCorrect: boolean }[]
+  setCurrentOpsis: (value: { opsiText: string; attachmentUrl?: string; attachmentType?: "IMAGE" | "AUDIO"; isCorrect: boolean }[]) => void
   newOpsiText: string
   setNewOpsiText: (value: string) => void
   isUploading: boolean
@@ -56,7 +56,7 @@ interface AddSoalDialogProps {
     attachmentType: "IMAGE" | "AUDIO" | undefined,
     difficulty: Difficulty | undefined,
     explanation: string,
-    opsis: { opsiText: string; isCorrect: boolean }[]
+    opsis: { opsiText: string; attachmentUrl?: string; attachmentType?: "IMAGE" | "AUDIO"; isCorrect: boolean }[]
   ) => void
 }
 
@@ -99,10 +99,10 @@ export function AddSoalDialog({
   
   // Handlers for local state
   const handleAddOpsi = () => {
-    if (!newOpsiText) return
+    // Allow empty text for attachment-only opsi
     setEditState(prev => ({
       ...prev,
-      opsis: [...prev.opsis, { opsiText: newOpsiText, isCorrect: false }]
+      opsis: [...prev.opsis, { opsiText: newOpsiText || "", isCorrect: false }]
     }))
     setNewOpsiText("")
   }
@@ -366,7 +366,7 @@ export function AddSoalDialog({
                   <Input
                     value={newOpsiText}
                     onChange={(e) => setNewOpsiText(e.target.value)}
-                    placeholder="Tulis opsi jawaban"
+                    placeholder="Tulis opsi jawaban (opsional jika menggunakan lampiran)"
                     className="flex-1"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
@@ -389,31 +389,124 @@ export function AddSoalDialog({
                   </Button>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {(isEditing ? editState.opsis : currentOpsis).map((opsi, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 p-2 bg-accent/20 hover:bg-accent/30 rounded-lg transition-colors"
+                      className="p-3 bg-accent/20 hover:bg-accent/30 rounded-lg transition-colors space-y-2"
                     >
-                      <Button
-                        type="button"
-                        onClick={() => isEditing ? handleToggleCorrect(index) : parentHandleToggleCorrect(index)}
-                        variant={opsi.isCorrect ? "default" : "outline"}
-                        size="sm"
-                      >
-                        {opsi.isCorrect ? "Benar" : "Salah"}
-                      </Button>
-                      <span className="flex-1">{opsi.opsiText}</span>
-                      <Button
-                        type="button"
-                        onClick={() => isEditing ? handleRemoveOpsi(index) : parentHandleRemoveOpsi(index)}
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Hapus</span>
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          onClick={() => isEditing ? handleToggleCorrect(index) : parentHandleToggleCorrect(index)}
+                          variant={opsi.isCorrect ? "default" : "outline"}
+                          size="sm"
+                        >
+                          {opsi.isCorrect ? "Benar" : "Salah"}
+                        </Button>
+                        <span className="flex-1">
+                          {opsi.opsiText || (opsi.attachmentUrl ? "[Lampiran]" : "[Opsi kosong]")}
+                        </span>
+                        <Button
+                          type="button"
+                          onClick={() => isEditing ? handleRemoveOpsi(index) : parentHandleRemoveOpsi(index)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">Hapus</span>
+                        </Button>
+                      </div>
+                      
+                      {/* Attachment section for each opsi */}
+                      <div className="ml-2 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={opsi.attachmentType || ""}
+                            onValueChange={(value: "IMAGE" | "AUDIO") => {
+                              if (isEditing) {
+                                setEditState(prev => ({
+                                  ...prev,
+                                  opsis: prev.opsis.map((o, i) => 
+                                    i === index ? { ...o, attachmentType: value } : o
+                                  )
+                                }))
+                              } else {
+                                setCurrentOpsis(currentOpsis.map((o, i) => 
+                                  i === index ? { ...o, attachmentType: value } : o
+                                ))
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue placeholder="Lampiran" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="IMAGE">
+                                <span className="flex items-center gap-2">
+                                  <ImageIcon className="w-4 h-4" />
+                                  Gambar
+                                </span>
+                              </SelectItem>
+                              <SelectItem value="AUDIO">
+                                <span className="flex items-center gap-2">
+                                  <Volume2 className="w-4 h-4" />
+                                  Audio
+                                </span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          {opsi.attachmentType && (
+                            <Input
+                              type="file"
+                              accept={opsi.attachmentType === "IMAGE" ? "image/*" : "audio/*"}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) {
+                                  handleFileUpload(file).then(url => {
+                                    if (isEditing) {
+                                      setEditState(prev => ({
+                                        ...prev,
+                                        opsis: prev.opsis.map((o, i) => 
+                                          i === index ? { ...o, attachmentUrl: url } : o
+                                        )
+                                      }))
+                                    } else {
+                                      setCurrentOpsis(currentOpsis.map((o, i) => 
+                                        i === index ? { ...o, attachmentUrl: url } : o
+                                      ))
+                                    }
+                                  })
+                                }
+                              }}
+                              disabled={isUploading}
+                              className="flex-1"
+                            />
+                          )}
+                        </div>
+                        
+                        {opsi.attachmentUrl && (
+                          <div className="rounded-md overflow-hidden bg-accent/20 p-2">
+                            {opsi.attachmentType === "IMAGE" ? (
+                              <Image
+                                src={opsi.attachmentUrl}
+                                alt="Opsi attachment"
+                                width={120}
+                                height={120}
+                                className="rounded-md object-contain"
+                              />
+                            ) : (
+                              <audio
+                                src={opsi.attachmentUrl}
+                                controls
+                                className="w-full max-w-[200px]"
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

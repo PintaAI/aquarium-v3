@@ -3,7 +3,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { db } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client('1085407842332-6jt7i5cn8scfc5bc2emb1juaqh6uv5ol.apps.googleusercontent.com');
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Verify the Google ID token
     const ticket = await client.verifyIdToken({
       idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: '1085407842332-6jt7i5cn8scfc5bc2emb1juaqh6uv5ol.apps.googleusercontent.com',
     });
 
     const payload = ticket.getPayload();

@@ -405,7 +405,7 @@ export function AddSoalDialog({
                           {opsi.isCorrect ? "Benar" : "Salah"}
                         </Button>
                         <span className="flex-1">
-                          {opsi.opsiText || (opsi.attachmentUrl ? "[Lampiran]" : "[Opsi kosong]")}
+                          {opsi.opsiText || (opsi.attachmentUrl ? "" : "[Opsi kosong]")}
                         </span>
                         <Button
                           type="button"

@@ -1,25 +1,69 @@
-- [ ] **Custom Poll Solution:** Define Prisma schema for Polls (`Poll`, `PollOption`, `PollVote`).
-- [ ] **Custom Poll Solution:** Create Next.js API route (`/api/polls/create`) to:
-    - Create poll records in the database.
-    - Send a Stream Chat message with the `pollId` attached.
-- [ ] **Custom Poll Solution:** Create Next.js API route (`/api/polls/vote`) to:
-    - Record user votes in the database.
-    - Send a Stream Custom Event (`custom.poll.updated`) with updated poll state.
-- [ ] **Custom Poll Solution:** Create Next.js API route (`/api/polls/close`) to:
-    - Mark a poll as closed in the database.
-    - Send a Stream Custom Event (`custom.poll.closed`) with the closed poll state.
-- [ ] **Custom Poll Solution:** Create Next.js API route (`GET /api/polls/[pollId]`) to fetch initial poll data.
-- [ ] **Custom Poll Solution:** Modify `CreatePollForm` to call the `/api/polls/create` endpoint.
-- [ ] **Custom Poll Solution:** Modify `ChatComponent` to:
-    - Remove Stream Polls API logic.
-    - Render `PollDisplay` based on `pollId` from message `customData`.
-    - Listen for `custom.poll.updated` and `custom.poll.closed` events to update UI state.
-- [ ] **Custom Poll Solution:** Modify `PollDisplay` to:
-    - Accept `pollId` prop.
-    - Fetch initial data via `GET /api/polls/[pollId]`.
-    - Call `/api/polls/vote` on vote submission.
-    - Call `/api/polls/close` when host closes poll.
-    - Update based on data received from custom events (passed down or via context).
-- [ ] Explore using the custom poll solution as a simple quiz mechanism.
+# Course Join Request Feature Implementation
 
-*Previous Stream Polls API tasks are now superseded.*
+## 📋 Database Schema Changes
+- [ ] Add `CourseJoinRequest` model to Prisma schema
+- [ ] Add `RequestStatus` enum (PENDING, APPROVED, REJECTED)
+- [ ] Add relation fields to User and Course models
+- [ ] Run database migration
+- [ ] Update TypeScript types
+
+## 🔧 Backend Implementation
+- [ ] Create `app/actions/join-request-actions.ts`
+  - [ ] `requestJoinCourse(courseId, message?)` - Submit join request
+  - [ ] `approveJoinRequest(requestId)` - Approve and add user to course
+  - [ ] `rejectJoinRequest(requestId, reason?)` - Reject request
+  - [ ] `getJoinRequests(courseId)` - Get requests for course author
+  - [ ] `getUserJoinRequestStatus(courseId, userId)` - Check user's request status
+  - [ ] `cancelJoinRequest(requestId)` - Allow user to cancel pending request
+
+## 🎨 Frontend Components
+- [ ] Create `components/courses/request-join-modal.tsx`
+  - [ ] Form with optional message input
+  - [ ] Submit and cancel actions
+  - [ ] Loading states
+- [ ] Create `components/courses/join-request-card.tsx`
+  - [ ] Display requester info and message
+  - [ ] Approve/Reject buttons
+  - [ ] Status badges
+- [ ] Create `components/courses/request-status-badge.tsx`
+  - [ ] Show PENDING/APPROVED/REJECTED status
+  - [ ] Color-coded badges
+- [ ] Update `components/courses/course-header.tsx`
+  - [ ] Replace join button with request button
+  - [ ] Show request status if user has pending/rejected request
+  - [ ] Handle different states (can request, pending, rejected, approved)
+
+## 📱 Pages & UI Updates
+- [ ] Create `app/dashboard/course-requests/page.tsx`
+  - [ ] List all join requests for author's courses
+  - [ ] Filter by status (pending, approved, rejected)
+  - [ ] Bulk actions support
+- [ ] Update course page to show request status
+- [ ] Add request management section to course edit page
+- [ ] Update navigation to include course requests link for authors
+
+## 🔔 Notification System
+- [ ] Add push notification for new join requests
+- [ ] Add email notification option
+- [ ] Notify students when request is approved/rejected
+- [ ] Add notification preferences
+
+## 🎯 Additional Features
+- [ ] Add course setting: "Require approval to join" (toggle)
+- [ ] Add request expiration (auto-reject after X days)
+- [ ] Add bulk approve/reject functionality
+- [ ] Add request history for students
+- [ ] Add analytics: request approval rates
+
+## 🧪 Testing & Validation
+- [ ] Test request submission flow
+- [ ] Test approval/rejection flow
+- [ ] Test notification delivery
+- [ ] Test edge cases (duplicate requests, deleted courses, etc.)
+- [ ] Test UI responsiveness on mobile
+- [ ] Add form validation and error handling
+
+## 📝 Documentation
+- [ ] Update API documentation
+- [ ] Add user guide for course authors
+- [ ] Add user guide for students

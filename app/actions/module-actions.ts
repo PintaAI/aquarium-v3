@@ -80,6 +80,58 @@ export async function joinCourse(courseId: number) {
   }
 }
 
+// Fungsi untuk unjoin course
+export async function unjoinCourse(courseId: number) {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      throw new Error('Unauthorized')
+    }
+
+    // Cek apakah course ada dan user adalah member
+    const course = await db.course.findUnique({
+      where: {
+        id: courseId,
+      },
+      include: {
+        members: {
+          where: {
+            id: user.id
+          }
+        }
+      }
+    })
+
+    if (!course) {
+      throw new Error('Course not found')
+    }
+
+    if (course.members.length === 0) {
+      throw new Error('Not a member of this course')
+    }
+
+    // Unjoin course
+    await db.course.update({
+      where: {
+        id: courseId
+      },
+      data: {
+        members: {
+          disconnect: {
+            id: user.id
+          }
+        }
+      }
+    })
+
+    revalidatePath(`/courses/${courseId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to unjoin course:', error)
+    return { success: false, error: 'Failed to unjoin course' }
+  }
+}
+
 export async function createModule(data: z.infer<typeof moduleSchema>) {
   try {
     const user = await currentUser()

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardTitle } from "../ui/card"
 import { Difficulty, User } from "@prisma/client"
-import { UserIcon, Pencil, Trash2, Lock } from "lucide-react"
+import { UserIcon, Pencil, Trash2, Lock, GraduationCap } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import { UseCurrentUser } from "@/hooks/use-current-user"
@@ -11,6 +11,14 @@ interface SoalItem {
   difficulty: Difficulty | null
 }
 
+interface Course {
+  id: number
+  title: string
+  members: {
+    id: string
+  }[]
+}
+
 interface SoalCardProps {
   id: number
   title: string
@@ -18,6 +26,7 @@ interface SoalCardProps {
   user?: Pick<User, "name" | "id"> | null
   soals: SoalItem[]
   isPrivate?: boolean
+  course?: Course | null
   onClick?: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -32,6 +41,7 @@ export function SoalCard({
   soals,
   onClick,
   isPrivate,
+  course,
   onEdit,
   onDelete
 }: SoalCardProps) {
@@ -157,9 +167,17 @@ export function SoalCard({
             {title}
           </CardTitle>
           {description && (
-            <CardDescription className="text-sm text-muted-foreground line-clamp-2">
+            <CardDescription className="text-sm text-muted-foreground line-clamp-2 mb-2">
               {description}
             </CardDescription>
+          )}
+          {course && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <GraduationCap className="h-3.5 w-3.5 text-primary" />
+              <Badge variant="outline" className="text-xs text-primary border-primary/20">
+                {course.title}
+              </Badge>
+            </div>
           )}
         </div>
       </CardContent>

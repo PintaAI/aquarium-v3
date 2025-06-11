@@ -53,13 +53,23 @@ interface Soal {
   author: Author
 }
 
+interface Course {
+  id: number
+  title: string
+  members: {
+    id: string
+  }[]
+}
+
 interface KoleksiSoal {
   id: number
   nama: string
   deskripsi: string | null
   isPrivate: boolean
+  courseId: number | null
   createdAt: Date
   updatedAt: Date
+  course: Course | null
   soals: Soal[]
 }
 
@@ -101,12 +111,8 @@ export default function SoalPage() {
     )
   }
 
-  // Filter collections based on privacy and user role
-  const filteredCollections = collections.filter(collection => {
-    if (!collection.isPrivate) return true;
-    if (isGuru) return true;
-    return collection.soals[0]?.author?.id === currentUser?.id;
-  });
+  // Access control is now handled by the backend actions
+  const filteredCollections = collections;
 
   return (
     <>
@@ -148,6 +154,7 @@ export default function SoalPage() {
                 user={collection.soals[0]?.author}
                 soals={collection.soals}
                 isPrivate={collection.isPrivate}
+                course={collection.course}
                 onClick={() => router.push(`/soal/${collection.id}/test`)}
                 onEdit={() => router.push(`/soal/${collection.id}/edit`)}
                 onDelete={() => setDeleteId(collection.id)}

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Difficulty } from "@prisma/client"
 import { createKoleksiSoal, getKoleksiSoal, updateKoleksiSoal, deleteKoleksiSoal } from "@/app/actions/soal-actions"
+import { getCourses } from "@/app/actions/course-actions"
 import { uploadImage } from "@/app/actions/upload-image"
 import { uploadAudio } from "@/app/actions/upload-audio"
 
@@ -36,6 +37,8 @@ export const useSoalForm = () => {
   const [nama, setNama] = useState("")
   const [deskripsi, setDeskripsi] = useState("")
   const [isPrivate, setIsPrivate] = useState(false)
+  const [courseId, setCourseId] = useState<number | undefined>(undefined)
+  const [availableCourses, setAvailableCourses] = useState<any[]>([])
   const [soals, setSoals] = useState<Soal[]>([])
   
   // Current soal being edited
@@ -48,6 +51,20 @@ export const useSoalForm = () => {
   const [newOpsiText, setNewOpsiText] = useState("")
   const [isUploading, setIsUploading] = useState(false)
 
+  // Load available courses
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const courses = await getCourses()
+        console.log("Loaded courses:", courses) // Debug log
+        setAvailableCourses(courses)
+      } catch (error) {
+        console.error("Failed to load courses:", error)
+      }
+    }
+    loadCourses()
+  }, [])
+
   // Load existing data if editing
   useEffect(() => {
     if (isEdit && koleksiId) {
@@ -57,6 +74,7 @@ export const useSoalForm = () => {
           setNama(result.data.nama)
           setDeskripsi(result.data.deskripsi ?? "")
           setIsPrivate(result.data.isPrivate)
+          setCourseId(result.data.courseId ?? undefined)
           setSoals(result.data.soals.map(soal => ({
             pertanyaan: soal.pertanyaan,
             attachmentUrl: soal.attachmentUrl ?? undefined,
@@ -177,7 +195,7 @@ export const useSoalForm = () => {
     startTransition(async () => {
       try {
         if (isEdit && koleksiId) {
-          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals, isPrivate)
+          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals, isPrivate, courseId)
           if (result.success) {
             toast.success("Koleksi soal berhasil diperbarui")
             router.push("/soal")
@@ -186,7 +204,7 @@ export const useSoalForm = () => {
             toast.error(result.error || "Terjadi kesalahan")
           }
         } else {
-          const result = await createKoleksiSoal(nama, deskripsi, soals, isPrivate)
+          const result = await createKoleksiSoal(nama, deskripsi, soals, isPrivate, courseId)
           if (result.success) {
             toast.success("Koleksi soal berhasil ditambahkan")
             router.push("/soal")
@@ -311,6 +329,9 @@ export const useSoalForm = () => {
     setDeskripsi,
     isPrivate,
     setIsPrivate,
+    courseId,
+    setCourseId,
+    availableCourses,
     soals,
     handleCopiedSoals,
     currentPertanyaan,

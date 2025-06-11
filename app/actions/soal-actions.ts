@@ -23,19 +23,38 @@ export async function createKoleksiSoal(
   nama: string, 
   deskripsi: string | undefined,
   soals: CreateSoal[] = [],
-  isPrivate: boolean = false
+  isPrivate: boolean = false,
+  courseId?: number
 ) {
   try {
     const user = await currentUser()
     if (!user) return { success: false, error: "Unauthorized" }
 
     const result = await db.$transaction(async (tx) => {
+      // If courseId is provided, verify user is a member or author of the course
+      if (courseId) {
+        const course = await tx.course.findFirst({
+          where: {
+            id: courseId,
+            OR: [
+              { authorId: user.id },
+              { members: { some: { id: user.id } } }
+            ]
+          }
+        })
+        
+        if (!course) {
+          throw new Error("Tidak memiliki akses ke course tersebut")
+        }
+      }
+
       // Create koleksi first
       const koleksi = await tx.koleksiSoal.create({
         data: { 
           nama, 
           deskripsi,
-          isPrivate
+          isPrivate,
+          courseId
         }
       })
 
@@ -77,8 +96,56 @@ export async function getKoleksiSoals() {
     const user = await currentUser()
     if (!user) return { success: false, error: "Unauthorized" }
 
+    let whereCondition
+
+    if (user.role === "GURU") {
+      // Guru can see everything
+      whereCondition = {}
+    } else {
+      // Murid filtering logic
+      whereCondition = {
+        OR: [
+          // All public koleksi soal that are not tied to a course (no course)
+          { 
+            AND: [
+              { courseId: null },
+              { isPrivate: false }
+            ]
+          },
+          // Public koleksi soal from courses that the user has joined
+          { 
+            AND: [
+              { isPrivate: false },
+              {
+                course: {
+                  members: {
+                    some: {
+                      id: user.id
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+
     const collections = await db.koleksiSoal.findMany({
+      where: whereCondition,
       include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            authorId: true,
+            members: {
+              select: {
+                id: true
+              }
+            }
+          }
+        },
         soals: {
           include: {
             opsis: true,
@@ -109,9 +176,42 @@ export async function getKoleksiSoal(id: number) {
     const user = await currentUser()
     if (!user) return { success: false, error: "Unauthorized" }
 
-    const collection = await db.koleksiSoal.findUnique({
-      where: { id },
+    const collection = await db.koleksiSoal.findFirst({
+      where: {
+        id,
+        OR: [
+          // Collections without course (public)
+          { courseId: null },
+          // Collections where user is course member
+          { 
+            course: {
+              members: {
+                some: {
+                  id: user.id
+                }
+              }
+            }
+          },
+          // Collections where user is course author
+          {
+            course: {
+              authorId: user.id
+            }
+          }
+        ]
+      },
       include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            members: {
+              select: {
+                id: true
+              }
+            }
+          }
+        },
         soals: {
           include: {
             opsis: true,
@@ -128,7 +228,7 @@ export async function getKoleksiSoal(id: number) {
     })
 
     if (!collection) {
-      return { success: false, error: "Koleksi soal tidak ditemukan" }
+      return { success: false, error: "Koleksi soal tidak ditemukan atau Anda tidak memiliki akses" }
     }
     
     return { success: true, data: collection }
@@ -143,20 +243,39 @@ export async function updateKoleksiSoal(
   nama: string,
   deskripsi?: string,
   soals?: CreateSoal[],
-  isPrivate: boolean = false
+  isPrivate: boolean = false,
+  courseId?: number
 ) {
   try {
     const user = await currentUser()
     if (!user) return { success: false, error: "Unauthorized" }
 
     const updated = await db.$transaction(async (tx) => {
+      // If courseId is provided, verify user is a member or author of the course
+      if (courseId) {
+        const course = await tx.course.findFirst({
+          where: {
+            id: courseId,
+            OR: [
+              { authorId: user.id },
+              { members: { some: { id: user.id } } }
+            ]
+          }
+        })
+        
+        if (!course) {
+          throw new Error("Tidak memiliki akses ke course tersebut")
+        }
+      }
+
       // Update koleksi
       const updatedKoleksi = await tx.koleksiSoal.update({
         where: { id },
         data: { 
           nama, 
           deskripsi,
-          isPrivate
+          isPrivate,
+          courseId
         }
       })
 

@@ -4,7 +4,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X } from "lucide-react"
+import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X, GraduationCap } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AddSoalDialog } from "./components/add-soal-dialog"
 import { useSoalForm } from "./hooks/use-soal-form"
 
@@ -38,6 +39,9 @@ export default function CreateSoalPage() {
     setDeskripsi,
     isPrivate,
     setIsPrivate,
+    courseId,
+    setCourseId,
+    availableCourses,
     soals,
     isPending,
     isEdit,
@@ -129,6 +133,31 @@ export default function CreateSoalPage() {
                 placeholder="Deskripsi singkat tentang koleksi soal ini"
                 rows={3}
               />
+            </div>
+
+            <div>
+              <label 
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+              >
+                <GraduationCap className="w-4 h-4" />
+                Course (Opsional)
+              </label>
+              <Select value={courseId?.toString() || "none"} onValueChange={(value) => setCourseId(value === "none" ? undefined : parseInt(value))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih course untuk membatasi akses soal" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Tanpa Course (Publik)</SelectItem>
+                  {availableCourses.map((course) => (
+                    <SelectItem key={course.id} value={course.id.toString()}>
+                      {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Jika dipilih, hanya anggota course yang dapat mengakses soal ini
+              </p>
             </div>
 
             <div>

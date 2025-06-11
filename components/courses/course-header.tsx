@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { User, BarChart, Clock } from "lucide-react";
-import { joinCourse, getFirstModule } from "@/app/actions/module-actions";
+import { joinCourse, unjoinCourse, getFirstModule } from "@/app/actions/module-actions";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -35,6 +35,7 @@ export function CourseHeader({
   const { data: session } = useSession();
   const isAuthor = session?.user?.id === author.id;
   const [joining, setJoining] = useState(false);
+  const [unjoining, setUnjoining] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigateToFirstModule = async () => {
@@ -85,6 +86,26 @@ export function CourseHeader({
     }
   };
 
+  const handleUnjoinCourse = async () => {
+    try {
+      setUnjoining(true);
+      const result = await unjoinCourse(id);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      toast.success("Berhasil keluar dari kursus!");
+      // Refresh the page to update the UI state
+      window.location.reload();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Gagal keluar dari kursus";
+      toast.error(errorMessage);
+    } finally {
+      setUnjoining(false);
+    }
+  };
+
   return (
     <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border-0 border-b sm:border sm:border-border sm:rounded-xl">
       {thumbnail && (
@@ -126,7 +147,7 @@ export function CourseHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-x-2">
+        <div className="flex items-center gap-2">
           {author.image && (
             <Image
               src={author.image}
@@ -136,6 +157,8 @@ export function CourseHeader({
               className="rounded-full hidden sm:block"
             />
           )}
+          
+          {/* Join button - for users who haven't joined */}
           {!isAuthor && !isJoined && moduleCount > 0 && (
             <Button 
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
@@ -145,7 +168,9 @@ export function CourseHeader({
               {joining ? "Bergabung..." : "Gabung Kursus"}
             </Button>
           )}
-          {(isAuthor || isJoined) && moduleCount > 0 && (
+
+          {/* Start learning button - for author */}
+          {isAuthor && moduleCount > 0 && (
             <Button 
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
               onClick={navigateToFirstModule}
@@ -154,6 +179,29 @@ export function CourseHeader({
               {loading ? "Memuat..." : "Mulai Belajar"}
             </Button>
           )}
+
+          {/* Buttons for joined users (not author) */}
+          {!isAuthor && isJoined && moduleCount > 0 && (
+            <>
+              <Button 
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
+                onClick={navigateToFirstModule}
+                disabled={loading}
+              >
+                {loading ? "Memuat..." : "Mulai Belajar"}
+              </Button>
+              <Button 
+                variant="outline"
+                className="flex-1 text-xs sm:text-sm h-8 sm:h-9 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                onClick={handleUnjoinCourse}
+                disabled={unjoining}
+              >
+                {unjoining ? "Keluar..." : "Keluar Kursus"}
+              </Button>
+            </>
+          )}
+
+          {/* No modules available */}
           {moduleCount === 0 && (
             <Button className="w-full text-xs sm:text-sm h-8 sm:h-9" disabled>
               Belum Ada Modul

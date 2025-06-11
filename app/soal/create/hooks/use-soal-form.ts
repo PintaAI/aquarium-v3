@@ -20,6 +20,7 @@ interface Soal {
   pertanyaan: string
   attachmentUrl?: string
   attachmentType?: "IMAGE" | "AUDIO"
+  type: "LISTENING" | "READING"
   difficulty?: Difficulty
   explanation?: string
   opsis: Opsi[]
@@ -36,6 +37,9 @@ export const useSoalForm = () => {
   // Form states
   const [nama, setNama] = useState("")
   const [deskripsi, setDeskripsi] = useState("")
+  const [audioUrl, setAudioUrl] = useState("")
+  const [audioTitle, setAudioTitle] = useState("")
+  const [audioDuration, setAudioDuration] = useState<number | undefined>(undefined)
   const [isPrivate, setIsPrivate] = useState(false)
   const [courseId, setCourseId] = useState<number | undefined>(undefined)
   const [availableCourses, setAvailableCourses] = useState<Course[]>([])
@@ -45,6 +49,7 @@ export const useSoalForm = () => {
   const [currentPertanyaan, setCurrentPertanyaan] = useState("")
   const [currentAttachmentUrl, setCurrentAttachmentUrl] = useState("")
   const [currentAttachmentType, setCurrentAttachmentType] = useState<"IMAGE" | "AUDIO">()
+  const [currentType, setCurrentType] = useState<"LISTENING" | "READING">("READING")
   const [currentDifficulty, setCurrentDifficulty] = useState<Difficulty>()
   const [currentExplanation, setCurrentExplanation] = useState("")
   const [currentOpsis, setCurrentOpsis] = useState<Opsi[]>([])
@@ -73,12 +78,16 @@ export const useSoalForm = () => {
         if (result.success && result.data) {
           setNama(result.data.nama)
           setDeskripsi(result.data.deskripsi ?? "")
+          setAudioUrl(result.data.audioUrl ?? "")
+          setAudioTitle(result.data.audioTitle ?? "")
+          setAudioDuration(result.data.audioDuration ?? undefined)
           setIsPrivate(result.data.isPrivate)
           setCourseId(result.data.courseId ?? undefined)
           setSoals(result.data.soals.map(soal => ({
             pertanyaan: soal.pertanyaan,
             attachmentUrl: soal.attachmentUrl ?? undefined,
             attachmentType: soal.attachmentType as "IMAGE" | "AUDIO" | undefined,
+            type: (soal.type as "LISTENING" | "READING") ?? "READING",
             difficulty: soal.difficulty ?? undefined,
             explanation: soal.explanation ?? undefined,
             opsis: soal.opsis.map(opsi => ({
@@ -155,6 +164,7 @@ export const useSoalForm = () => {
       pertanyaan: currentPertanyaan,
       attachmentUrl: currentAttachmentUrl || undefined,
       attachmentType: currentAttachmentType || undefined,
+      type: currentType,
       difficulty: currentDifficulty,
       explanation: currentExplanation || undefined,
       opsis: currentOpsis
@@ -174,6 +184,7 @@ export const useSoalForm = () => {
     setCurrentPertanyaan("")
     setCurrentAttachmentUrl("")
     setCurrentAttachmentType(undefined)
+    setCurrentType("READING")
     setCurrentDifficulty(undefined)
     setCurrentExplanation("")
     setCurrentOpsis([])
@@ -195,7 +206,7 @@ export const useSoalForm = () => {
     startTransition(async () => {
       try {
         if (isEdit && koleksiId) {
-          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals, isPrivate, courseId)
+          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals, isPrivate, courseId, audioUrl, audioTitle, audioDuration)
           if (result.success) {
             toast.success("Koleksi soal berhasil diperbarui")
             router.push("/soal")
@@ -204,7 +215,7 @@ export const useSoalForm = () => {
             toast.error(result.error || "Terjadi kesalahan")
           }
         } else {
-          const result = await createKoleksiSoal(nama, deskripsi, soals, isPrivate, courseId)
+          const result = await createKoleksiSoal(nama, deskripsi, soals, isPrivate, courseId, audioUrl, audioTitle, audioDuration)
           if (result.success) {
             toast.success("Koleksi soal berhasil ditambahkan")
             router.push("/soal")
@@ -250,6 +261,7 @@ export const useSoalForm = () => {
             pertanyaan: soal.pertanyaan,
             attachmentUrl: soal.attachmentUrl ?? undefined,
             attachmentType: soal.attachmentType as "IMAGE" | "AUDIO" | undefined,
+            type: (soal.type as "LISTENING" | "READING") ?? "READING",
             difficulty: soal.difficulty ?? undefined,
             explanation: soal.explanation ?? undefined,
             opsis: soal.opsis.map(opsi => ({
@@ -286,6 +298,7 @@ export const useSoalForm = () => {
     pertanyaan: string,
     attachmentUrl: string,
     attachmentType: "IMAGE" | "AUDIO" | undefined,
+    type: "LISTENING" | "READING",
     difficulty: Difficulty | undefined,
     explanation: string,
     opsis: Opsi[]
@@ -304,6 +317,7 @@ export const useSoalForm = () => {
       pertanyaan,
       attachmentUrl: attachmentUrl || undefined,
       attachmentType,
+      type,
       difficulty,
       explanation: explanation || undefined,
       opsis
@@ -317,6 +331,7 @@ export const useSoalForm = () => {
     setCurrentPertanyaan(pertanyaan)
     setCurrentAttachmentUrl(attachmentUrl)
     setCurrentAttachmentType(attachmentType)
+    setCurrentType(type)
     setCurrentDifficulty(difficulty)
     setCurrentExplanation(explanation)
     setCurrentOpsis(opsis)
@@ -327,6 +342,12 @@ export const useSoalForm = () => {
     setNama,
     deskripsi,
     setDeskripsi,
+    audioUrl,
+    setAudioUrl,
+    audioTitle,
+    setAudioTitle,
+    audioDuration,
+    setAudioDuration,
     isPrivate,
     setIsPrivate,
     courseId,
@@ -340,6 +361,8 @@ export const useSoalForm = () => {
     setCurrentAttachmentUrl,
     currentAttachmentType,
     setCurrentAttachmentType,
+    currentType,
+    setCurrentType,
     currentDifficulty,
     setCurrentDifficulty,
     currentExplanation,

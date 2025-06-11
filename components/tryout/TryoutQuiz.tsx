@@ -11,24 +11,47 @@ interface Question {
   pertanyaan: string
   attachmentUrl: string | null
   attachmentType: string | null
+  type: 'LISTENING' | 'READING'
   opsis: {
     id: number
     opsiText: string
   }[]
 }
 
+interface KoleksiSoal {
+  audioUrl: string | null
+  audioTitle: string | null
+  audioDuration: number | null
+}
+
 interface TryoutQuizProps {
   tryoutId: number
   userId: string
   questions: Question[]
+  koleksiSoal: KoleksiSoal
   duration: number // in minutes
 }
 
-export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuizProps) {
+export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration }: TryoutQuizProps) {
   const router = useRouter()
+  
+  // Separate questions by type
+  const listeningQuestions = questions.filter(q => q.type === 'LISTENING')
+  const readingQuestions = questions.filter(q => q.type === 'READING')
+  
+  // Quiz state management
+  const [currentSection, setCurrentSection] = useState<'LISTENING' | 'READING'>(
+    listeningQuestions.length > 0 ? 'LISTENING' : 'READING'
+  )
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(-1))
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Audio state for listening section
+  const [audioPlaying, setAudioPlaying] = useState(false)
+  const [audioEnded, setAudioEnded] = useState(false)
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0)
+  const [audioDuration, setAudioDuration] = useState(0)
   
   // Store start time for accurate duration calculation
   const [startTime, setStartTime] = useState<number | null>(null)
@@ -40,6 +63,9 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
     const parsedTime = stored ? parseInt(stored) : duration * 60
     return isNaN(parsedTime) ? duration * 60 : parsedTime
   })
+  
+  // Get current section questions
+  const currentSectionQuestions = currentSection === 'LISTENING' ? listeningQuestions : readingQuestions
 
   // Set start time when user first interacts
   useEffect(() => {
@@ -105,37 +131,143 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
       setHasInteracted(true)
       localStorage.setItem(`tryout-${tryoutId}-startTime`, now.toString())
     }
+    
+    // Get the actual question index in the full questions array
+    const actualQuestionIndex = getCurrentQuestionIndex()
     const newAnswers = [...answers]
-    newAnswers[currentQuestion] = opsiId
+    newAnswers[actualQuestionIndex] = opsiId
     setAnswers(newAnswers)
   }
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < currentSectionQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
+    } else if (currentSection === 'LISTENING' && readingQuestions.length > 0) {
+      // Move to reading section
+      setCurrentSection('READING')
+      setCurrentQuestion(0)
     }
   }
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1)
+    } else if (currentSection === 'READING' && listeningQuestions.length > 0) {
+      // Move back to listening section
+      setCurrentSection('LISTENING')
+      setCurrentQuestion(listeningQuestions.length - 1)
     }
   }
 
+  // Audio event handlers
+  const handleAudioPlay = () => setAudioPlaying(true)
+  const handleAudioPause = () => setAudioPlaying(false)
+  const handleAudioEnded = () => {
+    setAudioPlaying(false)
+    setAudioEnded(true)
+  }
+  const handleAudioTimeUpdate = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.target as HTMLAudioElement
+    setAudioCurrentTime(audio.currentTime)
+  }
+  const handleAudioLoadedMetadata = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.target as HTMLAudioElement
+    setAudioDuration(audio.duration)
+  }
+
+  // Get the actual question index in the full questions array
+  const getCurrentQuestionIndex = () => {
+    if (currentSection === 'LISTENING') {
+      return currentQuestion
+    } else {
+      return listeningQuestions.length + currentQuestion
+    }
+  }
+
+  // Format audio time
+  const formatAudioTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  // Check if user can proceed to reading section (only if audio ended or no audio)
+  const canProceedToReading = currentSection === 'LISTENING' && (!koleksiSoal.audioUrl || audioEnded)
+
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-background rounded-lg shadow-md space-y-6">
+      {/* Section indicator */}
+      <div className="text-center">
+        <h2 className="text-xl font-bold mb-2">
+          {currentSection === 'LISTENING' ? '듣기 (Listening)' : '읽기 (Reading)'}
+        </h2>
+        {currentSection === 'LISTENING' && koleksiSoal.audioUrl && (
+          <p className="text-sm text-muted-foreground">
+            {audioEnded ? 'Audio telah selesai. Anda dapat melanjutkan ke bagian Reading.' : 'Dengarkan audio dengan saksama'}
+          </p>
+        )}
+      </div>
+
+      {/* Audio player for listening section */}
+      {currentSection === 'LISTENING' && koleksiSoal.audioUrl && (
+        <div className="bg-muted p-4 rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{koleksiSoal.audioTitle || 'Audio Listening'}</span>
+              {audioPlaying && (
+                <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full animate-pulse">
+                  Playing
+                </span>
+              )}
+              {audioEnded && (
+                <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
+                  Completed
+                </span>
+              )}
+            </div>
+            <span className="text-sm text-muted-foreground">
+              {formatAudioTime(audioCurrentTime)} / {formatAudioTime(audioDuration)}
+            </span>
+          </div>
+          <audio
+            src={koleksiSoal.audioUrl}
+            controls
+            className="w-full"
+            onPlay={handleAudioPlay}
+            onPause={handleAudioPause}
+            onEnded={handleAudioEnded}
+            onTimeUpdate={handleAudioTimeUpdate}
+            onLoadedMetadata={handleAudioLoadedMetadata}
+          />
+          {!audioEnded && (
+            <p className="text-xs text-muted-foreground">
+              {audioPlaying
+                ? "Audio sedang diputar. Dengarkan sampai selesai untuk melanjutkan ke Reading."
+                : "Audio harus diputar sampai selesai sebelum dapat melanjutkan ke bagian Reading"
+              }
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Progress bar */}
-      <div className="w-full bg-muted rounded-full h-1.5">
-        <div
-          className="bg-primary h-1.5 rounded-full transition-all duration-300"
-          style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
-        />
+      <div className="space-y-2">
+        <div className="w-full bg-muted rounded-full h-1.5">
+          <div
+            className="bg-primary h-1.5 rounded-full transition-all duration-300"
+            style={{ width: `${((getCurrentQuestionIndex() + 1) / questions.length) * 100}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>Progress: {getCurrentQuestionIndex() + 1}/{questions.length}</span>
+          <span>{currentSection}: {currentQuestion + 1}/{currentSectionQuestions.length}</span>
+        </div>
       </div>
 
       {/* Question header */}
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium text-muted-foreground">
-          Soal {currentQuestion + 1}/{questions.length}
+          {currentSection} {currentQuestion + 1}/{currentSectionQuestions.length}
         </span>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Waktu Tersisa:</span>
@@ -151,16 +283,16 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
       {/* Question content */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">
-          {questions[currentQuestion].pertanyaan}
+          {currentSectionQuestions[currentQuestion].pertanyaan}
         </h2>
 
         {/* Attachment handling */}
-        {questions[currentQuestion].attachmentUrl && (
+        {currentSectionQuestions[currentQuestion].attachmentUrl && (
           <div className="my-4">
-            {questions[currentQuestion].attachmentType?.toUpperCase() === "IMAGE" ? (
+            {currentSectionQuestions[currentQuestion].attachmentType?.toUpperCase() === "IMAGE" ? (
               <div className="relative h-[300px] w-full rounded-lg overflow-hidden">
                 <Image
-                  src={questions[currentQuestion].attachmentUrl || ''}
+                  src={currentSectionQuestions[currentQuestion].attachmentUrl || ''}
                   alt="Lampiran soal"
                   fill
                   className="object-contain border-2 border-muted rounded-lg"
@@ -168,15 +300,15 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
-            ) : questions[currentQuestion].attachmentType?.toUpperCase() === "AUDIO" ? (
+            ) : currentSectionQuestions[currentQuestion].attachmentType?.toUpperCase() === "AUDIO" ? (
               <audio
-                src={questions[currentQuestion].attachmentUrl || ''}
+                src={currentSectionQuestions[currentQuestion].attachmentUrl || ''}
                 controls
                 className="w-full"
               />
             ) : (
-              <a 
-                href={questions[currentQuestion].attachmentUrl || '#'}
+              <a
+                href={currentSectionQuestions[currentQuestion].attachmentUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:underline block"
@@ -189,11 +321,11 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
         
         {/* Options */}
         <div className="space-y-3">
-          {questions[currentQuestion].opsis.map((opsi, index) => (
+          {currentSectionQuestions[currentQuestion].opsis.map((opsi, index) => (
             <button
               key={opsi.id}
               className={`w-full p-3 text-left rounded-md transition-colors flex items-center gap-3 ${
-                answers[currentQuestion] === opsi.id
+                answers[getCurrentQuestionIndex()] === opsi.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted hover:bg-accent text-foreground"
               }`}
@@ -201,7 +333,7 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
               disabled={isSubmitting}
             >
               <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${
-                answers[currentQuestion] === opsi.id
+                answers[getCurrentQuestionIndex()] === opsi.id
                   ? "border-primary-foreground"
                   : "border-foreground"
               }`}>
@@ -217,23 +349,43 @@ export function TryoutQuiz({ tryoutId, userId, questions, duration }: TryoutQuiz
           <div className="flex justify-between items-center">
             <Button
               onClick={handlePrevious}
-              disabled={currentQuestion === 0 || isSubmitting}
+              disabled={(currentQuestion === 0 && currentSection === 'LISTENING') || isSubmitting}
               variant="outline"
             >
               Sebelumnya
             </Button>
             <Button
               onClick={handleNext}
-              disabled={currentQuestion === questions.length - 1 || isSubmitting}
+              disabled={
+                isSubmitting ||
+                (currentQuestion === currentSectionQuestions.length - 1 &&
+                 currentSection === 'READING') ||
+                (currentSection === 'LISTENING' &&
+                 currentQuestion === currentSectionQuestions.length - 1 &&
+                 !canProceedToReading)
+              }
               variant="outline"
             >
-              Selanjutnya
+              {currentSection === 'LISTENING' &&
+               currentQuestion === currentSectionQuestions.length - 1 &&
+               readingQuestions.length > 0 ?
+               'Lanjut ke Reading' : 'Selanjutnya'}
             </Button>
           </div>
           
-          {/* Only show submit button if all questions are answered */}
+          {/* Show section navigation info */}
+          {currentSection === 'LISTENING' && readingQuestions.length > 0 && !canProceedToReading && (
+            <div className="text-center text-sm text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+              {!audioEnded ?
+                'Dengarkan audio sampai selesai untuk melanjutkan ke bagian Reading' :
+                'Selesaikan semua soal Listening untuk melanjutkan ke Reading'
+              }
+            </div>
+          )}
+          
+          {/* Only show submit button if all questions are answered and on last section */}
           {!answers.includes(-1) && (
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={isSubmitting}
               className="w-full"

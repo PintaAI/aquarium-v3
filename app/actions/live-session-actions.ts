@@ -136,6 +136,10 @@ export async function getLiveSession(sessionId: string) {
           select: {
             id: true,
             title: true,
+            members: {
+              where: { id: user.id },
+              select: { id: true }
+            }
           }
         },
         creator: {
@@ -155,7 +159,17 @@ export async function getLiveSession(sessionId: string) {
       }
     })
 
-    return session as LiveSession | null
+    if (!session) return null
+
+    // Add membership check
+    const isCurrentUserMember = session.course.members.length > 0
+    const isCurrentUserCreator = session.creator.id === user.id
+
+    return {
+      ...session,
+      isCurrentUserMember,
+      isCurrentUserCreator
+    } as LiveSession & { isCurrentUserMember: boolean; isCurrentUserCreator: boolean }
   } catch (error) {
     console.error("Failed to fetch live session:", error)
     return null
@@ -194,6 +208,10 @@ export async function getLiveSessions() {
           select: {
             id: true,
             title: true,
+            members: {
+              where: { id: user.id },
+              select: { id: true }
+            }
           }
         },
         creator: {
@@ -233,11 +251,13 @@ export async function getLiveSessions() {
     return {
       active: active.map(session => ({
         ...session,
-        isCurrentUserCreator: isCurrentUser(session.creator.id)
+        isCurrentUserCreator: isCurrentUser(session.creator.id),
+        isCurrentUserMember: session.course.members.length > 0
       })),
       scheduled: scheduled.map(session => ({
         ...session,
-        isCurrentUserCreator: isCurrentUser(session.creator.id)
+        isCurrentUserCreator: isCurrentUser(session.creator.id),
+        isCurrentUserMember: session.course.members.length > 0
       }))
     }
 

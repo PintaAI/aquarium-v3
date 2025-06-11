@@ -34,6 +34,8 @@ interface AddSoalDialogProps {
   setCurrentAttachmentUrl: (value: string) => void
   currentAttachmentType: "IMAGE" | "AUDIO" | undefined
   setCurrentAttachmentType: (value: "IMAGE" | "AUDIO" | undefined) => void
+  currentType: "LISTENING" | "READING"
+  setCurrentType: (value: "LISTENING" | "READING") => void
   currentDifficulty: Difficulty | undefined
   setCurrentDifficulty: (value: Difficulty | undefined) => void
   currentExplanation: string
@@ -54,6 +56,7 @@ interface AddSoalDialogProps {
     pertanyaan: string,
     attachmentUrl: string,
     attachmentType: "IMAGE" | "AUDIO" | undefined,
+    type: "LISTENING" | "READING",
     difficulty: Difficulty | undefined,
     explanation: string,
     opsis: { opsiText: string; attachmentUrl?: string; attachmentType?: "IMAGE" | "AUDIO"; isCorrect: boolean }[]
@@ -69,6 +72,8 @@ export function AddSoalDialog({
   setCurrentAttachmentUrl,
   currentAttachmentType,
   setCurrentAttachmentType,
+  currentType,
+  setCurrentType,
   currentDifficulty,
   setCurrentDifficulty,
   currentExplanation,
@@ -92,6 +97,7 @@ export function AddSoalDialog({
     pertanyaan: currentPertanyaan,
     attachmentUrl: currentAttachmentUrl,
     attachmentType: currentAttachmentType,
+    type: currentType,
     difficulty: currentDifficulty,
     explanation: currentExplanation,
     opsis: currentOpsis,
@@ -133,6 +139,7 @@ export function AddSoalDialog({
           pertanyaan: currentPertanyaan,
           attachmentUrl: currentAttachmentUrl,
           attachmentType: currentAttachmentType,
+          type: currentType,
           difficulty: currentDifficulty,
           explanation: currentExplanation,
           opsis: [...currentOpsis],
@@ -143,13 +150,14 @@ export function AddSoalDialog({
           pertanyaan: '',
           attachmentUrl: '',
           attachmentType: undefined,
+          type: 'READING',
           difficulty: undefined,
           explanation: '',
           opsis: [],
         })
       }
     }
-  }, [isEditing, open, currentPertanyaan, currentAttachmentUrl, currentAttachmentType, currentDifficulty, currentExplanation, currentOpsis])
+  }, [isEditing, open, currentPertanyaan, currentAttachmentUrl, currentAttachmentType, currentType, currentDifficulty, currentExplanation, currentOpsis])
 
   const handleSubmit = () => {
     // Update parent state with local state
@@ -161,6 +169,7 @@ export function AddSoalDialog({
           editState.pertanyaan,
           editState.attachmentUrl,
           editState.attachmentType,
+          editState.type,
           editState.difficulty,
           editState.explanation,
           editState.opsis
@@ -170,6 +179,7 @@ export function AddSoalDialog({
         setCurrentPertanyaan(editState.pertanyaan)
         setCurrentAttachmentUrl(editState.attachmentUrl)
         setCurrentAttachmentType(editState.attachmentType)
+        setCurrentType(editState.type)
         setCurrentDifficulty(editState.difficulty)
         setCurrentExplanation(editState.explanation)
         setCurrentOpsis(editState.opsis)
@@ -224,7 +234,38 @@ export function AddSoalDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Tipe Soal
+                  </Label>
+                  <Select
+                    value={isEditing ? editState.type : currentType}
+                    onValueChange={(value: "LISTENING" | "READING") => isEditing
+                      ? setEditState(prev => ({ ...prev, type: value }))
+                      : setCurrentType(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih tipe soal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LISTENING">
+                        <span className="flex items-center gap-2">
+                          <Volume2 className="w-4 h-4" />
+                          듣기 (Listening)
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="READING">
+                        <span className="flex items-center gap-2">
+                          <FileText className="w-4 h-4" />
+                          읽기 (Reading)
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Upload className="w-4 h-4" />

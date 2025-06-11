@@ -75,7 +75,46 @@ export async function joinTryout(tryoutId: number, userId: string) {
     throw new Error("Unauthorized")
   }
 
-  const tryout = await getTryout(tryoutId)
+  const tryout = await db.tryout.findUnique({
+    where: { id: tryoutId },
+    include: {
+      koleksiSoal: {
+        include: {
+          course: {
+            select: {
+              id: true,
+              title: true,
+              members: {
+                where: { id: userId },
+                select: { id: true }
+              }
+            }
+          }
+        }
+      },
+      participants: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true
+            }
+          }
+        }
+      }
+    }
+  })
+
+  if (!tryout) {
+    throw new Error("Tryout not found")
+  }
+
+  // Check if user is a member of the course
+  if (!tryout.koleksiSoal.course?.members || tryout.koleksiSoal.course.members.length === 0) {
+    throw new Error(`Kamu bukan member dari ${tryout.koleksiSoal.course?.title || 'kursus ini'}, silahkan join terlebih dahulu`)
+  }
+
   const now = new Date()
 
   if (now < tryout.startTime || now > tryout.endTime) {
@@ -120,7 +159,46 @@ export async function submitTryoutAnswers(
     throw new Error("Unauthorized")
   }
 
-  const tryout = await getTryout(tryoutId)
+  const tryout = await db.tryout.findUnique({
+    where: { id: tryoutId },
+    include: {
+      koleksiSoal: {
+        include: {
+          course: {
+            select: {
+              id: true,
+              title: true,
+              members: {
+                where: { id: userId },
+                select: { id: true }
+              }
+            }
+          }
+        }
+      },
+      participants: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true
+            }
+          }
+        }
+      }
+    }
+  })
+
+  if (!tryout) {
+    throw new Error("Tryout not found")
+  }
+
+  // Check if user is a member of the course
+  if (!tryout.koleksiSoal.course?.members || tryout.koleksiSoal.course.members.length === 0) {
+    throw new Error(`Kamu bukan member dari ${tryout.koleksiSoal.course?.title || 'kursus ini'}, silahkan join terlebih dahulu`)
+  }
+
   const now = new Date()
 
   if (now < tryout.startTime || now > tryout.endTime) {
@@ -337,10 +415,34 @@ export async function getTryoutForUser(userId: string | undefined) {
     throw new Error("Unauthorized: Cannot view other user's tryouts")
   }
 
+  // Only show tryouts from courses the user is a member of
   const participatingTryouts = await db.tryout.findMany({
-    where: {}, // Show all tryouts regardless of participation or end time
+    where: {
+      koleksiSoal: {
+        course: {
+          members: {
+            some: {
+              id: userId
+            }
+          }
+        }
+      }
+    },
     include: {
-      koleksiSoal: true,
+      koleksiSoal: {
+        include: {
+          course: {
+            select: {
+              id: true,
+              title: true,
+              members: {
+                where: { id: userId },
+                select: { id: true }
+              }
+            }
+          }
+        }
+      },
       participants: {
         include: {
           user: {

@@ -26,6 +26,22 @@ async function getQuestions(koleksiSoalId: number) {
           opsiText: true
         }
       }
+    },
+    orderBy: [
+      { type: 'asc' }, // LISTENING questions first, then READING
+      { number: 'asc' }, // Then by question number for proper ordering
+      { createdAt: 'asc' } // Fallback to creation date if number is null
+    ]
+  })
+}
+
+async function getKoleksiSoal(koleksiSoalId: number) {
+  return db.koleksiSoal.findUnique({
+    where: { id: koleksiSoalId },
+    select: {
+      audioUrl: true,
+      audioTitle: true,
+      audioDuration: true
     }
   })
 }
@@ -55,9 +71,13 @@ export default async function TryoutPage(props: Props) {
     await joinTryout(tryoutId, user.id)
   }
 
-  // Fetch questions only if needed (user has joined and tryout is active)
-  const questions = (status === 'active' && userParticipation && !userParticipation.submittedAt) 
+  // Fetch questions and koleksi soal data only if needed (user has joined and tryout is active)
+  const questions = (status === 'active' && userParticipation && !userParticipation.submittedAt)
     ? await getQuestions(tryout.koleksiSoalId)
+    : null
+
+  const koleksiSoal = (status === 'active' && userParticipation && !userParticipation.submittedAt)
+    ? await getKoleksiSoal(tryout.koleksiSoalId)
     : null
 
   return (
@@ -118,12 +138,13 @@ export default async function TryoutPage(props: Props) {
                 )
               }
 
-              if (!userParticipation.submittedAt && questions) {
+              if (!userParticipation.submittedAt && questions && koleksiSoal) {
                 return (
                   <TryoutQuiz
                     tryoutId={tryoutId}
                     userId={user.id}
                     questions={questions}
+                    koleksiSoal={koleksiSoal}
                     duration={tryout.duration}
                   />
                 )

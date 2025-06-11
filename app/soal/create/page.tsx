@@ -4,7 +4,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X, GraduationCap } from "lucide-react"
+import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X, GraduationCap, Volume2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"
@@ -30,6 +30,16 @@ const difficultyLabels = {
   ADVANCED: "Sulit"
 }
 
+const typeColors = {
+  LISTENING: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
+  READING: "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+}
+
+const typeLabels = {
+  LISTENING: "듣기 (Listening)",
+  READING: "읽기 (Reading)"
+}
+
 export default function CreateSoalPage() {
   const searchParams = useSearchParams()
   const {
@@ -37,6 +47,12 @@ export default function CreateSoalPage() {
     setNama,
     deskripsi,
     setDeskripsi,
+    audioUrl,
+    setAudioUrl,
+    audioTitle,
+    setAudioTitle,
+    audioDuration,
+    setAudioDuration,
     isPrivate,
     setIsPrivate,
     courseId,
@@ -56,6 +72,8 @@ export default function CreateSoalPage() {
     setCurrentAttachmentUrl,
     currentAttachmentType,
     setCurrentAttachmentType,
+    currentType,
+    setCurrentType,
     currentDifficulty,
     setCurrentDifficulty,
     currentExplanation,
@@ -136,7 +154,62 @@ export default function CreateSoalPage() {
             </div>
 
             <div>
-              <label 
+              <label
+                htmlFor="audioUrl"
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+              >
+                <Volume2 className="w-4 h-4" />
+                Audio untuk Listening (Opsional)
+              </label>
+              <Input
+                type="url"
+                id="audioUrl"
+                value={audioUrl}
+                onChange={(e) => setAudioUrl(e.target.value)}
+                placeholder="https://example.com/audio.mp3"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                URL audio yang akan diputar untuk soal-soal listening
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="audioTitle"
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+              >
+                <Volume2 className="w-4 h-4" />
+                Judul Audio (Opsional)
+              </label>
+              <Input
+                type="text"
+                id="audioTitle"
+                value={audioTitle}
+                onChange={(e) => setAudioTitle(e.target.value)}
+                placeholder="Contoh: Dialog percakapan sehari-hari"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="audioDuration"
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+              >
+                <Volume2 className="w-4 h-4" />
+                Durasi Audio (detik, opsional)
+              </label>
+              <Input
+                type="number"
+                id="audioDuration"
+                value={audioDuration || ''}
+                onChange={(e) => setAudioDuration(e.target.value ? parseInt(e.target.value) : undefined)}
+                placeholder="180"
+                min="1"
+              />
+            </div>
+
+            <div>
+              <label
                 className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
               >
                 <GraduationCap className="w-4 h-4" />
@@ -204,6 +277,8 @@ export default function CreateSoalPage() {
                 setCurrentAttachmentUrl={setCurrentAttachmentUrl}
                 currentAttachmentType={currentAttachmentType}
                 setCurrentAttachmentType={setCurrentAttachmentType}
+                currentType={currentType}
+                setCurrentType={setCurrentType}
                 currentDifficulty={currentDifficulty}
                 setCurrentDifficulty={setCurrentDifficulty}
                 currentExplanation={currentExplanation}
@@ -242,7 +317,13 @@ export default function CreateSoalPage() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
-                            <Badge 
+                            <Badge
+                              variant="secondary"
+                              className={`${typeColors[soal.type as keyof typeof typeColors]} transition-colors`}
+                            >
+                              {typeLabels[soal.type as keyof typeof typeLabels]}
+                            </Badge>
+                            <Badge
                               variant="secondary"
                               className={`${difficultyColors[soal.difficulty as keyof typeof difficultyColors]} transition-colors`}
                             >
@@ -258,6 +339,8 @@ export default function CreateSoalPage() {
                                 setCurrentAttachmentUrl={setCurrentAttachmentUrl}
                                 currentAttachmentType={soal.attachmentType}
                                 setCurrentAttachmentType={setCurrentAttachmentType}
+                                currentType={soal.type}
+                                setCurrentType={setCurrentType}
                                 currentDifficulty={soal.difficulty}
                                 setCurrentDifficulty={setCurrentDifficulty}
                                 currentExplanation={soal.explanation || ''}

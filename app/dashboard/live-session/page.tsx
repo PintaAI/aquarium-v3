@@ -155,16 +155,28 @@ export default async function LiveSessionPage() {
                                 <DeleteSessionButton sessionId={session.id} />
                               </>
                             ) : (
-                              session.status === 'LIVE' ? (
-                                <Button className="w-full" variant="default" asChild>
-                                  <Link href={`/dashboard/live-session/${session.id}`}>
-                                    Join Live Session
-                                  </Link>
-                                </Button>
+                              // Check if user is a member of the course
+                              session.isCurrentUserMember ? (
+                                session.status === 'LIVE' ? (
+                                  <Button className="w-full" variant="default" asChild>
+                                    <Link href={`/dashboard/live-session/${session.id}`}>
+                                      Join Live Session
+                                    </Link>
+                                  </Button>
+                                ) : (
+                                  <Button className="w-full" variant="outline" disabled>
+                                    Session Not Started
+                                  </Button>
+                                )
                               ) : (
-                                <Button className="w-full" variant="outline" disabled>
-                                  Session Not Started
-                                </Button>
+                                <div className="space-y-2">
+                                  <Button className="w-full" variant="outline" disabled>
+                                    Join Live Session
+                                  </Button>
+                                  <p className="text-xs text-muted-foreground text-center">
+                                    Kamu bukan member dari {session.course.title}, silahkan join terlebih dahulu
+                                  </p>
+                                </div>
                               )
                             )}
                           </div>

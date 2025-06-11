@@ -263,26 +263,31 @@ enum Difficulty {
 }
 
 model KoleksiSoal {
-  id         Int      @id @default(autoincrement())
-  nama       String
-  deskripsi  String?
-  isPrivate  Boolean  @default(false)
-  courseId   Int?     // Optional - KoleksiSoal can exist without being tied to a course
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  course     Course?  @relation("CourseKoleksiSoals", fields: [courseId], references: [id])
-  soals      Soal[]
-  tryouts    Tryout[]
+  id               Int      @id @default(autoincrement())
+  nama             String
+  deskripsi        String?
+  isPrivate        Boolean  @default(false)
+  courseId         Int?     // Optional - KoleksiSoal can exist without being tied to a course
+  audioUrl         String?  // Optional audio attachment for listening section
+  audioTitle       String?  // Optional title for the audio
+  audioDuration    Int?     // Optional duration in seconds for the audio
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  course           Course?  @relation("CourseKoleksiSoals", fields: [courseId], references: [id])
+  soals            Soal[]
+  tryouts          Tryout[]
 }
 
 model Soal {
   id             Int         @id @default(autoincrement())
   koleksiId      Int
   authorId       String      // Changed to String to match existing User id type
+  number         Int?        // Question number for sorting within the collection (nullable for migration)
   pertanyaan     String
   attachmentUrl  String?
   attachmentType String?
   difficulty     Difficulty?
+  type           SoalType    @default(READING) // Type of question: LISTENING or READING
   explanation    String?
   isActive       Boolean     @default(true)
   createdAt      DateTime    @default(now())
@@ -411,4 +416,9 @@ enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum SoalType {
+  LISTENING
+  READING
 }

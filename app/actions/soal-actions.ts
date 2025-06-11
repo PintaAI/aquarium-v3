@@ -14,17 +14,21 @@ interface CreateSoal {
   pertanyaan: string
   attachmentUrl?: string
   attachmentType?: string
+  type: "LISTENING" | "READING"
   difficulty?: Difficulty
   explanation?: string
   opsis: CreateOpsi[]
 }
 
 export async function createKoleksiSoal(
-  nama: string, 
+  nama: string,
   deskripsi: string | undefined,
   soals: CreateSoal[] = [],
   isPrivate: boolean = false,
-  courseId?: number
+  courseId?: number,
+  audioUrl?: string,
+  audioTitle?: string,
+  audioDuration?: number
 ) {
   try {
     const user = await currentUser()
@@ -50,9 +54,12 @@ export async function createKoleksiSoal(
 
       // Create koleksi first
       const koleksi = await tx.koleksiSoal.create({
-        data: { 
-          nama, 
+        data: {
+          nama,
           deskripsi,
+          audioUrl,
+          audioTitle,
+          audioDuration,
           isPrivate,
           courseId
         }
@@ -60,14 +67,17 @@ export async function createKoleksiSoal(
 
       // If there are soals, create them all
       if (soals.length > 0) {
-        for (const soal of soals) {
+        for (let i = 0; i < soals.length; i++) {
+          const soal = soals[i]
           await tx.soal.create({
             data: {
               koleksiId: koleksi.id,
               authorId: user.id,
+              number: i + 1, // Set number based on order
               pertanyaan: soal.pertanyaan,
               attachmentUrl: soal.attachmentUrl,
               attachmentType: soal.attachmentType,
+              type: soal.type,
               difficulty: soal.difficulty,
               explanation: soal.explanation,
               opsis: {
@@ -244,7 +254,10 @@ export async function updateKoleksiSoal(
   deskripsi?: string,
   soals?: CreateSoal[],
   isPrivate: boolean = false,
-  courseId?: number
+  courseId?: number,
+  audioUrl?: string,
+  audioTitle?: string,
+  audioDuration?: number
 ) {
   try {
     const user = await currentUser()
@@ -271,9 +284,12 @@ export async function updateKoleksiSoal(
       // Update koleksi
       const updatedKoleksi = await tx.koleksiSoal.update({
         where: { id },
-        data: { 
-          nama, 
+        data: {
+          nama,
           deskripsi,
+          audioUrl,
+          audioTitle,
+          audioDuration,
           isPrivate,
           courseId
         }
@@ -295,14 +311,17 @@ export async function updateKoleksiSoal(
 
         // Create new soals
         if (soals.length > 0) {
-          for (const soal of soals) {
+          for (let i = 0; i < soals.length; i++) {
+            const soal = soals[i]
             await tx.soal.create({
               data: {
                 koleksiId: id,
                 authorId: user.id,
+                number: i + 1, // Set number based on order
                 pertanyaan: soal.pertanyaan,
                 attachmentUrl: soal.attachmentUrl,
                 attachmentType: soal.attachmentType,
+                type: soal.type,
                 difficulty: soal.difficulty,
                 explanation: soal.explanation,
                 opsis: {
@@ -392,14 +411,22 @@ export async function copySoalToCollection(
       })
 
       // Create copies in target collection
-      for (const soal of sourceSoals) {
+      // Get the current count to set proper numbers
+      const existingSoalCount = await tx.soal.count({
+        where: { koleksiId: targetCollectionId }
+      })
+
+      for (let i = 0; i < sourceSoals.length; i++) {
+        const soal = sourceSoals[i]
         await tx.soal.create({
           data: {
             koleksiId: targetCollectionId,
             authorId: user.id,
+            number: existingSoalCount + i + 1, // Continue numbering from existing soals
             pertanyaan: soal.pertanyaan,
             attachmentUrl: soal.attachmentUrl,
             attachmentType: soal.attachmentType,
+            type: soal.type || "READING", // Default to READING if not set
             difficulty: soal.difficulty,
             explanation: soal.explanation,
             opsis: {

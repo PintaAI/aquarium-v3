@@ -7,45 +7,68 @@ import { getLatestJoinedCourses } from "@/app/actions/course-actions";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Course } from "@/app/actions/course-actions";
+import { Course } from "@/app/actions/course-actions"; // Main Course type
 import { RecentCourse, getRecentCourses } from "@/lib/recent-courses";
-import { getCurrentLocalTime, compareDates } from "@/lib/date-utils";
+import { compareDates, getCurrentLocalTime } from "@/lib/date-utils";
+import { CourseType } from "@prisma/client"; // For default type
+
+// Interface for courses in the combined list, ensuring lastAccessed is present
+interface CourseForDisplay extends Course {
+  lastAccessed: Date;
+}
 
 export function LatestCourses() {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [recentCourses, setRecentCourses] = useState<RecentCourse[]>([]);
+  const [serverCourses, setServerCourses] = useState<Course[]>([]);
+  const [localRecentCourses, setLocalRecentCourses] = useState<RecentCourse[]>([]);
 
   useEffect(() => {
     // Get recently accessed courses from localStorage
-    setRecentCourses(getRecentCourses());
+    setLocalRecentCourses(getRecentCourses());
 
     // Fetch joined courses from server
     getLatestJoinedCourses().then((latestCourses) => {
-      setCourses(latestCourses);
+      setServerCourses(latestCourses);
     });
   }, []);
 
   // Combine and deduplicate courses, prioritizing recently accessed
-  // Combine and sort courses by last access/update time
-  const combinedCourses = [...recentCourses];
-  
-  // Add joined courses that aren't in recent list
-  courses.forEach(course => {
-    if (!combinedCourses.some(c => c.id === course.id)) {
-      combinedCourses.push({
-        ...course,
-        lastAccessed: getCurrentLocalTime()
-      });
-    }
-  });
+  const combinedAndSortedCourses: CourseForDisplay[] = (() => {
+    const combined: CourseForDisplay[] = [];
+    const processedIds = new Set<number>();
 
-  // Sort by lastAccessed date using our compareDates utility
-  combinedCourses.sort((a, b) => {
-    return -compareDates(a.lastAccessed, b.lastAccessed); // Negative to reverse order (newest first)
-  });
+    // Add local recent courses first, ensuring they have all Course fields
+    localRecentCourses.forEach(rc => {
+      if (!processedIds.has(rc.id)) {
+        combined.push({
+          ...rc, // Spread RecentCourse properties
+          type: CourseType.NORMAL, // Provide default type
+          eventStartDate: null,    // Provide default eventStartDate
+          eventEndDate: null,      // Provide default eventEndDate
+          // lastAccessed is already part of RecentCourse
+        } as CourseForDisplay); // Ensure it matches CourseForDisplay
+        processedIds.add(rc.id);
+      }
+    });
 
-  // Limit to 3 items
-  const displayCourses = combinedCourses.slice(0, 4);
+    // Add server-fetched courses that aren't already in the list from local recent
+    serverCourses.forEach(sc => {
+      if (!processedIds.has(sc.id)) {
+        combined.push({
+          ...sc, // Spread Course properties
+          // Use updatedAt or createdAt as lastAccessed if it's purely a server course
+          lastAccessed: sc.updatedAt || sc.createdAt || getCurrentLocalTime(),
+        });
+        processedIds.add(sc.id);
+      }
+    });
+
+    // Sort by lastAccessed date (newest first)
+    combined.sort((a, b) => -compareDates(a.lastAccessed, b.lastAccessed));
+    
+    return combined;
+  })();
+
+  const displayCourses = combinedAndSortedCourses.slice(0, 4);
 
   return (
     <Card className="border-none shadow-sm">
@@ -80,7 +103,7 @@ export function LatestCourses() {
               displayCourses.map((course) => (
                 <div key={course.id} className="w-[295px] flex-none">
                   <CourseListCard
-                    course={course}
+                    course={course} // Now 'course' is of type CourseForDisplay, which is compatible with Course
                     isAuthor={false}
                     onDelete={() => {}}
                   />

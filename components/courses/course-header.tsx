@@ -4,15 +4,23 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { User, BarChart, Clock } from "lucide-react";
+import { User, BarChart, Clock, X, Calendar, Timer } from "lucide-react";
 import { joinCourse, unjoinCourse, getFirstModule } from "@/app/actions/module-actions";
-import { useState } from "react";
+import { getUserJoinRequestStatus, cancelJoinRequest } from "@/app/actions/join-request-actions";
+import { getEventStatus, getEventStatusText, getTimeRemaining, formatEventDate, shouldCourseBeLocked, CourseWithEventInfo } from "@/lib/course-utils";
+import { CourseType } from "@prisma/client";
+import { RequestJoinModal } from "./request-join-modal";
+import { RequestStatusBadge } from "./request-status-badge";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 
 interface CourseHeaderProps {
   id: number;
   title: string;
   thumbnail: string | null;
+  type: string;
+  eventStartDate: Date | null;
+  eventEndDate: Date | null;
   author: {
     id: string;
     name: string | null;
@@ -27,6 +35,9 @@ export function CourseHeader({
   id, 
   title, 
   thumbnail, 
+  type,
+  eventStartDate,
+  eventEndDate,
   author, 
   level,
   moduleCount = 0,
@@ -34,9 +45,85 @@ export function CourseHeader({
 }: CourseHeaderProps) {
   const { data: session } = useSession();
   const isAuthor = session?.user?.id === author.id;
-  const [joining, setJoining] = useState(false);
+
+  const courseForUtils: CourseWithEventInfo = {
+    id,
+    type: type as CourseType,
+    eventStartDate,
+    eventEndDate,
+    isLocked: false, // Base isLocked, will be overridden by event status if applicable
+    members: [] // Placeholder, actual member check is `isJoined`
+  };
+  const eventStatus = getEventStatus(courseForUtils);
+  const isEffectivelyLocked = shouldCourseBeLocked(courseForUtils);
+
+
+  const [_joining, setJoining] = useState(false);
   const [unjoining, setUnjoining] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [joinRequest, setJoinRequest] = useState<{
+    id: number;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    message: string | null;
+    reason: string | null;
+  } | null>(null);
+
+  const fetchJoinRequestStatus = useCallback(async () => {
+    try {
+      const result = await getUserJoinRequestStatus(id);
+      if (result.success && result.request) {
+        setJoinRequest(result.request);
+      } else if (!result.success) {
+        // Don't toast error if request simply not found, common case
+        if (result.error && result.error !== 'Request not found') {
+          // console.error('Error fetching join request status:', result.error);
+        }
+        setJoinRequest(null); // Ensure joinRequest is null if not found or error
+      } else {
+        setJoinRequest(null); // Ensure joinRequest is null if request is not present
+      }
+    } catch (error) {
+      console.error('Error fetching join request status:', error);
+      setJoinRequest(null); // Ensure joinRequest is null on catch
+    }
+  }, [id]);
+
+  // Fetch join request status on component mount
+  useEffect(() => {
+    if (session?.user && !isAuthor && !isJoined) {
+      fetchJoinRequestStatus();
+    }
+  }, [session?.user, isAuthor, isJoined, fetchJoinRequestStatus]);
+
+  const handleRequestJoin = () => {
+    setIsRequestModalOpen(true);
+  };
+
+  const handleRequestSuccess = () => {
+    fetchJoinRequestStatus();
+  };
+
+  const handleCancelRequest = async () => {
+    if (!joinRequest) return;
+    
+    try {
+      setLoading(true);
+      const result = await cancelJoinRequest(joinRequest.id);
+      
+      if (result.success) {
+        toast.success('Permintaan berhasil dibatalkan');
+        setJoinRequest(null);
+      } else {
+        toast.error(result.error || 'Gagal membatalkan permintaan');
+      }
+    } catch (error) {
+      console.error('Error canceling request:', error);
+      toast.error('Terjadi kesalahan saat membatalkan permintaan');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const navigateToFirstModule = async () => {
     try {
@@ -56,7 +143,7 @@ export function CourseHeader({
     }
   };
 
-  const handleJoinCourse = async () => {
+  const _handleJoinCourse = async () => {
     try {
       setJoining(true);
       const result = await joinCourse(id);
@@ -107,7 +194,16 @@ export function CourseHeader({
   };
 
   return (
-    <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border-0 border-b sm:border sm:border-border sm:rounded-xl">
+    <>
+      <RequestJoinModal
+        courseId={id}
+        courseTitle={title}
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        onSuccess={handleRequestSuccess}
+      />
+      
+      <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border-0 border-b sm:border sm:border-border sm:rounded-xl">
       {thumbnail && (
         <div className="relative aspect-video w-full max-h-[130px] sm:max-h-[150px]">
           <Image
@@ -145,7 +241,70 @@ export function CourseHeader({
             <Clock className="mr-1.5 sm:mr-2" size={14} />
             <span>{moduleCount} modules</span>
           </div>
+          {type === 'EVENT' && (
+            <div className="flex items-center">
+              <Timer className="mr-1.5 sm:mr-2" size={14} />
+              <span className="text-orange-600 font-medium">Event Course</span>
+            </div>
+          )}
         </div>
+
+        {/* Event Information Section */}
+        {type === 'EVENT' && eventStartDate && eventEndDate && (
+          <div className="mb-4 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="text-orange-600" size={16} />
+              <span className="font-medium text-orange-800">Event Schedule</span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              <div>
+                <span className="text-muted-foreground">Start: </span>
+                <span className="font-medium">{formatEventDate(eventStartDate)}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">End: </span>
+                <span className="font-medium">{formatEventDate(eventEndDate)}</span>
+              </div>
+            </div>
+
+            {(() => {
+              const courseForUtilsLocal: CourseWithEventInfo = {
+                id,
+                type: type as CourseType,
+                eventStartDate,
+                eventEndDate,
+                isLocked: false, // This might need to reflect actual lock status if available
+                members: [] // Placeholder
+              };
+              const eventStatus = getEventStatus(courseForUtilsLocal);
+              const timeRemaining = getTimeRemaining(courseForUtilsLocal);
+              
+              return (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {eventStatus && (
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      eventStatus === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                      eventStatus === 'active' ? 'bg-green-100 text-green-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {getEventStatusText(eventStatus)}
+                    </div>
+                  )}
+                  
+                  {timeRemaining && (
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      timeRemaining.isActive ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      <Timer size={12} className="mr-1" />
+                      {timeRemaining.timeLeft}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           {author.image && (
@@ -158,15 +317,56 @@ export function CourseHeader({
             />
           )}
           
-          {/* Join button - for users who haven't joined */}
+          {/* Request join button and status - for users who haven't joined */}
           {!isAuthor && !isJoined && moduleCount > 0 && (
-            <Button 
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
-              onClick={handleJoinCourse}
-              disabled={joining || loading}
-            >
-              {joining ? "Bergabung..." : "Gabung Kursus"}
-            </Button>
+            <>
+              {!joinRequest && (
+                <Button 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
+                  onClick={handleRequestJoin}
+                  disabled={loading || isEffectivelyLocked && eventStatus !== 'upcoming'} // Allow request for upcoming, but not expired/locked
+                >
+                  {isEffectivelyLocked && eventStatus === 'expired' ? 'Event Telah Berakhir' : 'Minta Bergabung'}
+                </Button>
+              )}
+              
+              {joinRequest && !isEffectivelyLocked && (
+                <div className="w-full flex flex-col gap-2">
+                  <RequestStatusBadge status={joinRequest.status} className="self-start" />
+                  
+                  {joinRequest.status === 'PENDING' && (
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-7 text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={handleCancelRequest}
+                      disabled={loading}
+                    >
+                      <X size={14} className="mr-1" />
+                      {loading ? "Membatalkan..." : "Batalkan Permintaan"}
+                    </Button>
+                  )}
+                  
+                  {joinRequest.status === 'REJECTED' && joinRequest.reason && (
+                    <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                      <span className="font-medium">Alasan: </span>
+                      {joinRequest.reason}
+                    </div>
+                  )}
+                  
+                  {joinRequest.status === 'REJECTED' && (
+                    <Button 
+                      size="sm"
+                      className="text-xs h-7 bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={handleRequestJoin}
+                      disabled={loading}
+                    >
+                      Kirim Ulang Permintaan
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
           )}
 
           {/* Start learning button - for author */}
@@ -174,9 +374,9 @@ export function CourseHeader({
             <Button 
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
               onClick={navigateToFirstModule}
-              disabled={loading}
+              disabled={loading || isEffectivelyLocked}
             >
-              {loading ? "Memuat..." : "Mulai Belajar"}
+              {isEffectivelyLocked ? getEventStatusText(eventStatus) : (loading ? "Memuat..." : "Mulai Belajar")}
             </Button>
           )}
 
@@ -186,9 +386,9 @@ export function CourseHeader({
               <Button 
                 className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
                 onClick={navigateToFirstModule}
-                disabled={loading}
+                disabled={loading || isEffectivelyLocked}
               >
-                {loading ? "Memuat..." : "Mulai Belajar"}
+                {isEffectivelyLocked ? getEventStatusText(eventStatus) : (loading ? "Memuat..." : "Mulai Belajar")}
               </Button>
               <Button 
                 variant="outline"
@@ -210,5 +410,6 @@ export function CourseHeader({
         </div>
       </div>
     </div>
+    </>
   );
 }

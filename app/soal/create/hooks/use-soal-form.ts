@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Difficulty } from "@prisma/client"
 import { createKoleksiSoal, getKoleksiSoal, updateKoleksiSoal, deleteKoleksiSoal } from "@/app/actions/soal-actions"
-import { getCourses } from "@/app/actions/course-actions"
+import { getCourses, Course } from "@/app/actions/course-actions"
 import { uploadImage } from "@/app/actions/upload-image"
 import { uploadAudio } from "@/app/actions/upload-audio"
 
@@ -38,7 +38,7 @@ export const useSoalForm = () => {
   const [deskripsi, setDeskripsi] = useState("")
   const [isPrivate, setIsPrivate] = useState(false)
   const [courseId, setCourseId] = useState<number | undefined>(undefined)
-  const [availableCourses, setAvailableCourses] = useState<any[]>([])
+  const [availableCourses, setAvailableCourses] = useState<Course[]>([])
   const [soals, setSoals] = useState<Soal[]>([])
   
   // Current soal being edited

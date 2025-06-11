@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { currentUser } from '@/lib/auth'
 import { auth } from '@/auth'
 import { addCourseSchema, updateCourseSchema } from '@/schemas/course'
+import { getEventStatus, shouldCourseBeLocked, CourseWithEventInfo } from '@/lib/course-utils'
 import { z } from 'zod'
 
 export interface Course {
@@ -14,6 +15,9 @@ export interface Course {
   jsonDescription: string | null
   htmlDescription: string | null
   level: string
+  type: string
+  eventStartDate: Date | null
+  eventEndDate: Date | null
   thumbnail: string | null
   isLocked: boolean
   modules: Array<{
@@ -59,6 +63,9 @@ export async function getJoinedCourses() {
         jsonDescription: true,
         htmlDescription: true,
         level: true,
+        type: true,
+        eventStartDate: true,
+        eventEndDate: true,
         thumbnail: true,
         isLocked: true,
         createdAt: true,
@@ -199,6 +206,9 @@ export async function getCourse(courseId: number) {
         jsonDescription: true,
         htmlDescription: true,
         level: true,
+        type: true,
+        eventStartDate: true,
+        eventEndDate: true,
         thumbnail: true,
         isLocked: true,
         createdAt: true,
@@ -257,6 +267,9 @@ export async function getLatestJoinedCourses(): Promise<Course[]> {
         jsonDescription: true,
         htmlDescription: true,
         level: true,
+        type: true,
+        eventStartDate: true,
+        eventEndDate: true,
         thumbnail: true,
         isLocked: true,
         createdAt: true,
@@ -309,6 +322,9 @@ export async function getCourses(): Promise<Course[]> {
         jsonDescription: true,
         htmlDescription: true,
         level: true,
+        type: true,
+        eventStartDate: true,
+        eventEndDate: true,
         thumbnail: true,
         isLocked: true,
         createdAt: true,
@@ -358,6 +374,9 @@ export async function getCourseWithModules(courseId: number) {
         jsonDescription: true,
         htmlDescription: true,
         level: true,
+        type: true,
+        eventStartDate: true,
+        eventEndDate: true,
         thumbnail: true,
         isLocked: true,
         createdAt: true,
@@ -430,5 +449,97 @@ export async function startCourse(courseId: number) {
   } catch (error) {
     console.error(`Failed to start course ${courseId}:`, error)
     throw error
+  }
+}
+
+/**
+ * Cleanup expired event courses by clearing members and locking them
+ */
+export async function cleanupExpiredEventCourses() {
+  try {
+    const now = new Date()
+    
+    // Find all expired event courses that still have members
+    const expiredEventCourses = await db.course.findMany({
+      where: {
+        type: 'EVENT',
+        eventEndDate: {
+          lt: now
+        },
+        members: {
+          some: {}
+        }
+      },
+      include: {
+        members: true
+      }
+    })
+
+    if (expiredEventCourses.length === 0) {
+      console.log('No expired event courses found')
+      return { success: true, cleanedCount: 0 }
+    }
+
+    // Clear members from expired courses and lock them
+    const cleanupPromises = expiredEventCourses.map(async (course) => {
+      return db.course.update({
+        where: { id: course.id },
+        data: {
+          isLocked: true,
+          members: {
+            set: [] // Remove all members
+          }
+        }
+      })
+    })
+
+    await Promise.all(cleanupPromises)
+
+    console.log(`Cleaned up ${expiredEventCourses.length} expired event courses`)
+    return { success: true, cleanedCount: expiredEventCourses.length }
+  } catch (error) {
+    console.error('Failed to cleanup expired event courses:', error)
+    return { success: false, error: 'Failed to cleanup expired courses' }
+  }
+}
+
+/**
+ * Get event course status and check if user can access
+ */
+export async function getEventCourseAccess(courseId: number, userId?: string) {
+  try {
+    const course = await db.course.findUnique({
+      where: { id: courseId },
+      select: {
+        id: true,
+        type: true,
+        eventStartDate: true,
+        eventEndDate: true,
+        isLocked: true,
+        members: {
+          where: userId ? { id: userId } : undefined,
+          select: { id: true }
+        }
+      }
+    })
+
+    if (!course) {
+      return { success: false, error: 'Course not found' }
+    }
+
+    const eventStatus = getEventStatus(course as CourseWithEventInfo)
+    const shouldBeLocked = shouldCourseBeLocked(course as CourseWithEventInfo)
+    const isMember = userId ? course.members.length > 0 : false
+
+    return {
+      success: true,
+      eventStatus,
+      shouldBeLocked,
+      isMember,
+      canAccess: isMember && !shouldBeLocked
+    }
+  } catch (error) {
+    console.error('Failed to get event course access:', error)
+    return { success: false, error: 'Failed to check course access' }
   }
 }

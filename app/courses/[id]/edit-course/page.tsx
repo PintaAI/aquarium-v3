@@ -1,7 +1,7 @@
 import { CourseForm } from '@/components/courses/course-form'
 import { getCourse } from '@/app/actions/course-actions'
 import { notFound, redirect } from 'next/navigation'
-import { CourseLevel } from '@prisma/client'
+import { CourseLevel, CourseType } from '@prisma/client' // Added CourseType
 import { currentUser } from '@/lib/auth'
 
 interface EditCoursePageProps {
@@ -36,6 +36,9 @@ export default async function EditCoursePage(props: EditCoursePageProps) {
     title: courseData.title,
     description: courseData.description || '',
     level: courseData.level as CourseLevel,
+    type: courseData.type as CourseType, // Added type
+    eventStartDate: courseData.eventStartDate, // Added eventStartDate
+    eventEndDate: courseData.eventEndDate, // Added eventEndDate
     thumbnail: courseData.thumbnail,
     jsonDescription: courseData.jsonDescription || '',
     htmlDescription: courseData.htmlDescription || ''

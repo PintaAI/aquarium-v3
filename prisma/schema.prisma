@@ -40,28 +40,33 @@ model User {
   tryoutParticipations  TryoutParticipant[]
   subscriptions         Subscription[] // Added relation to Subscription
   activityLogs          ActivityLog[]  // Added relation to ActivityLog
+  courseJoinRequests    CourseJoinRequest[]
   isCertificateEligible Boolean                @default(false) // Added for certificate eligibility
 }
 
 model Course {
-  id              Int          @id @default(autoincrement())
+  id              Int                @id @default(autoincrement())
   title           String
   description     String?
   jsonDescription String?
   htmlDescription String?
   level           CourseLevel
+  type            CourseType         @default(NORMAL)
+  eventStartDate  DateTime?
+  eventEndDate    DateTime?
   thumbnail       String?
   icon            String?
-  isCompleted     Boolean      @default(false)
-  isLocked        Boolean      @default(false)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  isCompleted     Boolean            @default(false)
+  isLocked        Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
   authorId        String
-  author          User         @relation("CourseAuthor", fields: [authorId], references: [id])
-  modules         Module[]     @relation("CourseModules")
-  liveSessions    LiveSession[] @relation("CourseLiveSessions")
-  members         User[]       @relation("CourseMembers")
-  koleksiSoals    KoleksiSoal[] @relation("CourseKoleksiSoals")
+  author          User               @relation("CourseAuthor", fields: [authorId], references: [id])
+  modules         Module[]           @relation("CourseModules")
+  liveSessions    LiveSession[]      @relation("CourseLiveSessions")
+  members         User[]             @relation("CourseMembers")
+  koleksiSoals    KoleksiSoal[]      @relation("CourseKoleksiSoals")
+  joinRequests    CourseJoinRequest[]
 }
 
 enum LiveSessionStatus {
@@ -246,6 +251,11 @@ enum CourseLevel {
   ADVANCED
 }
 
+enum CourseType {
+  NORMAL
+  EVENT
+}
+
 enum Difficulty {
   BEGINNER
   INTERMEDIATE
@@ -374,6 +384,27 @@ enum ActivityType {
   PARTICIPATE_LIVE_SESSION
   PLAY_GAME
   OTHER
+}
+
+model CourseJoinRequest {
+  id           Int           @id @default(autoincrement())
+  courseId     Int
+  userId       String
+  status       RequestStatus @default(PENDING)
+  message      String?       // Optional message from requester
+  attachmentUrl String?      // Optional attachment image URL
+  contact      String?       // Optional contact information (phone, email, etc.)
+  reason       String?       // Optional reason for rejection
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([courseId, userId]) // Prevent duplicate requests
+  @@index([userId])
+  @@index([courseId])
+  @@index([status])
 }
 
 enum RequestStatus {

@@ -4,8 +4,8 @@ import { useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { User, BarChart, Clock, Upload } from "lucide-react"
-import { CourseLevel } from '@prisma/client'
+import { User, BarChart, Clock, Upload, Calendar, Timer } from "lucide-react"
+import { CourseLevel, CourseType } from '@prisma/client'
 import { JSONContent } from 'novel'
 
 import Editor, { defaultEditorContent } from '../editor/editor'
@@ -24,6 +24,9 @@ interface CourseFormProps {
     title: string;
     description: string;
     level: CourseLevel;
+    type: CourseType;
+    eventStartDate: Date | null;
+    eventEndDate: Date | null;
     thumbnail: string | null;
     jsonDescription: string;
     htmlDescription: string;
@@ -34,6 +37,9 @@ interface CourseData {
   title: string;
   description: string;
   level: CourseLevel;
+  type: CourseType;
+  eventStartDate: Date | null;
+  eventEndDate: Date | null;
   jsonDescription: string;
   htmlDescription: string;
   thumbnail: string | null;
@@ -45,6 +51,13 @@ export function CourseForm({ initialData }: CourseFormProps) {
   const [title, setTitle] = useState(initialData?.title || '')
   const [description, setDescription] = useState(initialData?.description || '')
   const [level, setLevel] = useState<CourseLevel>(initialData?.level || CourseLevel.BEGINNER)
+  const [type, setType] = useState<CourseType>(initialData?.type || CourseType.NORMAL)
+  const [eventStartDate, setEventStartDate] = useState<string>(
+    initialData?.eventStartDate ? new Date(initialData.eventStartDate).toISOString().slice(0, 10) : ''
+  )
+  const [eventEndDate, setEventEndDate] = useState<string>(
+    initialData?.eventEndDate ? new Date(initialData.eventEndDate).toISOString().slice(0, 10) : ''
+  )
   const [jsonDescription, setJsonDescription] = useState<JSONContent>(
     initialData?.jsonDescription ? JSON.parse(initialData.jsonDescription) : defaultEditorContent
   )
@@ -73,10 +86,43 @@ export function CourseForm({ initialData }: CourseFormProps) {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    console.log('Form submission started. Current values:');
+    console.log('Title:', title);
+    console.log('Description:', description);
+    console.log('Level:', level);
+    console.log('JSON Description:', jsonDescription);
+    console.log('HTML Description:', htmlDescription);
+    console.log('Event Start Date:', eventStartDate);
+    console.log('Event End Date:', eventEndDate);
+    console.log('Type:', type);
     
     if (!title || !description || !level || !jsonDescription || !htmlDescription) {
       toast.error('Please fill in all required fields')
       return
+    }
+
+    // Validate event course dates
+    if (type === CourseType.EVENT) {
+      if (!eventStartDate || !eventEndDate) {
+        toast.error('Event courses must have both start and end dates')
+        return
+      }
+
+      const startDate = new Date(eventStartDate)
+      const endDate = new Date(eventEndDate)
+
+      if (endDate <= startDate) {
+        toast.error('Event end date must be after start date')
+        return
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Set to midnight today
+
+      if (startDate < today) {
+        toast.error('Event start date cannot be in the past.')
+        return
+      }
     }
 
     setPending(true)
@@ -86,6 +132,9 @@ export function CourseForm({ initialData }: CourseFormProps) {
         title,
         description,
         level,
+        type,
+        eventStartDate: type === CourseType.EVENT && eventStartDate ? new Date(eventStartDate) : null,
+        eventEndDate: type === CourseType.EVENT && eventEndDate ? new Date(eventEndDate) : null,
         jsonDescription: JSON.stringify(jsonDescription),
         htmlDescription,
         thumbnail,
@@ -107,6 +156,7 @@ export function CourseForm({ initialData }: CourseFormProps) {
       toast.success(initialData ? 'Course updated successfully' : 'Course created successfully')
       router.push(`/courses/${result.courseId}`)
     } catch (error) {
+      console.error('Error in handleSubmit:', error); // Added console.error
       toast.error(error instanceof Error ? error.message : 'Failed to save course')
     } finally {
       setPending(false)
@@ -157,6 +207,64 @@ export function CourseForm({ initialData }: CourseFormProps) {
                 <Clock className="mr-2" size={16} />
                 <span>0 modules</span>
               </div>
+            </div>
+
+            {/* Course Type Selector */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <Timer className="text-muted-foreground" size={16} />
+                <Select value={type} onValueChange={(value: CourseType) => setType(value)}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Course Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={CourseType.NORMAL}>Normal Course</SelectItem>
+                    <SelectItem value={CourseType.EVENT}>Event Course</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Event Date Inputs - Show only for EVENT type */}
+              {type === CourseType.EVENT && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Calendar size={16} />
+                      <span>Event Start Date</span>
+                    </div>
+                    <Input
+                      type="date"
+                      value={eventStartDate}
+                      onChange={(e) => setEventStartDate(e.target.value)}
+                      className="w-full"
+                      required={type === CourseType.EVENT}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Calendar size={16} />
+                      <span>Event End Date</span>
+                    </div>
+                    <Input
+                      type="date"
+                      value={eventEndDate}
+                      onChange={(e) => setEventEndDate(e.target.value)}
+                      className="w-full"
+                      required={type === CourseType.EVENT}
+                    />
+                  </div>
+                  {type === CourseType.EVENT && (
+                    <div className="col-span-full text-sm text-muted-foreground">
+                      <p className="flex items-start gap-2">
+                        <span className="text-yellow-600">⚠️</span>
+                        <span>
+                          Event courses are time-limited. Students will be automatically removed and the course will be locked after the end date.
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-4">

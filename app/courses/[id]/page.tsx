@@ -57,6 +57,9 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
               id={course.id}
               title={course.title}
               thumbnail={course.thumbnail}
+              type={course.type}
+              eventStartDate={course.eventStartDate}
+              eventEndDate={course.eventEndDate}
               author={course.author}
               level={course.level}
               moduleCount={course.modules.length}

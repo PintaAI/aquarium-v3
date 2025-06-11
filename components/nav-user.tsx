@@ -109,6 +109,12 @@ export function NavUser() {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
+                    <Link href="/dashboard/course-requests">
+                      <Users className="mr-2" />
+                      Course Requests
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/beta">
                       <BeakerIcon className="mr-2" />
                       Beta Features

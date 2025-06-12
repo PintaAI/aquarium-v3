@@ -20,8 +20,6 @@ interface Question {
 
 interface KoleksiSoal {
   audioUrl: string | null
-  audioTitle: string | null
-  audioDuration: number | null
 }
 
 interface TryoutQuizProps {
@@ -213,7 +211,7 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
         <div className="bg-muted p-4 rounded-lg space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-medium">{koleksiSoal.audioTitle || 'Audio Listening'}</span>
+              <span className="font-medium">Audio Listening</span>
               {audioPlaying && (
                 <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full animate-pulse">
                   Playing

@@ -269,8 +269,6 @@ model KoleksiSoal {
   isPrivate        Boolean  @default(false)
   courseId         Int?     // Optional - KoleksiSoal can exist without being tied to a course
   audioUrl         String?  // Optional audio attachment for listening section
-  audioTitle       String?  // Optional title for the audio
-  audioDuration    Int?     // Optional duration in seconds for the audio
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   course           Course?  @relation("CourseKoleksiSoals", fields: [courseId], references: [id])

@@ -35,10 +35,19 @@ export async function uploadAudio(formData: FormData) {
     console.log('Cloudinary upload successful:', data);
     revalidatePath('/');
     
-    // Return the secure URL from Cloudinary
-    return data.secure_url;
+    // Return the secure URL and duration info from Cloudinary
+    return {
+      url: data.secure_url,
+      duration: data.duration ? Math.round(data.duration) : null // Duration in seconds, rounded
+    };
   } catch (error) {
     console.error('Error uploading audio to Cloudinary:', error);
     throw error;
   }
+}
+
+// Legacy function for backward compatibility - returns just the URL
+export async function uploadAudioUrl(formData: FormData): Promise<string> {
+  const result = await uploadAudio(formData);
+  return typeof result === 'string' ? result : result.url;
 }

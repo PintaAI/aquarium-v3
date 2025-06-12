@@ -38,12 +38,11 @@ export const useSoalForm = () => {
   const [nama, setNama] = useState("")
   const [deskripsi, setDeskripsi] = useState("")
   const [audioUrl, setAudioUrl] = useState("")
-  const [audioTitle, setAudioTitle] = useState("")
-  const [audioDuration, setAudioDuration] = useState<number | undefined>(undefined)
   const [isPrivate, setIsPrivate] = useState(false)
   const [courseId, setCourseId] = useState<number | undefined>(undefined)
   const [availableCourses, setAvailableCourses] = useState<Course[]>([])
   const [soals, setSoals] = useState<Soal[]>([])
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false)
   
   // Current soal being edited
   const [currentPertanyaan, setCurrentPertanyaan] = useState("")
@@ -79,8 +78,6 @@ export const useSoalForm = () => {
           setNama(result.data.nama)
           setDeskripsi(result.data.deskripsi ?? "")
           setAudioUrl(result.data.audioUrl ?? "")
-          setAudioTitle(result.data.audioTitle ?? "")
-          setAudioDuration(result.data.audioDuration ?? undefined)
           setIsPrivate(result.data.isPrivate)
           setCourseId(result.data.courseId ?? undefined)
           setSoals(result.data.soals.map(soal => ({
@@ -125,6 +122,37 @@ export const useSoalForm = () => {
       return ''
     } finally {
       setIsUploading(false)
+    }
+  }
+
+  // Handle audio file upload
+  const handleAudioFileUpload = async (file: File): Promise<string> => {
+    if (!file) return ''
+
+    setIsUploadingAudio(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      
+      const result = await uploadAudio(formData)
+      const url = typeof result === 'string' ? result : result.url
+      const duration = typeof result === 'object' ? result.duration : null
+      
+      setAudioUrl(url)
+      
+      if (duration) {
+        toast.success(`Audio berhasil diunggah (${duration} detik)`)
+      } else {
+        toast.success("Audio berhasil diunggah")
+      }
+      
+      return url
+    } catch (error) {
+      toast.error("Gagal mengunggah audio")
+      console.error(error)
+      return ''
+    } finally {
+      setIsUploadingAudio(false)
     }
   }
 
@@ -206,7 +234,7 @@ export const useSoalForm = () => {
     startTransition(async () => {
       try {
         if (isEdit && koleksiId) {
-          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals, isPrivate, courseId, audioUrl, audioTitle, audioDuration)
+          const result = await updateKoleksiSoal(parseInt(koleksiId), nama, deskripsi, soals, isPrivate, courseId, audioUrl)
           if (result.success) {
             toast.success("Koleksi soal berhasil diperbarui")
             router.push("/soal")
@@ -215,7 +243,7 @@ export const useSoalForm = () => {
             toast.error(result.error || "Terjadi kesalahan")
           }
         } else {
-          const result = await createKoleksiSoal(nama, deskripsi, soals, isPrivate, courseId, audioUrl, audioTitle, audioDuration)
+          const result = await createKoleksiSoal(nama, deskripsi, soals, isPrivate, courseId, audioUrl)
           if (result.success) {
             toast.success("Koleksi soal berhasil ditambahkan")
             router.push("/soal")
@@ -344,10 +372,6 @@ export const useSoalForm = () => {
     setDeskripsi,
     audioUrl,
     setAudioUrl,
-    audioTitle,
-    setAudioTitle,
-    audioDuration,
-    setAudioDuration,
     isPrivate,
     setIsPrivate,
     courseId,
@@ -373,6 +397,7 @@ export const useSoalForm = () => {
     setNewOpsiText,
     isPending,
     isUploading,
+    isUploadingAudio,
     isEdit,
     formAction,
     deleteAction,
@@ -382,6 +407,7 @@ export const useSoalForm = () => {
     handleAddSoal,
     handleRemoveSoal,
     handleFileUpload,
+    handleAudioFileUpload,
     handleEditSoal,
     handleEditSoalWithValues
   }

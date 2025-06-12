@@ -4,7 +4,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X, GraduationCap, Volume2 } from "lucide-react"
+import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X, GraduationCap, Volume2, Upload } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"
@@ -49,10 +49,6 @@ export default function CreateSoalPage() {
     setDeskripsi,
     audioUrl,
     setAudioUrl,
-    audioTitle,
-    setAudioTitle,
-    audioDuration,
-    setAudioDuration,
     isPrivate,
     setIsPrivate,
     courseId,
@@ -83,11 +79,13 @@ export default function CreateSoalPage() {
     newOpsiText,
     setNewOpsiText,
     isUploading,
+    isUploadingAudio,
     handleAddOpsi,
     handleRemoveOpsi,
     handleToggleCorrect,
     handleAddSoal,
     handleFileUpload,
+    handleAudioFileUpload,
     handleEditSoal,
     handleEditSoalWithValues
   } = useSoalForm()
@@ -155,57 +153,66 @@ export default function CreateSoalPage() {
 
             <div>
               <label
-                htmlFor="audioUrl"
                 className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
               >
                 <Volume2 className="w-4 h-4" />
                 Audio untuk Listening (Opsional)
               </label>
-              <Input
-                type="url"
-                id="audioUrl"
-                value={audioUrl}
-                onChange={(e) => setAudioUrl(e.target.value)}
-                placeholder="https://example.com/audio.mp3"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                URL audio yang akan diputar untuk soal-soal listening
-              </p>
-            </div>
-
-            <div>
-              <label
-                htmlFor="audioTitle"
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
-              >
-                <Volume2 className="w-4 h-4" />
-                Judul Audio (Opsional)
-              </label>
-              <Input
-                type="text"
-                id="audioTitle"
-                value={audioTitle}
-                onChange={(e) => setAudioTitle(e.target.value)}
-                placeholder="Contoh: Dialog percakapan sehari-hari"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="audioDuration"
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
-              >
-                <Volume2 className="w-4 h-4" />
-                Durasi Audio (detik, opsional)
-              </label>
-              <Input
-                type="number"
-                id="audioDuration"
-                value={audioDuration || ''}
-                onChange={(e) => setAudioDuration(e.target.value ? parseInt(e.target.value) : undefined)}
-                placeholder="180"
-                min="1"
-              />
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isUploadingAudio}
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'audio/*'
+                      input.onchange = async (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0]
+                        if (file) {
+                          await handleAudioFileUpload(file)
+                        }
+                      }
+                      input.click()
+                    }}
+                    className="w-fit"
+                  >
+                    {isUploadingAudio ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
+                        Mengunggah...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Upload className="w-4 h-4" />
+                        {audioUrl ? 'Ganti Audio' : 'Upload Audio'}
+                      </span>
+                    )}
+                  </Button>
+                  {audioUrl && (
+                    <div className="flex items-center gap-2">
+                      <audio
+                        src={audioUrl}
+                        controls
+                        className="flex-1 max-w-[400px]"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setAudioUrl('')}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Upload file audio yang akan diputar untuk soal-soal listening
+                </p>
+              </div>
             </div>
 
             <div>

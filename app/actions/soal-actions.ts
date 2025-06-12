@@ -26,9 +26,7 @@ export async function createKoleksiSoal(
   soals: CreateSoal[] = [],
   isPrivate: boolean = false,
   courseId?: number,
-  audioUrl?: string,
-  audioTitle?: string,
-  audioDuration?: number
+  audioUrl?: string
 ) {
   try {
     const user = await currentUser()
@@ -58,8 +56,6 @@ export async function createKoleksiSoal(
           nama,
           deskripsi,
           audioUrl,
-          audioTitle,
-          audioDuration,
           isPrivate,
           courseId
         }
@@ -255,9 +251,7 @@ export async function updateKoleksiSoal(
   soals?: CreateSoal[],
   isPrivate: boolean = false,
   courseId?: number,
-  audioUrl?: string,
-  audioTitle?: string,
-  audioDuration?: number
+  audioUrl?: string
 ) {
   try {
     const user = await currentUser()
@@ -288,8 +282,6 @@ export async function updateKoleksiSoal(
           nama,
           deskripsi,
           audioUrl,
-          audioTitle,
-          audioDuration,
           isPrivate,
           courseId
         }

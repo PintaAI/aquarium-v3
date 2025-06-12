@@ -111,7 +111,7 @@ export function NavUser() {
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/course-requests">
                       <Users className="mr-2" />
-                      Course Requests
+                      Requests
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

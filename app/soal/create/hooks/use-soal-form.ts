@@ -223,6 +223,24 @@ export const useSoalForm = () => {
     setSoals(soals.filter((_, i) => i !== index))
   }
 
+  // Move soal handler for reordering
+  const handleMoveSoal = (index: number, direction: 'up' | 'down') => {
+    const newSoals = [...soals]
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    
+    // Check bounds
+    if (targetIndex < 0 || targetIndex >= soals.length) {
+      return
+    }
+    
+    // Swap the items
+    const temp = newSoals[index]
+    newSoals[index] = newSoals[targetIndex]
+    newSoals[targetIndex] = temp
+    
+    setSoals(newSoals)
+  }
+
   // Form submission handler
   const formAction = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -409,6 +427,7 @@ export const useSoalForm = () => {
     handleFileUpload,
     handleAudioFileUpload,
     handleEditSoal,
-    handleEditSoalWithValues
+    handleEditSoalWithValues,
+    handleMoveSoal
   }
 }

@@ -1,10 +1,10 @@
 "use client"
 
-
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X, GraduationCap, Volume2, Upload } from "lucide-react"
+import { Book, FileText, HelpCircle, ListPlus, Lock, Trash2, X, GraduationCap, Volume2, Upload, GripVertical, ChevronUp, ChevronDown, ChevronRight, ChevronLeft, Eye, EyeOff, Edit, ImageIcon, AudioLines, CheckCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"
@@ -42,6 +42,19 @@ const typeLabels = {
 
 export default function CreateSoalPage() {
   const searchParams = useSearchParams()
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set())
+
+  const toggleExpanded = (index: number) => {
+    const newExpanded = new Set(expandedQuestions)
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index)
+    } else {
+      newExpanded.add(index)
+    }
+    setExpandedQuestions(newExpanded)
+  }
+
+  const isExpanded = (index: number) => expandedQuestions.has(index)
   const {
     nama,
     setNama,
@@ -87,35 +100,39 @@ export default function CreateSoalPage() {
     handleFileUpload,
     handleAudioFileUpload,
     handleEditSoal,
-    handleEditSoalWithValues
+    handleEditSoalWithValues,
+    handleMoveSoal
   } = useSoalForm()
 
   return (
-    <div className="container max-w-5xl mx-auto p-4 md:p-6 min-h-[calc(100vh-4rem)]">
-      <Card className="p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center">
-            <h1 className="text-xl md:text-2xl font-bold text-primary">
-              {isEdit ? "Edit Koleksi Soal" : "Tambah Koleksi Soal"}
-            </h1>
-          </div>
-          {isEdit && (
-            <Button
-              type="button"
-              onClick={deleteAction}
-              disabled={isPending}
-              variant="destructive"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span>Hapus</span>
-            </Button>
-          )}
-        </div>
+    <div className="container max-w-[1700px] mx-auto p-4 md:p-6 min-h-[calc(100vh-4rem)]">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Column - Form */}
+        <div className="lg:w-1/2">
+          <Card className="p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center">
+                <h1 className="text-xl md:text-2xl font-bold text-primary">
+                  {isEdit ? "Edit Koleksi Soal" : "Tambah Koleksi Soal"}
+                </h1>
+              </div>
+              {isEdit && (
+                <Button
+                  type="button"
+                  onClick={deleteAction}
+                  disabled={isPending}
+                  variant="destructive"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Hapus</span>
+                </Button>
+              )}
+            </div>
 
-        <form onSubmit={formAction} className="space-y-8">
-          <div className="space-y-4">
+            <form onSubmit={formAction} className="space-y-8">
+              <div className="space-y-4">
             <div>
               <label 
                 htmlFor="nama" 
@@ -151,119 +168,208 @@ export default function CreateSoalPage() {
               />
             </div>
 
-            <div>
-              <label
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
-              >
-                <Volume2 className="w-4 h-4" />
-                Audio untuk Listening (Opsional)
-              </label>
-              <div className="space-y-2">
-                <div className="flex flex-col gap-2">
+            {/* Audio, Course and Privacy Settings Row */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Audio Upload */}
+                <div>
+                  <label
+                    className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    Audio Listening
+                  </label>
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isUploadingAudio}
+                      onClick={() => {
+                        const input = document.createElement('input')
+                        input.type = 'file'
+                        input.accept = 'audio/*'
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0]
+                          if (file) {
+                            await handleAudioFileUpload(file)
+                          }
+                        }
+                        input.click()
+                      }}
+                      className="w-full h-10"
+                    >
+                      {isUploadingAudio ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
+                          Upload...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <Upload className="w-4 h-4" />
+                          {audioUrl ? 'Ganti' : 'Upload'}
+                        </span>
+                      )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Upload file audio (opsional)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Course Selection */}
+                <div>
+                  <label
+                    className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    Course
+                  </label>
+                  <Select value={courseId?.toString() || "none"} onValueChange={(value) => setCourseId(value === "none" ? undefined : parseInt(value))}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Pilih course" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Tanpa Course</SelectItem>
+                      {availableCourses.map((course) => (
+                        <SelectItem key={course.id} value={course.id.toString()}>
+                          {course.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Batasi akses (opsional)
+                  </p>
+                </div>
+
+                {/* Publication Status */}
+                <div>
+                  <label
+                    className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
+                  >
+                    {isPrivate ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    Status Publikasi
+                  </label>
+                  <div className="flex items-center gap-2 h-10">
+                    <Switch
+                      checked={!isPrivate}
+                      onCheckedChange={(checked) => setIsPrivate(!checked)}
+                    />
+                    <span className="text-sm font-medium">
+                      {isPrivate ? "Draft" : "Publish"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {isPrivate
+                      ? "Hanya Anda yang dapat melihat"
+                      : courseId
+                        ? "Anggota course dapat mengakses"
+                        : "Semua pengguna dapat mengakses"
+                    }
+                  </p>
+                </div>
+              </div>
+
+              {/* Audio Preview - Full Width */}
+              {audioUrl && (
+                <div className="p-3 bg-muted/50 rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <audio
+                      src={audioUrl}
+                      controls
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setAudioUrl('')}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+              </div>
+
+              <Separator className="my-6" />
+
+              {/* Actions untuk menambah soal */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                    <ListPlus className="w-5 h-5" />
+                    Tambah Soal
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <AddSoalDialog
+                    isEditing={false}
+                    editingSoalIndex={null}
+                    currentPertanyaan={currentPertanyaan}
+                    setCurrentPertanyaan={setCurrentPertanyaan}
+                    currentAttachmentUrl={currentAttachmentUrl}
+                    setCurrentAttachmentUrl={setCurrentAttachmentUrl}
+                    currentAttachmentType={currentAttachmentType}
+                    setCurrentAttachmentType={setCurrentAttachmentType}
+                    currentType={currentType}
+                    setCurrentType={setCurrentType}
+                    currentDifficulty={currentDifficulty}
+                    setCurrentDifficulty={setCurrentDifficulty}
+                    currentExplanation={currentExplanation}
+                    setCurrentExplanation={setCurrentExplanation}
+                    currentOpsis={currentOpsis}
+                    setCurrentOpsis={setCurrentOpsis}
+                    newOpsiText={newOpsiText}
+                    setNewOpsiText={setNewOpsiText}
+                    isUploading={isUploading}
+                    handleAddOpsi={handleAddOpsi}
+                    handleRemoveOpsi={handleRemoveOpsi}
+                    handleToggleCorrect={handleToggleCorrect}
+                    handleAddSoal={handleAddSoal}
+                    handleFileUpload={handleFileUpload}
+                    handleEditSoal={handleEditSoal}
+                    handleEditSoalWithValues={handleEditSoalWithValues}
+                  />
+                  {isEdit && (
+                    <CopySoalDialog
+                      currentCollectionId={parseInt(searchParams.get("id") || "")}
+                      onSuccess={handleCopiedSoals}
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row gap-4">
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {isPending ? "Menyimpan..." : isEdit ? "Perbarui" : "Simpan"}
+                </Button>
+                
+                <Link href="/soal">
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={isUploadingAudio}
-                    onClick={() => {
-                      const input = document.createElement('input')
-                      input.type = 'file'
-                      input.accept = 'audio/*'
-                      input.onchange = async (e) => {
-                        const file = (e.target as HTMLInputElement).files?.[0]
-                        if (file) {
-                          await handleAudioFileUpload(file)
-                        }
-                      }
-                      input.click()
-                    }}
-                    className="w-fit"
+                    className="w-full sm:w-auto border-input hover:bg-accent"
                   >
-                    {isUploadingAudio ? (
-                      <span className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
-                        Mengunggah...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <Upload className="w-4 h-4" />
-                        {audioUrl ? 'Ganti Audio' : 'Upload Audio'}
-                      </span>
-                    )}
+                    Batal
                   </Button>
-                  {audioUrl && (
-                    <div className="flex items-center gap-2">
-                      <audio
-                        src={audioUrl}
-                        controls
-                        className="flex-1 max-w-[400px]"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAudioUrl('')}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Upload file audio yang akan diputar untuk soal-soal listening
-                </p>
+                </Link>
               </div>
-            </div>
+            </form>
+          </Card>
+        </div>
 
-            <div>
-              <label
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
-              >
-                <GraduationCap className="w-4 h-4" />
-                Course (Opsional)
-              </label>
-              <Select value={courseId?.toString() || "none"} onValueChange={(value) => setCourseId(value === "none" ? undefined : parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih course untuk membatasi akses soal" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Tanpa Course (Publik)</SelectItem>
-                  {availableCourses.map((course) => (
-                    <SelectItem key={course.id} value={course.id.toString()}>
-                      {course.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-1">
-                Jika dipilih, hanya anggota course yang dapat mengakses soal ini
-              </p>
-            </div>
-
-            <div>
-              <label 
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-1"
-              >
-                <Lock className="w-4 h-4" />
-                Status Privasi
-              </label>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={isPrivate}
-                  onCheckedChange={setIsPrivate}
-                />
-                <span className="text-sm text-muted-foreground">
-                  {isPrivate ? "Koleksi Privat" : "Koleksi Publik"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <Separator className="my-6" />
-
-          {/* Form untuk menambah soal */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
+        {/* Right Column - Question List */}
+        <div className="lg:w-1/2">
+          <Card className="p-4 md:p-6">
+            <div className="flex items-center gap-2 mb-4">
               <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
                 <ListPlus className="w-5 h-5" />
                 Daftar Soal
@@ -273,209 +379,205 @@ export default function CreateSoalPage() {
               </h2>
             </div>
 
-            {/* Actions untuk menambah soal */}
-            <div className="flex flex-wrap items-center max-w-4xl gap-2">
-              <AddSoalDialog
-                isEditing={false}
-                editingSoalIndex={null}
-                currentPertanyaan={currentPertanyaan}
-                setCurrentPertanyaan={setCurrentPertanyaan}
-                currentAttachmentUrl={currentAttachmentUrl}
-                setCurrentAttachmentUrl={setCurrentAttachmentUrl}
-                currentAttachmentType={currentAttachmentType}
-                setCurrentAttachmentType={setCurrentAttachmentType}
-                currentType={currentType}
-                setCurrentType={setCurrentType}
-                currentDifficulty={currentDifficulty}
-                setCurrentDifficulty={setCurrentDifficulty}
-                currentExplanation={currentExplanation}
-                setCurrentExplanation={setCurrentExplanation}
-                currentOpsis={currentOpsis}
-                setCurrentOpsis={setCurrentOpsis}
-                newOpsiText={newOpsiText}
-                setNewOpsiText={setNewOpsiText}
-                isUploading={isUploading}
-                handleAddOpsi={handleAddOpsi}
-                handleRemoveOpsi={handleRemoveOpsi}
-                handleToggleCorrect={handleToggleCorrect}
-                handleAddSoal={handleAddSoal}
-                handleFileUpload={handleFileUpload}
-                                handleEditSoal={handleEditSoal}
-                               
-                                handleEditSoalWithValues={handleEditSoalWithValues}
-              />
-              {isEdit && (
-                <CopySoalDialog 
-                  currentCollectionId={parseInt(searchParams.get("id") || "")} 
-                  onSuccess={handleCopiedSoals}
-                />
-              )}
-            </div>
-
-            {/* Daftar soal yang sudah ditambahkan */}
-            <Card className="border border-border mt-8">
-                <ScrollArea className="h-[400px] w-full rounded-md">
-                  <div className="p-4 space-y-4">
-                  {soals.map((soal, index) => (
-                    <div
-                      key={index}
-                      className="p-4 bg-card border border-border rounded-lg space-y-3 hover:bg-accent/5 transition-colors group"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="secondary"
-                              className={`${typeColors[soal.type as keyof typeof typeColors]} transition-colors`}
-                            >
-                              {typeLabels[soal.type as keyof typeof typeLabels]}
-                            </Badge>
-                            <Badge
-                              variant="secondary"
-                              className={`${difficultyColors[soal.difficulty as keyof typeof difficultyColors]} transition-colors`}
-                            >
-                              {difficultyLabels[soal.difficulty as keyof typeof difficultyLabels]}
-                            </Badge>
-                            <div className="font-medium flex items-center gap-2">
-                              <AddSoalDialog
-                                isEditing={true}
-                                editingSoalIndex={index}
-                                currentPertanyaan={soal.pertanyaan}
-                                setCurrentPertanyaan={setCurrentPertanyaan}
-                                currentAttachmentUrl={soal.attachmentUrl || ''}
-                                setCurrentAttachmentUrl={setCurrentAttachmentUrl}
-                                currentAttachmentType={soal.attachmentType}
-                                setCurrentAttachmentType={setCurrentAttachmentType}
-                                currentType={soal.type}
-                                setCurrentType={setCurrentType}
-                                currentDifficulty={soal.difficulty}
-                                setCurrentDifficulty={setCurrentDifficulty}
-                                currentExplanation={soal.explanation || ''}
-                                setCurrentExplanation={setCurrentExplanation}
-                                currentOpsis={soal.opsis}
-                                setCurrentOpsis={setCurrentOpsis}
-                                newOpsiText={newOpsiText}
-                                setNewOpsiText={setNewOpsiText}
-                                isUploading={isUploading}
-                                handleAddOpsi={handleAddOpsi}
-                                handleRemoveOpsi={handleRemoveOpsi}
-                                handleToggleCorrect={handleToggleCorrect}
-                                handleAddSoal={handleAddSoal}
-                                handleFileUpload={handleFileUpload}
-                                handleEditSoal={handleEditSoal}
-                                handleEditSoalWithValues={handleEditSoalWithValues}
-                              />
-                              <span>{soal.pertanyaan}</span>
-                            </div>
-                          </div>
-                          {soal.attachmentUrl && (
-                            <div className="mt-3">
-                              {soal.attachmentType === "IMAGE" ? (
-                                <Image 
-                                  src={soal.attachmentUrl} 
-                                  alt="Attachment" 
-                                  width={200}
-                                  height={200}
-                                  className="rounded-md object-contain"
-                                />
-                              ) : (
-                                <audio 
-                                  src={soal.attachmentUrl} 
-                                  controls 
-                                  className="w-full max-w-[300px]"
-                                />
-                              )}
-                            </div>
-                          )}
+            <ScrollArea className="h-[calc(100vh-12rem)] w-full rounded-md">
+              <div className="space-y-3">
+                {soals.map((soal, index) => (
+                  <div
+                    key={index}
+                    className="bg-card border border-border shadow-lg rounded-lg hover:bg-accent/5 transition-colors group"
+                  >
+                    {/* Header Section - Always Visible */}
+                    <div className="p-3 flex items-center gap-3">
+                      {/* Question Number */}
+                      <div className="relative flex-shrink-0">
+                        <div className="flex items-center justify-center w-8 h-8 bg-primary/10 text-primary rounded-lg font-medium text-sm group-hover:opacity-0 transition-opacity">
+                          {index + 1}
                         </div>
+                        {/* Reorder controls */}
+                        <div className="absolute inset-0 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleMoveSoal(index, 'up')}
+                            disabled={index === 0}
+                            className="h-4 w-4 p-0 bg-background border rounded-t"
+                          >
+                            <ChevronUp className="h-2 w-2" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleMoveSoal(index, 'down')}
+                            disabled={index === soals.length - 1}
+                            className="h-4 w-4 p-0 bg-background border rounded-b -mt-px"
+                          >
+                            <ChevronDown className="h-2 w-2" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Question Content */}
+                      <div className="flex-1 min-w-0">
+                        {/* Badges */}
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge
+                            variant="secondary"
+                            className={`${typeColors[soal.type as keyof typeof typeColors]} text-xs`}
+                          >
+                            {soal.type === 'LISTENING' ? '듣기' : '읽기'}
+                          </Badge>
+                          <Badge
+                            variant="secondary"
+                            className={`${difficultyColors[soal.difficulty as keyof typeof difficultyColors]} text-xs`}
+                          >
+                            {difficultyLabels[soal.difficulty as keyof typeof difficultyLabels]}
+                          </Badge>
+                        </div>
+                        
+                        {/* Question text */}
+                        <div className="font-medium text-sm mb-1">
+                          {soal.pertanyaan.length > 60 ? `${soal.pertanyaan.substring(0, 60)}...` : soal.pertanyaan}
+                        </div>
+                        
+                        {/* Stats */}
+                        <div className="text-xs text-muted-foreground">
+                          {soal.opsis.length} opsi • {soal.opsis.filter(o => o.isCorrect).length} benar
+                          {soal.attachmentUrl && " • Lampiran"}
+                          {soal.explanation && " • Penjelasan"}
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleExpanded(index)}
+                          className="h-7 w-7 p-0"
+                        >
+                          {isExpanded(index) ? (
+                            <ChevronLeft className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                        </Button>
+                        
+                        <AddSoalDialog
+                          isEditing={true}
+                          editingSoalIndex={index}
+                          currentPertanyaan={soal.pertanyaan}
+                          setCurrentPertanyaan={setCurrentPertanyaan}
+                          currentAttachmentUrl={soal.attachmentUrl || ''}
+                          setCurrentAttachmentUrl={setCurrentAttachmentUrl}
+                          currentAttachmentType={soal.attachmentType}
+                          setCurrentAttachmentType={setCurrentAttachmentType}
+                          currentType={soal.type}
+                          setCurrentType={setCurrentType}
+                          currentDifficulty={soal.difficulty}
+                          setCurrentDifficulty={setCurrentDifficulty}
+                          currentExplanation={soal.explanation || ''}
+                          setCurrentExplanation={setCurrentExplanation}
+                          currentOpsis={soal.opsis}
+                          setCurrentOpsis={setCurrentOpsis}
+                          newOpsiText={newOpsiText}
+                          setNewOpsiText={setNewOpsiText}
+                          isUploading={isUploading}
+                          handleAddOpsi={handleAddOpsi}
+                          handleRemoveOpsi={handleRemoveOpsi}
+                          handleToggleCorrect={handleToggleCorrect}
+                          handleAddSoal={handleAddSoal}
+                          handleFileUpload={handleFileUpload}
+                          handleEditSoal={handleEditSoal}
+                          handleEditSoalWithValues={handleEditSoalWithValues}
+                        />
+                        
                         <Button
                           type="button"
                           onClick={() => handleRemoveSoal(index)}
-                          variant="ghost" 
-                          size="icon"
-                          className="opacity-0 group-hover:opacity-100 h-8 w-8 text-muted-foreground hover:text-destructive transition-opacity"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                         >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Hapus</span>
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
-                      {soal.explanation && (
-                        <p className="text-sm text-muted-foreground italic border-l-2 border-border pl-3 mt-2 flex items-start gap-2">
-                          <HelpCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                          {soal.explanation}
-                        </p>
-                      )}
-                      <div className="pl-4 border-l-2 border-accent space-y-1.5 mt-3">
-                        {soal.opsis.map((opsi, opsiIndex) => (
-                          <div 
-                            key={opsiIndex}
-                            className={`text-sm ${
-                              opsi.isCorrect 
-                                ? "text-primary font-medium" 
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            <div className="flex items-start gap-2">
-                              <span className="flex-1">
-                                {opsi.opsiText || (opsi.attachmentUrl ? "[Lampiran]" : "[Opsi kosong]")}
-                                {opsi.isCorrect && " ✓"}
-                              </span>
-                            </div>
-                            {opsi.attachmentUrl && (
-                              <div className="mt-2 ml-4">
-                                {opsi.attachmentType === "IMAGE" ? (
-                                  <Image 
-                                    src={opsi.attachmentUrl} 
-                                    alt="Opsi attachment" 
-                                    width={120}
-                                    height={120}
-                                    className="rounded-md object-contain"
-                                  />
-                                ) : (
-                                  <audio 
-                                    src={opsi.attachmentUrl} 
-                                    controls 
-                                    className="w-full max-w-[200px]"
-                                  />
-                                )}
-                              </div>
+                    </div>
+
+                    {/* Expanded Content */}
+                    {isExpanded(index) && (
+                      <div className="border-t border-border bg-muted/30 p-3 space-y-3">
+                        {/* Full Question Text */}
+                        <div>
+                          <h4 className="font-medium text-sm text-muted-foreground mb-1">Pertanyaan:</h4>
+                          <p className="text-sm">{soal.pertanyaan}</p>
+                        </div>
+
+                        {/* Attachment */}
+                        {soal.attachmentUrl && (
+                          <div>
+                            <h4 className="font-medium text-sm text-muted-foreground mb-1">Lampiran:</h4>
+                            {soal.attachmentType === "IMAGE" ? (
+                              <Image
+                                src={soal.attachmentUrl}
+                                alt="Attachment"
+                                width={200}
+                                height={200}
+                                className="rounded-md object-contain"
+                              />
+                            ) : (
+                              <audio
+                                src={soal.attachmentUrl}
+                                controls
+                                className="w-full max-w-[300px]"
+                              />
                             )}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  {soals.length === 0 && (
-                    <p className="text-center text-sm text-muted-foreground py-8">
-                      Belum ada soal yang ditambahkan
-                    </p>
-                  )}
-                </div>
-              </ScrollArea>
-            </Card>
-          </div>
+                        )}
 
-          <div className="flex flex-col-reverse sm:flex-row gap-4">
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {isPending ? "Menyimpan..." : isEdit ? "Perbarui" : "Simpan"}
-            </Button>
-            
-            <Link href="/soal">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:w-auto border-input hover:bg-accent"
-              >
-                Batal
-              </Button>
-            </Link>
-          </div>
-        </form>
-      </Card>
+                        {/* Options */}
+                        <div>
+                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Opsi:</h4>
+                          <div className="space-y-1">
+                            {soal.opsis.map((opsi, opsiIndex) => (
+                              <div
+                                key={opsiIndex}
+                                className={`text-sm p-2 rounded ${
+                                  opsi.isCorrect
+                                    ? "bg-green-50 text-green-800 border border-green-200"
+                                    : "bg-background"
+                                }`}
+                              >
+                                <span className="font-medium">{String.fromCharCode(65 + opsiIndex)}.</span> {opsi.opsiText || "[Lampiran]"}
+                                {opsi.isCorrect && " ✓"}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Explanation */}
+                        {soal.explanation && (
+                          <div>
+                            <h4 className="font-medium text-sm text-muted-foreground mb-1">Penjelasan:</h4>
+                            <p className="text-sm text-muted-foreground italic">{soal.explanation}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {soals.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">Belum ada soal yang ditambahkan</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

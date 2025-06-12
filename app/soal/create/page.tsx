@@ -35,10 +35,6 @@ const typeColors = {
   READING: "bg-green-500/10 text-green-500 hover:bg-green-500/20"
 }
 
-const typeLabels = {
-  LISTENING: "듣기 (Listening)",
-  READING: "읽기 (Reading)"
-}
 
 export default function CreateSoalPage() {
   const searchParams = useSearchParams()

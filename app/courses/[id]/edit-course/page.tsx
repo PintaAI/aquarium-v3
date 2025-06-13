@@ -41,7 +41,8 @@ export default async function EditCoursePage(props: EditCoursePageProps) {
     eventEndDate: courseData.eventEndDate, // Added eventEndDate
     thumbnail: courseData.thumbnail,
     jsonDescription: courseData.jsonDescription || '',
-    htmlDescription: courseData.htmlDescription || ''
+    htmlDescription: courseData.htmlDescription || '',
+    isLocked: courseData.isLocked
   }
 
   return (

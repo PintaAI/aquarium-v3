@@ -126,7 +126,6 @@ export function QuizTest({ collectionId }: QuizTestProps) {
   }, [collectionId])
 
   const currentSectionQuestions = currentSection === 'LISTENING' ? listeningQuestions : readingQuestions
-  const canProceedToReading = currentSection === 'LISTENING' && (!koleksi?.audioUrl || audioEnded)
 
   const handleAnswerClick = (selectedIndex: number) => {
     setSelectedOption(selectedIndex)

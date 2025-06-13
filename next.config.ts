@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
   experimental: {
     webVitalsAttribution: ['CLS', 'LCP'],
     serverActions: {
-      bodySizeLimit: '10mb'
+      bodySizeLimit: '50mb'  // Increased to handle your 44MB files
     }
   }
 }

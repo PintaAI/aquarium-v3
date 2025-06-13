@@ -39,9 +39,7 @@ async function getKoleksiSoal(koleksiSoalId: number) {
   return db.koleksiSoal.findUnique({
     where: { id: koleksiSoalId },
     select: {
-      audioUrl: true,
-      audioTitle: true,
-      audioDuration: true
+      audioUrl: true
     }
   })
 }

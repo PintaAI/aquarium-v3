@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { User, BarChart, Clock, Upload, Calendar, Timer } from "lucide-react"
+import { User, BarChart, Clock, Upload, Calendar, Timer, Lock, Unlock } from "lucide-react"
 import { CourseLevel, CourseType } from '@prisma/client'
 import { JSONContent } from 'novel'
 
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Card, CardContent } from '@/components/ui/card'
 import { addCourse, updateCourse } from '@/app/actions/course-actions'
 import { uploadImage } from '@/app/actions/upload-image'
@@ -30,6 +31,7 @@ interface CourseFormProps {
     thumbnail: string | null;
     jsonDescription: string;
     htmlDescription: string;
+    isLocked: boolean;
   }
 }
 
@@ -63,6 +65,7 @@ export function CourseForm({ initialData }: CourseFormProps) {
   )
   const [htmlDescription, setHtmlDescription] = useState(initialData?.htmlDescription || '')
   const [thumbnail, setThumbnail] = useState<string | null>(initialData?.thumbnail || null)
+  const [isLocked, setIsLocked] = useState(initialData?.isLocked ?? true) // Default to locked (draft)
   const [pending, setPending] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -139,7 +142,7 @@ export function CourseForm({ initialData }: CourseFormProps) {
         htmlDescription,
         thumbnail,
         isCompleted: false,
-        isLocked: false,
+        isLocked,
       }
 
       let result
@@ -295,8 +298,34 @@ export function CourseForm({ initialData }: CourseFormProps) {
               )}
             </div>
 
+            {/* Draft/Public Toggle */}
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-3">
+                {isLocked ? (
+                  <Lock className="text-muted-foreground" size={20} />
+                ) : (
+                  <Unlock className="text-muted-foreground" size={20} />
+                )}
+                <div className="space-y-1">
+                  <div className="font-medium">
+                    {isLocked ? 'Mode Draft' : 'Mode Publik'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {isLocked
+                      ? 'Kursus disimpan sebagai draft dan tidak terlihat oleh siswa'
+                      : 'Kursus sudah publik dan dapat dilihat oleh siswa'
+                    }
+                  </div>
+                </div>
+              </div>
+              <Switch
+                checked={!isLocked}
+                onCheckedChange={(checked) => setIsLocked(!checked)}
+              />
+            </div>
+
             <Button type="submit" disabled={pending} className="w-full">
-              {pending ? 'Saving...' : initialData ? 'Update Course' : 'Create Course'}
+              {pending ? 'Menyimpan...' : initialData ? 'Perbarui Kursus' : (isLocked ? 'Simpan sebagai Draft' : 'Buat Kursus')}
             </Button>
           </form>
         </CardContent>

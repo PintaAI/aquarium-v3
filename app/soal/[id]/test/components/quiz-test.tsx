@@ -23,7 +23,8 @@ interface KoleksiSoal {
       name: string | null
       role: string
     }
-  }[]
+  }[],
+  audioUrl?: string | null
 }
 
 interface Question {
@@ -36,6 +37,7 @@ interface Question {
   explanation: string | null
   koleksiId: number
   authorId: string
+  type: "LISTENING" | "READING"
   author: {
     name: string | null
     role: string
@@ -68,6 +70,16 @@ export function QuizTest({ collectionId }: QuizTestProps) {
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([])
   const [reviewMode, setReviewMode] = useState(false)
   const [reviewIndex, setReviewIndex] = useState(0)
+
+  const [listeningQuestions, setListeningQuestions] = useState<Question[]>([])
+  const [readingQuestions, setReadingQuestions] = useState<Question[]>([])
+  const [currentSection, setCurrentSection] = useState<'LISTENING' | 'READING'>('LISTENING')
+  
+  // Audio state for listening section
+  const [audioPlaying, setAudioPlaying] = useState(false)
+  const [audioEnded, setAudioEnded] = useState(false)
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0)
+  const [audioDuration, setAudioDuration] = useState(0)
   const { data: session } = useSession()
 
   useEffect(() => {
@@ -77,16 +89,30 @@ export function QuizTest({ collectionId }: QuizTestProps) {
         if (result.success && result.data) {
           const soals = result.data.soals.map(soal => ({
             ...soal,
-            attachmentType: soal.attachmentType?.toUpperCase() === "IMAGE" || soal.attachmentType?.toUpperCase() === "AUDIO" 
+            attachmentType: soal.attachmentType?.toUpperCase() === "IMAGE" || soal.attachmentType?.toUpperCase() === "AUDIO"
               ? soal.attachmentType.toUpperCase()
               : null
-          }))
+          })) as Question[]
+
+          const listening = soals.filter(q => q.type === 'LISTENING');
+          const reading = soals.filter(q => q.type === 'READING');
+
+          setListeningQuestions(listening);
+          setReadingQuestions(reading);
           setQuestions(soals)
+          
+          if (listening.length > 0) {
+            setCurrentSection('LISTENING');
+          } else {
+            setCurrentSection('READING');
+          }
+
           setKoleksi({
             id: result.data.id,
             nama: result.data.nama,
             deskripsi: result.data.deskripsi,
-            soals: result.data.soals
+            soals: result.data.soals,
+            audioUrl: result.data.audioUrl
           })
         }
         setIsLoading(false)
@@ -99,12 +125,15 @@ export function QuizTest({ collectionId }: QuizTestProps) {
     loadQuestions()
   }, [collectionId])
 
+  const currentSectionQuestions = currentSection === 'LISTENING' ? listeningQuestions : readingQuestions
+  const canProceedToReading = currentSection === 'LISTENING' && (!koleksi?.audioUrl || audioEnded)
+
   const handleAnswerClick = (selectedIndex: number) => {
     setSelectedOption(selectedIndex)
-    const isCorrect = questions[currentQuestion].opsis[selectedIndex].isCorrect
+    const isCorrect = currentSectionQuestions[currentQuestion].opsis[selectedIndex].isCorrect
     
     setUserAnswers([...userAnswers, {
-      questionId: questions[currentQuestion].id,
+      questionId: currentSectionQuestions[currentQuestion].id,
       selectedOption: selectedIndex,
       isCorrect
     }])
@@ -115,11 +144,17 @@ export function QuizTest({ collectionId }: QuizTestProps) {
       }
       
       const nextQuestion = currentQuestion + 1
-      if (nextQuestion < questions.length) {
+      if (nextQuestion < currentSectionQuestions.length) {
         setCurrentQuestion(nextQuestion)
         setSelectedOption(null)
       } else {
-        setShowResult(true)
+        if (currentSection === 'LISTENING' && readingQuestions.length > 0) {
+          setCurrentSection('READING')
+          setCurrentQuestion(0)
+          setSelectedOption(null)
+        } else {
+          setShowResult(true)
+        }
       }
     }, 750)
   }
@@ -147,6 +182,34 @@ export function QuizTest({ collectionId }: QuizTestProps) {
     setUserAnswers([])
     setReviewMode(false)
     setReviewIndex(0)
+    setCurrentSection(listeningQuestions.length > 0 ? 'LISTENING' : 'READING')
+    setAudioPlaying(false)
+    setAudioEnded(false)
+    setAudioCurrentTime(0)
+    setAudioDuration(0)
+  }
+
+  // Audio event handlers
+  const handleAudioPlay = () => setAudioPlaying(true)
+  const handleAudioPause = () => setAudioPlaying(false)
+  const handleAudioEnded = () => {
+    setAudioPlaying(false)
+    setAudioEnded(true)
+  }
+  const handleAudioTimeUpdate = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.target as HTMLAudioElement
+    setAudioCurrentTime(audio.currentTime)
+  }
+  const handleAudioLoadedMetadata = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.target as HTMLAudioElement
+    setAudioDuration(audio.duration)
+  }
+
+  // Format audio time
+  const formatAudioTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   if (isLoading) {
@@ -176,6 +239,59 @@ export function QuizTest({ collectionId }: QuizTestProps) {
           </div>
         </div>
       )}
+      <div className="text-center">
+        <h2 className="text-xl font-bold mb-2">
+          {currentSection === 'LISTENING' ? '듣기 (Listening)' : '읽기 (Reading)'}
+        </h2>
+        {currentSection === 'LISTENING' && koleksi?.audioUrl && (
+          <p className="text-sm text-muted-foreground">
+            {audioEnded ? 'Audio telah selesai. Anda dapat melanjutkan ke bagian Reading.' : 'Dengarkan audio dengan saksama'}
+          </p>
+        )}
+      </div>
+
+      {/* Audio player for listening section */}
+      {currentSection === 'LISTENING' && koleksi?.audioUrl && (
+        <div className="bg-muted p-4 rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Audio Listening</span>
+              {audioPlaying && (
+                <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full animate-pulse">
+                  Playing
+                </span>
+              )}
+              {audioEnded && (
+                <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
+                  Completed
+                </span>
+              )}
+            </div>
+            <span className="text-sm text-muted-foreground">
+              {formatAudioTime(audioCurrentTime)} / {formatAudioTime(audioDuration)}
+            </span>
+          </div>
+          <audio
+            src={koleksi.audioUrl}
+            controls
+            className="w-full"
+            onPlay={handleAudioPlay}
+            onPause={handleAudioPause}
+            onEnded={handleAudioEnded}
+            onTimeUpdate={handleAudioTimeUpdate}
+            onLoadedMetadata={handleAudioLoadedMetadata}
+          />
+          {!audioEnded && (
+            <p className="text-xs text-muted-foreground">
+              {audioPlaying
+                ? "Audio sedang diputar. Dengarkan sampai selesai untuk melanjutkan."
+                : "Audio harus diputar sampai selesai sebelum dapat melanjutkan."
+              }
+            </p>
+          )}
+        </div>
+      )}
+
       {showResult ? (
         <div className="space-y-6">
           <div className="text-center">
@@ -333,12 +449,12 @@ export function QuizTest({ collectionId }: QuizTestProps) {
           <div className="w-full bg-muted rounded-full h-1.5 mb-6">
             <div
               className="bg-primary h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+              style={{ width: `${((userAnswers.length) / questions.length) * 100}%` }}
             />
           </div>
           <div className="flex justify-between items-center mb-6">
             <span className="text-sm font-medium text-muted-foreground">
-              Soal {currentQuestion + 1}/{questions.length}
+              Soal {userAnswers.length + 1}/{questions.length}
             </span>
             <span className="text-sm font-medium text-muted-foreground">
               Skor: {score}
@@ -347,15 +463,15 @@ export function QuizTest({ collectionId }: QuizTestProps) {
           
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-4 text-foreground whitespace-pre-line">
-              {currentQuestion + 1}. {questions[currentQuestion].pertanyaan}
+              {currentQuestion + 1}. {currentSectionQuestions[currentQuestion].pertanyaan}
             </h2>
 
-            {questions[currentQuestion].attachmentUrl && (
+            {currentSectionQuestions[currentQuestion].attachmentUrl && (
               <div className="mb-4">
-                {questions[currentQuestion].attachmentType === "IMAGE" || questions[currentQuestion].attachmentType?.toUpperCase() === "IMAGE" ? (
+                {currentSectionQuestions[currentQuestion].attachmentType === "IMAGE" || currentSectionQuestions[currentQuestion].attachmentType?.toUpperCase() === "IMAGE" ? (
                       <div className="relative h-[300px] w-full rounded-lg overflow-hidden">
                         <Image
-                          src={questions[currentQuestion].attachmentUrl}
+                          src={currentSectionQuestions[currentQuestion].attachmentUrl!}
                           alt="Question attachment"
                           fill
                           className="object-contain border-2 border-muted rounded-lg"
@@ -363,9 +479,9 @@ export function QuizTest({ collectionId }: QuizTestProps) {
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       </div>
-                ) : questions[currentQuestion].attachmentType === "AUDIO" || questions[currentQuestion].attachmentType?.toUpperCase() === "AUDIO" ? (
+                ) : currentSectionQuestions[currentQuestion].attachmentType === "AUDIO" || currentSectionQuestions[currentQuestion].attachmentType?.toUpperCase() === "AUDIO" ? (
                   <audio
-                    src={questions[currentQuestion].attachmentUrl}
+                    src={currentSectionQuestions[currentQuestion].attachmentUrl!}
                     controls
                     className="w-full"
                   />
@@ -374,7 +490,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
             )}
             
             <div className="space-y-3">
-              {questions[currentQuestion].opsis.map((option: Opsi, index: number) => (
+              {currentSectionQuestions[currentQuestion].opsis.map((option: Opsi, index: number) => (
                 <button
                   key={index}
                   className={`w-full p-3 text-left rounded-md transition-colors flex items-center gap-3 ${
@@ -385,7 +501,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
                       : "bg-muted hover:bg-accent text-foreground"
                   }`}
                   onClick={() => handleAnswerClick(index)}
-                  disabled={selectedOption !== null}
+                  disabled={selectedOption !== null || (currentSection === 'LISTENING' && !!koleksi?.audioUrl && !audioEnded)}
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${

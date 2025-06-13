@@ -219,6 +219,10 @@ export async function getKoleksiSoal(id: number) {
           }
         },
         soals: {
+          orderBy: [
+            { type: 'asc' },
+            { number: 'asc' }
+          ],
           include: {
             opsis: true,
             author: {

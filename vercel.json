@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "app/actions/upload-audio.ts": {
+      "maxDuration": 60
+    },
+    "app/api/**": {
+      "maxDuration": 60
+    }
+  },
+  "regions": ["sin1"],
+  "framework": "nextjs"
+}

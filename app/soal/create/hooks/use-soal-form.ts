@@ -8,6 +8,7 @@ import { createKoleksiSoal, getKoleksiSoal, updateKoleksiSoal, deleteKoleksiSoal
 import { getCourses, Course } from "@/app/actions/course-actions"
 import { uploadImage } from "@/app/actions/upload-image"
 import { uploadAudio } from "@/app/actions/upload-audio"
+import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
 
 interface Opsi {
   opsiText: string
@@ -33,6 +34,9 @@ export const useSoalForm = () => {
   
   const koleksiId = searchParams.get("id")
   const isEdit = Boolean(koleksiId)
+
+  // Cloudinary direct upload hook
+  const { uploadFile: uploadToCloudinary, isUploading: isCloudinaryUploading, progress: uploadProgress } = useCloudinaryUpload()
 
   // Form states
   const [nama, setNama] = useState("")
@@ -100,59 +104,98 @@ export const useSoalForm = () => {
     }
   }, [koleksiId, isEdit])
 
-  // Handle file upload
+  // Handle file upload with size detection
   const handleFileUpload = async (file: File): Promise<string> => {
     if (!file) return ''
 
-    setIsUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      
-      const url = currentAttachmentType === "AUDIO" 
-        ? await uploadAudio(formData)
-        : await uploadImage(formData)
+    const fileSizeMB = file.size / (1024 * 1024)
+    const isLargeFile = fileSizeMB > 4 // Use direct upload for files > 4MB
+
+    if (currentAttachmentType === "AUDIO" && isLargeFile) {
+      // Use direct Cloudinary upload for large audio files
+      try {
+        const result = await uploadToCloudinary(file)
+        setCurrentAttachmentUrl(result.url)
+        toast.success(`Audio berhasil diunggah (${Math.round(fileSizeMB)}MB)`)
+        return result.url
+      } catch (error) {
+        toast.error("Gagal mengunggah audio")
+        console.error(error)
+        return ''
+      }
+    } else {
+      // Use server action for smaller files
+      setIsUploading(true)
+      try {
+        const formData = new FormData()
+        formData.append("file", file)
         
-      setCurrentAttachmentUrl(url)
-      toast.success("File berhasil diunggah")
-      return url
-    } catch (error) {
-      toast.error("Gagal mengunggah file")
-      console.error(error)
-      return ''
-    } finally {
-      setIsUploading(false)
+        const url = currentAttachmentType === "AUDIO"
+          ? await uploadAudio(formData)
+          : await uploadImage(formData)
+          
+        setCurrentAttachmentUrl(url)
+        toast.success("File berhasil diunggah")
+        return url
+      } catch (error) {
+        toast.error("Gagal mengunggah file")
+        console.error(error)
+        return ''
+      } finally {
+        setIsUploading(false)
+      }
     }
   }
 
-  // Handle audio file upload
+  // Handle audio file upload with size detection
   const handleAudioFileUpload = async (file: File): Promise<string> => {
     if (!file) return ''
 
-    setIsUploadingAudio(true)
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      
-      const result = await uploadAudio(formData)
-      const url = typeof result === 'string' ? result : result.url
-      const duration = typeof result === 'object' ? result.duration : null
-      
-      setAudioUrl(url)
-      
-      if (duration) {
-        toast.success(`Audio berhasil diunggah (${duration} detik)`)
-      } else {
-        toast.success("Audio berhasil diunggah")
+    const fileSizeMB = file.size / (1024 * 1024)
+    const isLargeFile = fileSizeMB > 4 // Use direct upload for files > 4MB
+
+    if (isLargeFile) {
+      // Use direct Cloudinary upload for large files
+      try {
+        const result = await uploadToCloudinary(file)
+        setAudioUrl(result.url)
+        
+        const durationText = result.duration ? ` (${result.duration} detik)` : ''
+        toast.success(`Audio berhasil diunggah${durationText} - ${Math.round(fileSizeMB)}MB`)
+        
+        return result.url
+      } catch (error) {
+        toast.error("Gagal mengunggah audio")
+        console.error(error)
+        return ''
       }
-      
-      return url
-    } catch (error) {
-      toast.error("Gagal mengunggah audio")
-      console.error(error)
-      return ''
-    } finally {
-      setIsUploadingAudio(false)
+    } else {
+      // Use server action for smaller files
+      setIsUploadingAudio(true)
+      try {
+        const formData = new FormData()
+        formData.append("file", file)
+        
+        const result = await uploadAudio(formData)
+        const url = typeof result === 'string' ? result : result.url
+        const duration = typeof result === 'object' ? result.duration : null
+        
+        setAudioUrl(url)
+        
+        if (duration) {
+          toast.success(`Audio berhasil diunggah (${duration} detik)`)
+        } else {
+          toast.success("Audio berhasil diunggah")
+        }
+        
+        return url
+      } catch (error) {
+        toast.error("Gagal mengunggah audio")
+        console.error(error)
+        return ''
+      } finally {
+        setIsUploadingAudio(false)
+      }
     }
   }
 
@@ -414,8 +457,9 @@ export const useSoalForm = () => {
     newOpsiText,
     setNewOpsiText,
     isPending,
-    isUploading,
-    isUploadingAudio,
+    isUploading: isUploading || isCloudinaryUploading,
+    isUploadingAudio: isUploadingAudio || isCloudinaryUploading,
+    uploadProgress,
     isEdit,
     formAction,
     deleteAction,

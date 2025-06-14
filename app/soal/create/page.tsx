@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { UploadProgress } from "@/components/ui/upload-progress"
 import { AddSoalDialog } from "./components/add-soal-dialog"
 import { useSoalForm } from "./hooks/use-soal-form"
 
@@ -89,6 +90,7 @@ export default function CreateSoalPage() {
     setNewOpsiText,
     isUploading,
     isUploadingAudio,
+    uploadProgress,
     handleAddOpsi,
     handleRemoveOpsi,
     handleToggleCorrect,
@@ -197,7 +199,7 @@ export default function CreateSoalPage() {
                       {isUploadingAudio ? (
                         <span className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
-                          Upload...
+                          {uploadProgress > 0 ? `${uploadProgress}%` : 'Upload...'}
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
@@ -206,8 +208,16 @@ export default function CreateSoalPage() {
                         </span>
                       )}
                     </Button>
+                    
+                    {/* Upload Progress Indicator */}
+                    <UploadProgress
+                      progress={uploadProgress}
+                      isUploading={isUploadingAudio}
+                      fileName={isUploadingAudio ? "Audio File" : undefined}
+                    />
+                    
                     <p className="text-xs text-muted-foreground">
-                      Upload file audio (opsional)
+                      Upload file audio (opsional) - Support file besar (40MB+)
                     </p>
                   </div>
                 </div>

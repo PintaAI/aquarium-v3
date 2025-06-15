@@ -244,7 +244,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
         </h2>
         {currentSection === 'LISTENING' && koleksi?.audioUrl && (
           <p className="text-sm text-muted-foreground">
-            {audioEnded ? 'Audio telah selesai. Anda dapat melanjutkan ke bagian Reading.' : 'Dengarkan audio dengan saksama'}
+            {audioEnded ? 'Audio telah selesai. Anda dapat melanjutkan ke bagian Reading.' : 'Dengarkan audio dengan saksama dan jawab pertanyaan'}
           </p>
         )}
       </div>
@@ -283,8 +283,8 @@ export function QuizTest({ collectionId }: QuizTestProps) {
           {!audioEnded && (
             <p className="text-xs text-muted-foreground">
               {audioPlaying
-                ? "Audio sedang diputar. Dengarkan sampai selesai untuk melanjutkan."
-                : "Audio harus diputar sampai selesai sebelum dapat melanjutkan."
+                ? "Audio sedang diputar. Anda dapat menjawab pertanyaan sambil mendengarkan."
+                : "Putar audio untuk memulai listening test."
               }
             </p>
           )}
@@ -500,7 +500,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
                       : "bg-muted hover:bg-accent text-foreground"
                   }`}
                   onClick={() => handleAnswerClick(index)}
-                  disabled={selectedOption !== null || (currentSection === 'LISTENING' && !!koleksi?.audioUrl && !audioEnded)}
+                  disabled={selectedOption !== null}
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div className={`flex scale-75 items-center justify-center rounded-full border w-6 h-6 min-w-[24px] ${

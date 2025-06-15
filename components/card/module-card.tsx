@@ -147,8 +147,11 @@ export function ModuleCard({ module, index, isAuthor, provided, snapshot }: Modu
         tabIndex={isLocked ? -1 : 0}
       >
         {isLocked && (
-          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[2px] bg-background/60 z-10">
-            <Lock className="w-8 h-8 text-muted-foreground/80 animate-pulse" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-[2px] bg-background/60 z-10 p-4 text-center">
+            <Lock className="w-8 h-8 text-muted-foreground/80 animate-pulse mb-2" />
+            <p className="text-sm text-muted-foreground font-medium">
+              Silahkan gabung untuk melihat module
+            </p>
           </div>
         )}
         {isCompleted && (

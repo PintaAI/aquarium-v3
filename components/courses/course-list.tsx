@@ -33,23 +33,13 @@ export default function CourseList({ initialCourses, userRole, userId, error }: 
 
   const filteredAndSortedCourses = useMemo(() => {
     const filtered = courses.filter((course) => {
-      // Check access permissions: only author (GURU) and course members can see the course
-      const isAuthor = course.author.id === userId;
-      const isMember = course.members?.some(member => member.id === userId) || false;
-      const hasAccess = isAuthor || isMember;
-      
-      // If user doesn't have access, don't show the course
-      if (!hasAccess) {
-        return false;
-      }
-      
       const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesLevel = selectedLevel === 'all' || course.level.toLowerCase() === selectedLevel;
       return matchesSearch && matchesLevel;
     });
     return sortCourses(filtered, sortOrder);
-  }, [courses, searchTerm, selectedLevel, sortOrder, userId]);
+  }, [courses, searchTerm, selectedLevel, sortOrder]);
 
   const handleDeleteCourse = async (courseId: number) => {
     if (window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {

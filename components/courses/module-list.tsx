@@ -25,16 +25,20 @@ interface ModuleListProps {
   modules: Module[];
   courseId: number;
   courseAuthorId: string;
+  isUserJoined?: boolean;
 }
 
-export function ModuleList({ modules: initialModules, courseId, courseAuthorId }: ModuleListProps) {
+export function ModuleList({ modules: initialModules, courseId, courseAuthorId, isUserJoined = false }: ModuleListProps) {
   const { data: session } = useSession();
   const isAuthor = session?.user?.id === courseAuthorId;
   const { toast } = useToast();
   const [, startTransition] = useTransition();
 
-  // Sort modules by order initially
-  const sortedModules = [...initialModules].sort((a, b) => a.order - b.order);
+  // Sort modules by order initially and apply access control
+  const sortedModules = [...initialModules].sort((a, b) => a.order - b.order).map(module => ({
+    ...module,
+    isLocked: !isAuthor && !isUserJoined // Lock modules if user is not author and not joined
+  }));
   const [modules, setModules] = useOptimistic(sortedModules);
 
   const onDragEnd = async (result: DropResult) => {

@@ -44,10 +44,10 @@ export function CourseListCard({ course, isAuthor, onDelete }: CourseListCardPro
 
   return (
     <Link href={`/courses/${course.id}`}>
-      <Card className={`group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:-translate-y-1 ${course.isLocked ? 'opacity-60' : ''}`}>
+      <Card className={`group relative bg-card overflow-hidden rounded-lg border border-border transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:-translate-y-1 ${course.isLocked ? 'opacity-75' : ''}`}>
         {course.isLocked && (
-          <div className="absolute inset-0 z-20 bg-background/5 backdrop-blur-[1px] flex items-center justify-center">
-            <LockIcon className="h-16 w-16 text-muted-foreground opacity-80" />
+          <div className="absolute inset-0 z-20 bg-foreground/50 backdrop-blur-[1px] flex items-center justify-center">
+            <LockIcon className="h-16 w-16 text-foreground opacity-90" />
           </div>
         )}
         <div className="relative">

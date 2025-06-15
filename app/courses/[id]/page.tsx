@@ -73,10 +73,11 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
 
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <ModuleList 
-                modules={formattedModules} 
+              <ModuleList
+                modules={formattedModules}
                 courseId={courseId}
                 courseAuthorId={course.author.id}
+                isUserJoined={isJoined}
               />
             </div>
           </div>

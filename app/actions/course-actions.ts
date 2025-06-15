@@ -351,6 +351,11 @@ export async function getCourses(): Promise<Course[]> {
             name: true,
             image: true
           }
+        },
+        members: {
+          select: {
+            id: true
+          }
         }
       }
     })

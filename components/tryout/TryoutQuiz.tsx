@@ -39,7 +39,7 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
   
   // Quiz state management
   const [currentSection, setCurrentSection] = useState<'LISTENING' | 'READING'>(
-    listeningQuestions.length > 0 ? 'LISTENING' : 'READING'
+    readingQuestions.length > 0 ? 'READING' : 'LISTENING'
   )
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(-1))
@@ -140,9 +140,9 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
   const handleNext = () => {
     if (currentQuestion < currentSectionQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
-    } else if (currentSection === 'LISTENING' && readingQuestions.length > 0) {
-      // Move to reading section
-      setCurrentSection('READING')
+    } else if (currentSection === 'READING' && listeningQuestions.length > 0) {
+      // Move to listening section
+      setCurrentSection('LISTENING')
       setCurrentQuestion(0)
     }
   }
@@ -150,10 +150,10 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1)
-    } else if (currentSection === 'READING' && listeningQuestions.length > 0) {
-      // Move back to listening section
-      setCurrentSection('LISTENING')
-      setCurrentQuestion(listeningQuestions.length - 1)
+    } else if (currentSection === 'LISTENING' && readingQuestions.length > 0) {
+      // Move back to reading section
+      setCurrentSection('READING')
+      setCurrentQuestion(readingQuestions.length - 1)
     }
   }
 
@@ -175,10 +175,10 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
 
   // Get the actual question index in the full questions array
   const getCurrentQuestionIndex = () => {
-    if (currentSection === 'LISTENING') {
+    if (currentSection === 'READING') {
       return currentQuestion
     } else {
-      return listeningQuestions.length + currentQuestion
+      return readingQuestions.length + currentQuestion
     }
   }
 
@@ -347,7 +347,7 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
           <div className="flex justify-between items-center">
             <Button
               onClick={handlePrevious}
-              disabled={(currentQuestion === 0 && currentSection === 'LISTENING') || isSubmitting}
+              disabled={(currentQuestion === 0 && currentSection === 'READING') || isSubmitting}
               variant="outline"
             >
               Sebelumnya
@@ -357,17 +357,17 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
               disabled={
                 isSubmitting ||
                 (currentQuestion === currentSectionQuestions.length - 1 &&
-                 currentSection === 'READING') ||
+                 currentSection === 'LISTENING') ||
                 (currentSection === 'LISTENING' &&
                  currentQuestion === currentSectionQuestions.length - 1 &&
                  !canProceedToReading)
               }
               variant="outline"
             >
-              {currentSection === 'LISTENING' &&
+              {currentSection === 'READING' &&
                currentQuestion === currentSectionQuestions.length - 1 &&
-               readingQuestions.length > 0 ?
-               'Lanjut ke Reading' : 'Selanjutnya'}
+               listeningQuestions.length > 0 ?
+               'Lanjut ke Listening' : 'Selanjutnya'}
             </Button>
           </div>
           

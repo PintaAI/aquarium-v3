@@ -101,10 +101,10 @@ export function QuizTest({ collectionId }: QuizTestProps) {
           setReadingQuestions(reading);
           setQuestions(soals)
           
-          if (listening.length > 0) {
-            setCurrentSection('LISTENING');
-          } else {
+          if (reading.length > 0) {
             setCurrentSection('READING');
+          } else {
+            setCurrentSection('LISTENING');
           }
 
           setKoleksi({
@@ -147,8 +147,8 @@ export function QuizTest({ collectionId }: QuizTestProps) {
         setCurrentQuestion(nextQuestion)
         setSelectedOption(null)
       } else {
-        if (currentSection === 'LISTENING' && readingQuestions.length > 0) {
-          setCurrentSection('READING')
+        if (currentSection === 'READING' && listeningQuestions.length > 0) {
+          setCurrentSection('LISTENING')
           setCurrentQuestion(0)
           setSelectedOption(null)
         } else {
@@ -181,7 +181,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
     setUserAnswers([])
     setReviewMode(false)
     setReviewIndex(0)
-    setCurrentSection(listeningQuestions.length > 0 ? 'LISTENING' : 'READING')
+    setCurrentSection(readingQuestions.length > 0 ? 'READING' : 'LISTENING')
     setAudioPlaying(false)
     setAudioEnded(false)
     setAudioCurrentTime(0)

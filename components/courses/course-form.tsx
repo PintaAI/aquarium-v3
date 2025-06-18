@@ -109,8 +109,10 @@ export function CourseForm({ initialData }: CourseFormProps) {
     const hasValidContent = jsonDescription && 
       jsonDescription.content && 
       jsonDescription.content.length > 0 && 
-      jsonDescription.content.some((node: any) => 
-        node.content && node.content.length > 0
+      jsonDescription.content.some((node: unknown) => 
+        typeof node === 'object' && node !== null && 'content' in node && 
+        Array.isArray((node as { content: unknown[] }).content) && 
+        (node as { content: unknown[] }).content.length > 0
       );
 
     if (!title || !description || !level || !hasValidContent || !htmlDescription) {

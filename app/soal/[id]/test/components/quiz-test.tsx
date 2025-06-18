@@ -462,7 +462,7 @@ export function QuizTest({ collectionId }: QuizTestProps) {
           
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-4 text-foreground whitespace-pre-line">
-              {currentQuestion + 1}. {currentSectionQuestions[currentQuestion].pertanyaan}
+              {userAnswers.length + 1}. {currentSectionQuestions[currentQuestion].pertanyaan}
             </h2>
 
             {currentSectionQuestions[currentQuestion].attachmentUrl && (

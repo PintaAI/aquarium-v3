@@ -281,7 +281,7 @@ export function TryoutQuiz({ tryoutId, userId, questions, koleksiSoal, duration 
       {/* Question content */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">
-          {currentSectionQuestions[currentQuestion].pertanyaan}
+          {getCurrentQuestionIndex() + 1}. {currentSectionQuestions[currentQuestion].pertanyaan}
         </h2>
 
         {/* Attachment handling */}

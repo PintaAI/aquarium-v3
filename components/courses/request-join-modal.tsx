@@ -25,6 +25,8 @@ interface RequestJoinModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  price?: number | null
+  paidMessage?: string | null
 }
 
 export function RequestJoinModal({
@@ -32,7 +34,9 @@ export function RequestJoinModal({
   courseTitle,
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
+  price,
+  paidMessage
 }: RequestJoinModalProps) {
   const [message, setMessage] = useState('')
   const [contact, setContact] = useState('')
@@ -65,6 +69,12 @@ export function RequestJoinModal({
   }
 
   const handleSubmit = async () => {
+    // Validate required fields for paid courses
+    if (price && price > 0 && !attachmentUrl) {
+      toast.error('Bukti pembayaran wajib untuk kelas berbayar')
+      return
+    }
+
     try {
       setIsSubmitting(true)
       
@@ -107,8 +117,19 @@ export function RequestJoinModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Minta Bergabung dengan Kursus</DialogTitle>
-          <DialogDescription>
-            Kirim permintaan untuk bergabung dengan &quot;{courseTitle}&quot;. Penulis kursus akan meninjau permintaan Anda.
+          <DialogDescription asChild>
+            {paidMessage ? (
+              <div className="space-y-2">
+                <div>{paidMessage}</div>
+                {price && (
+                  <div className="font-semibold text-primary">
+                    Biaya: Rp {price.toLocaleString('id-ID')}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>Kirim permintaan untuk bergabung dengan &quot;{courseTitle}&quot;. Penulis kursus akan meninjau permintaan Anda.</div>
+            )}
           </DialogDescription>
         </DialogHeader>
         
@@ -153,7 +174,7 @@ export function RequestJoinModal({
           {/* Attachment Field */}
           <div className="space-y-2">
             <Label htmlFor="attachment">
-              Lampiran (Opsional)
+              Bukti Pembayaran {price && price > 0 ? '(Wajib)' : '(Opsional)'}
             </Label>
             
             {!attachmentUrl ? (
@@ -200,7 +221,10 @@ export function RequestJoinModal({
             )}
             
             <div className="text-xs text-muted-foreground">
-              Unggah gambar pendukung seperti sertifikat, CV, atau dokumen lainnya
+              {price && price > 0 
+                ? 'Bukti pembayaran wajib untuk kelas berbayar ini'
+                : 'Unggah bukti pembayaran atau dokumen pendukung lainnya'
+              }
             </div>
           </div>
         </div>

@@ -38,7 +38,9 @@ export interface Course {
   }
   members?: Array<{
     id: string
-  }>
+  }>,
+  price?: number | null,
+  paidCourseMessage?: string | null
 }
 
 export async function getJoinedCourses() {
@@ -95,7 +97,9 @@ export async function getJoinedCourses() {
             name: true,
             image: true
           }
-        }
+        },
+        price: true,
+        paidCourseMessage: true
       },
       orderBy: {
         updatedAt: 'desc'
@@ -228,7 +232,9 @@ export async function getCourse(courseId: number) {
             image: true
           }
         },
-        members: true
+        members: true,
+        price: true,
+        paidCourseMessage: true
       }
     })
 
@@ -356,7 +362,9 @@ export async function getCourses(): Promise<Course[]> {
           select: {
             id: true
           }
-        }
+        },
+        price: true,
+        paidCourseMessage: true
       }
     })
     return courses as Course[]

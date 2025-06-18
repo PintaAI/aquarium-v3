@@ -31,7 +31,9 @@ interface CourseFormProps {
     thumbnail: string | null;
     jsonDescription: string;
     htmlDescription: string;
-    isLocked: boolean;
+  isLocked: boolean;
+  price?: number | null;
+  paidCourseMessage?: string | null;
   }
 }
 
@@ -47,6 +49,8 @@ interface CourseData {
   thumbnail: string | null;
   isCompleted: boolean;
   isLocked: boolean;
+  price?: number | null;
+  paidCourseMessage?: string | null;
 }
 
 export function CourseForm({ initialData }: CourseFormProps) {
@@ -65,7 +69,9 @@ export function CourseForm({ initialData }: CourseFormProps) {
   )
   const [htmlDescription, setHtmlDescription] = useState(initialData?.htmlDescription || '')
   const [thumbnail, setThumbnail] = useState<string | null>(initialData?.thumbnail || null)
-  const [isLocked, setIsLocked] = useState(initialData?.isLocked ?? true) // Default to locked (draft)
+  const [isLocked, setIsLocked] = useState(initialData?.isLocked ?? false) // Default to free course
+  const [price, setPrice] = useState<number | null>(initialData?.price ?? null)
+  const [paidCourseMessage, setPaidCourseMessage] = useState<string | null>(initialData?.paidCourseMessage ?? null)
   const [pending, setPending] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -99,8 +105,16 @@ export function CourseForm({ initialData }: CourseFormProps) {
     console.log('Event End Date:', eventEndDate);
     console.log('Type:', type);
     
-    if (!title || !description || !level || !jsonDescription || !htmlDescription) {
-      toast.error('Please fill in all required fields')
+    // Check if jsonDescription has actual content
+    const hasValidContent = jsonDescription && 
+      jsonDescription.content && 
+      jsonDescription.content.length > 0 && 
+      jsonDescription.content.some((node: any) => 
+        node.content && node.content.length > 0
+      );
+
+    if (!title || !description || !level || !hasValidContent || !htmlDescription) {
+      toast.error('Please fill in all required fields including the detailed description')
       return
     }
 
@@ -143,6 +157,8 @@ export function CourseForm({ initialData }: CourseFormProps) {
         thumbnail,
         isCompleted: false,
         isLocked,
+        price,
+        paidCourseMessage
       }
 
       let result
@@ -298,7 +314,44 @@ export function CourseForm({ initialData }: CourseFormProps) {
               )}
             </div>
 
-            {/* Draft/Public Toggle */}
+            {/* Pricing Section - Only show for paid courses */}
+            {isLocked && (
+              <div className="flex flex-col gap-4 p-4 bg-muted/50 rounded-lg">
+                <h3 className="text-lg font-medium">Pengaturan Kelas Berbayar</h3>
+                <div className="space-y-2">
+                  <label htmlFor="course-price" className="text-sm font-medium">Harga Kelas (IDR)</label>
+                  <Input
+                    id="course-price"
+                    type="number"
+                    placeholder="Masukkan harga (contoh: 50000)"
+                    value={price === null ? '' : price}
+                    onChange={(e) => setPrice(e.target.value === '' ? null : parseInt(e.target.value, 10))}
+                    min="0"
+                    className="w-full"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Tentukan harga untuk kelas berbayar ini.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="paid-course-message" className="text-sm font-medium">Pesan untuk Permintaan Bergabung</label>
+                  <Textarea
+                    id="paid-course-message"
+                    placeholder="Masukkan pesan yang akan ditampilkan saat siswa meminta bergabung (contoh: instruksi pembayaran)."
+                    value={paidCourseMessage || ''}
+                    onChange={(e) => setPaidCourseMessage(e.target.value)}
+                    className="min-h-[100px]"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Pesan ini akan ditampilkan dalam modal permintaan bergabung untuk kelas berbayar.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Course Type Toggle */}
             <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-3">
                 {isLocked ? (
@@ -308,24 +361,30 @@ export function CourseForm({ initialData }: CourseFormProps) {
                 )}
                 <div className="space-y-1">
                   <div className="font-medium">
-                    {isLocked ? 'Mode Draft' : 'Mode Publik'}
+                    {isLocked ? 'Kelas Berbayar' : 'Kelas Gratis'}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {isLocked
-                      ? 'Kursus disimpan sebagai draft dan tidak terlihat oleh siswa'
-                      : 'Kursus sudah publik dan dapat dilihat oleh siswa'
+                      ? 'Kelas ini membutuhkan pembayaran untuk bergabung'
+                      : 'Kelas ini dapat diakses secara gratis'
                     }
                   </div>
                 </div>
               </div>
               <Switch
                 checked={!isLocked}
-                onCheckedChange={(checked) => setIsLocked(!checked)}
+                onCheckedChange={(checked) => {
+                  setIsLocked(!checked);
+                  if (checked) { // If switching to free course
+                    setPrice(null);
+                    setPaidCourseMessage(null);
+                  }
+                }}
               />
             </div>
 
             <Button type="submit" disabled={pending} className="w-full">
-              {pending ? 'Menyimpan...' : initialData ? 'Perbarui Kursus' : (isLocked ? 'Simpan sebagai Draft' : 'Buat Kursus')}
+              {pending ? 'Menyimpan...' : initialData ? 'Perbarui Kursus' : (isLocked ? 'Buat Kelas Berbayar' : 'Buat Kelas Gratis')}
             </Button>
           </form>
         </CardContent>

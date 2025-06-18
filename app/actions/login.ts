@@ -10,13 +10,13 @@ import { DEFAULT_REDIRECT_URL } from "@/routes";
 /**
  * Function to perform login using email and password.
  * 
- * @param values - Object containing email and password.
+ * @param values - Object containing email, password, and optional callbackUrl.
  * @returns If login is successful, returns an object with "success", "redirectTo", and "shouldRefresh" properties.
  *          If there's a validation error, returns an object with an "error" property.
  *          If there's an error during login, returns an object with an "error" property.
  * @throws Error if there's an error other than validation or login errors.
  */
-export const login = async (values: z.infer<typeof LoginSchema>) => {
+export const login = async (values: z.infer<typeof LoginSchema> & { callbackUrl?: string }) => {
     const validatedFields = LoginSchema.safeParse(values);
 
     if (!validatedFields.success) {
@@ -25,6 +25,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     }
 
     const { email, password } = validatedFields.data;
+    const { callbackUrl } = values;
 
     try {
         const result = await signIn("credentials", {
@@ -52,7 +53,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 
         return { 
             success: "Login successful", 
-            redirectTo: DEFAULT_REDIRECT_URL,
+            redirectTo: callbackUrl || DEFAULT_REDIRECT_URL,
             shouldRefresh: true // Add this flag to indicate that the page should refresh
         };
     } catch (error) {

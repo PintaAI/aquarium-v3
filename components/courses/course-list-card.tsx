@@ -80,7 +80,7 @@ export function CourseListCard({ course, isAuthor, onDelete }: CourseListCardPro
                 priority
               />
             {isAuthor && (
-              <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <Button
                   variant="destructive"
                   size="sm"

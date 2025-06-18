@@ -64,6 +64,9 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
               level={course.level}
               moduleCount={course.modules.length}
               isJoined={isJoined}
+              isLocked={course.isLocked}
+              price={course.price}
+              paidCourseMessage={course.paidCourseMessage}
             />
             
             <div className="mt-6">

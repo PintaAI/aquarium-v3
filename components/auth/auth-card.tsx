@@ -1,7 +1,7 @@
 "use client"
 import { useState, useRef } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -43,9 +43,13 @@ const AuthCard = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get callback URL from search parameters
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const handleGoogleAuth = () => {
-    signIn('google', { callbackUrl: '/', state: { role } });
+    signIn('google', { callbackUrl, state: { role } });
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -66,14 +70,14 @@ const AuthCard = () => {
 
     try {
       if (isLogin) {
-        const result = await login({ email, password });
+        const result = await login({ email, password, callbackUrl });
 
         if ('error' in result) {
           setError(result.error || 'An unexpected error occurred during login');
         } else if ('success' in result) {
           setSuccess(result.success);
           if (result.shouldRefresh) {
-            window.location.href = result.redirectTo || '/';
+            window.location.href = result.redirectTo || callbackUrl;
           } else if (result.redirectTo) {
             router.push(result.redirectTo);
           }
@@ -93,13 +97,13 @@ const AuthCard = () => {
         } else {
           setSuccess('Registration successful! Logging you in...');
           // Automatically log in with the registered credentials
-          const result = await login({ email, password });
+          const result = await login({ email, password, callbackUrl });
           
           if ('error' in result) {
             setError(result.error || 'Failed to login after registration');
           } else if ('success' in result) {
             if (result.shouldRefresh) {
-              window.location.href = result.redirectTo || '/';
+              window.location.href = result.redirectTo || callbackUrl;
             } else if (result.redirectTo) {
               router.push(result.redirectTo);
             }

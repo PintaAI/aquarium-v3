@@ -13,6 +13,8 @@ export const addCourseSchema = z.object({
   thumbnail: z.string().nullable().optional(),
   isCompleted: z.boolean().default(false),
   isLocked: z.boolean().default(false),
+  price: z.number().int().min(0, "Price must be a positive number or zero").optional().nullable(),
+  paidCourseMessage: z.string().optional().nullable(),
 }).refine((data) => {
   // If course type is EVENT, both start and end dates are required
   if (data.type === "EVENT") {
@@ -45,6 +47,8 @@ export const updateCourseSchema = z.object({
   thumbnail: z.string().nullable(),
   isCompleted: z.boolean().default(false),
   isLocked: z.boolean().default(false),
+  price: z.number().int().min(0, "Price must be a positive number or zero").optional().nullable(),
+  paidCourseMessage: z.string().optional().nullable(),
 }).refine((data) => {
   // If course type is EVENT, both start and end dates are required
   if (data.type === "EVENT") {

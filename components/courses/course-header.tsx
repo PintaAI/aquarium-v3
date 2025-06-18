@@ -4,8 +4,9 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { User, BarChart, Clock, X, Calendar, Timer } from "lucide-react";
-import { joinCourse, unjoinCourse, getFirstModule } from "@/app/actions/module-actions";
+import { unjoinCourse, getFirstModule, joinCourse } from "@/app/actions/module-actions";
 import { getUserJoinRequestStatus, cancelJoinRequest } from "@/app/actions/join-request-actions";
 import { getEventStatus, getEventStatusText, getTimeRemaining, formatEventDate, shouldCourseBeLocked, CourseWithEventInfo } from "@/lib/course-utils";
 import { CourseType } from "@prisma/client";
@@ -13,6 +14,16 @@ import { RequestJoinModal } from "./request-join-modal";
 import { RequestStatusBadge } from "./request-status-badge";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
+import { ShareCourseButton } from "./share-course-button";
+import confetti from 'canvas-confetti';
+
+const triggerConfetti = () => {
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 }
+  });
+};
 
 interface CourseHeaderProps {
   id: number;
@@ -29,6 +40,9 @@ interface CourseHeaderProps {
   level: string;
   moduleCount?: number;
   isJoined?: boolean;
+  isLocked: boolean;
+  price?: number | null;
+  paidCourseMessage?: string | null;
 }
 
 export function CourseHeader({ 
@@ -41,9 +55,13 @@ export function CourseHeader({
   author, 
   level,
   moduleCount = 0,
-  isJoined = false
+  isJoined = false,
+  isLocked = false,
+  price,
+  paidCourseMessage
 }: CourseHeaderProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const isAuthor = session?.user?.id === author.id;
 
   const courseForUtils: CourseWithEventInfo = {
@@ -58,7 +76,6 @@ export function CourseHeader({
   const isEffectivelyLocked = shouldCourseBeLocked(courseForUtils);
 
 
-  const [_joining, setJoining] = useState(false);
   const [unjoining, setUnjoining] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -96,12 +113,51 @@ export function CourseHeader({
     }
   }, [session?.user, isAuthor, isJoined, fetchJoinRequestStatus]);
 
+  const redirectToLogin = () => {
+    const currentUrl = window.location.href;
+    router.push(`/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
+  };
+
   const handleRequestJoin = () => {
+    if (!session?.user) {
+      redirectToLogin();
+      return;
+    }
     setIsRequestModalOpen(true);
   };
 
   const handleRequestSuccess = () => {
     fetchJoinRequestStatus();
+  };
+
+  const handleDirectJoin = async () => {
+    if (!session?.user) {
+      redirectToLogin();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const result = await joinCourse(id);
+      
+      if (!result.success) {
+        if (result.error?.includes('Already joined')) {
+          toast.success("Anda sudah bergabung dengan kursus ini");
+          await navigateToFirstModule();
+          return;
+        }
+        throw new Error(result.error);
+      }
+
+      toast.success("Berhasil bergabung dengan kursus!");
+      triggerConfetti();
+      await navigateToFirstModule();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Gagal bergabung dengan kursus";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancelRequest = async () => {
@@ -143,35 +199,6 @@ export function CourseHeader({
     }
   };
 
-  const _handleJoinCourse = async () => {
-    try {
-      setJoining(true);
-      const result = await joinCourse(id);
-      
-      if (!result.success) {
-        if (result.error?.includes('Already joined')) {
-          toast.success("Anda sudah bergabung dengan kursus ini");
-          // Jika sudah bergabung, langsung navigasi ke modul pertama
-          await navigateToFirstModule();
-          return;
-        }
-        throw new Error(result.error);
-      }
-
-      toast.success("Berhasil bergabung dengan kursus!");
-      // Setelah berhasil bergabung, langsung navigasi ke modul pertama
-      await navigateToFirstModule();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Gagal bergabung dengan kursus";
-      if (errorMessage.includes('Already joined')) {
-        toast.error("Anda sudah bergabung dengan kursus ini");
-      } else {
-        toast.error(errorMessage);
-      }
-    } finally {
-      setJoining(false);
-    }
-  };
 
   const handleUnjoinCourse = async () => {
     try {
@@ -201,6 +228,8 @@ export function CourseHeader({
         isOpen={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
         onSuccess={handleRequestSuccess}
+        paidMessage={paidCourseMessage}
+        price={price}
       />
       
       <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border-0 border-b sm:border sm:border-border sm:rounded-xl">
@@ -219,18 +248,30 @@ export function CourseHeader({
       <div className="p-2 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1.5 sm:gap-4 mb-2 sm:mb-4">
           <h1 className="text-lg sm:text-3xl font-bold text-primary leading-tight">{title}</h1>
-          {isAuthor && (
-            <Link href={`/courses/${id}/edit-course`} className="mt-1 sm:mt-0">
-              <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">
-                Edit Course
-              </Button>
-            </Link>
-          )}
+          <div className="flex items-center gap-2">
+            {isAuthor && (
+              <Link href={`/courses/${id}/edit-course`} className="mt-1 sm:mt-0">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">
+                  Edit Course
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap sm:flex-row sm:justify-between text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-6 gap-2 sm:gap-4">
           <div className="flex items-center">
-            <User className="mr-1.5 sm:mr-2" size={14} />
+            {author.image ? (
+              <Image
+                src={author.image}
+                alt={author.name || "Author"}
+                width={20}
+                height={20}
+                className="rounded-full mr-1.5 sm:mr-2"
+              />
+            ) : (
+              <User className="mr-1.5 sm:mr-2" size={14} />
+            )}
             <span className="truncate">{author.name}</span>
           </div>
           <div className="flex items-center">
@@ -307,27 +348,24 @@ export function CourseHeader({
         )}
 
         <div className="flex items-center gap-2">
-          {author.image && (
-            <Image
-              src={author.image}
-              alt={author.name || "Author"}
-              width={28}
-              height={28}
-              className="rounded-full hidden sm:block"
-            />
-          )}
-          
           {/* Request join button and status - for users who haven't joined */}
           {!isAuthor && !isJoined && moduleCount > 0 && (
             <>
               {!joinRequest && (
-                <Button 
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
-                  onClick={handleRequestJoin}
-                  disabled={loading || isEffectivelyLocked && eventStatus !== 'upcoming'} // Allow request for upcoming, but not expired/locked
-                >
-                  {isEffectivelyLocked && eventStatus === 'expired' ? 'Event Telah Berakhir' : 'Minta Bergabung'}
-                </Button>
+                <div className="flex gap-2 w-full">
+                  <Button 
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
+                    onClick={isLocked ? handleRequestJoin : handleDirectJoin}
+                    disabled={loading || isEffectivelyLocked && eventStatus !== 'upcoming'} // Allow request for upcoming, but not expired/locked
+                  >
+                    {isEffectivelyLocked && eventStatus === 'expired' 
+                      ? 'Event Telah Berakhir' 
+                      : isLocked 
+                        ? 'Minta Bergabung' 
+                        : 'Bergabung dengan Kursus'}
+                  </Button>
+                  <ShareCourseButton onShare={triggerConfetti} />
+                </div>
               )}
               
               {joinRequest && !isEffectivelyLocked && (
@@ -371,13 +409,16 @@ export function CourseHeader({
 
           {/* Start learning button - for author */}
           {isAuthor && moduleCount > 0 && (
-            <Button 
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
-              onClick={navigateToFirstModule}
-              disabled={loading || isEffectivelyLocked}
-            >
-              {isEffectivelyLocked ? getEventStatusText(eventStatus) : (loading ? "Memuat..." : "Mulai Belajar")}
-            </Button>
+            <div className="flex gap-2 w-full">
+              <Button 
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm h-8 sm:h-9"
+                onClick={navigateToFirstModule}
+                disabled={loading || isEffectivelyLocked}
+              >
+                {isEffectivelyLocked ? getEventStatusText(eventStatus) : (loading ? "Memuat..." : "Mulai Belajar")}
+              </Button>
+              <ShareCourseButton onShare={triggerConfetti} />
+            </div>
           )}
 
           {/* Buttons for joined users (not author) */}
@@ -398,14 +439,18 @@ export function CourseHeader({
               >
                 {unjoining ? "Keluar..." : "Keluar Kursus"}
               </Button>
+              <ShareCourseButton onShare={triggerConfetti} />
             </>
           )}
 
           {/* No modules available */}
           {moduleCount === 0 && (
-            <Button className="w-full text-xs sm:text-sm h-8 sm:h-9" disabled>
-              Belum Ada Modul
-            </Button>
+            <div className="flex gap-2 w-full">
+              <Button className="flex-1 text-xs sm:text-sm h-8 sm:h-9" disabled>
+                Belum Ada Modul
+              </Button>
+              <ShareCourseButton onShare={triggerConfetti} />
+            </div>
           )}
         </div>
       </div>

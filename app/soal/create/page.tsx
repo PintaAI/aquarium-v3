@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
-import { Book, FileText, ListPlus, Trash2, X, GraduationCap, Volume2, Upload,ChevronUp, ChevronDown, ChevronRight, ChevronLeft, Eye, EyeOff,} from "lucide-react"
+import { Book, FileText, ListPlus, Trash2, X, GraduationCap, Volume2, Upload, ChevronRight, ChevronLeft, Eye, EyeOff, GripVertical} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CopySoalDialog } from "../[id]/components/copy-soal-dialog"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UploadProgress } from "@/components/ui/upload-progress"
 import { AddSoalDialog } from "./components/add-soal-dialog"
 import { useSoalForm } from "./hooks/use-soal-form"
+import { DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided, DraggableStateSnapshot } from "@hello-pangea/dnd"
 
 const difficultyColors = {
   BEGINNER: "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20",
@@ -99,7 +100,7 @@ export default function CreateSoalPage() {
     handleAudioFileUpload,
     handleEditSoal,
     handleEditSoalWithValues,
-    handleMoveSoal
+    handleDragEnd
   } = useSoalForm()
 
   return (
@@ -386,200 +387,209 @@ export default function CreateSoalPage() {
             </div>
 
             <ScrollArea className="h-[calc(100vh-12rem)] w-full rounded-md">
-              <div className="space-y-3">
-                {soals.map((soal, index) => (
-                  <div
-                    key={index}
-                    className="bg-card border border-border shadow-lg rounded-lg hover:bg-accent/5 transition-colors group"
-                  >
-                    {/* Header Section - Always Visible */}
-                    <div className="p-3 flex items-center gap-3">
-                      {/* Question Number */}
-                      <div className="relative flex-shrink-0">
-                        <div className="flex items-center justify-center w-8 h-8 bg-primary/10 text-primary rounded-lg font-medium text-sm group-hover:opacity-0 transition-opacity">
-                          {index + 1}
-                        </div>
-                        {/* Reorder controls */}
-                        <div className="absolute inset-0 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleMoveSoal(index, 'up')}
-                            disabled={index === 0}
-                            className="h-4 w-4 p-0 bg-background border rounded-t"
+              {soals.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">Belum ada soal yang ditambahkan</p>
+                </div>
+              ) : (
+                <DragDropContext onDragEnd={handleDragEnd}>
+                  <Droppable droppableId="soals">
+                    {(provided: DroppableProvided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-3"
+                      >
+                        {soals.map((soal, index) => (
+                          <Draggable
+                            key={`soal-${index}`}
+                            draggableId={`soal-${index}`}
+                            index={index}
                           >
-                            <ChevronUp className="h-2 w-2" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleMoveSoal(index, 'down')}
-                            disabled={index === soals.length - 1}
-                            className="h-4 w-4 p-0 bg-background border rounded-b -mt-px"
-                          >
-                            <ChevronDown className="h-2 w-2" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Question Content */}
-                      <div className="flex-1 min-w-0">
-                        {/* Badges */}
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge
-                            variant="secondary"
-                            className={`${typeColors[soal.type as keyof typeof typeColors]} text-xs`}
-                          >
-                            {soal.type === 'LISTENING' ? '듣기' : '읽기'}
-                          </Badge>
-                          <Badge
-                            variant="secondary"
-                            className={`${difficultyColors[soal.difficulty as keyof typeof difficultyColors]} text-xs`}
-                          >
-                            {difficultyLabels[soal.difficulty as keyof typeof difficultyLabels]}
-                          </Badge>
-                        </div>
-                        
-                        {/* Question text */}
-                        <div className="font-medium text-sm mb-1">
-                          {soal.pertanyaan.length > 60 ? `${soal.pertanyaan.substring(0, 60)}...` : soal.pertanyaan}
-                        </div>
-                        
-                        {/* Stats */}
-                        <div className="text-xs text-muted-foreground">
-                          {soal.opsis.length} opsi • {soal.opsis.filter(o => o.isCorrect).length} benar
-                          {soal.attachmentUrl && " • Lampiran"}
-                          {soal.explanation && " • Penjelasan"}
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleExpanded(index)}
-                          className="h-7 w-7 p-0"
-                        >
-                          {isExpanded(index) ? (
-                            <ChevronLeft className="h-3 w-3" />
-                          ) : (
-                            <ChevronRight className="h-3 w-3" />
-                          )}
-                        </Button>
-                        
-                        <AddSoalDialog
-                          isEditing={true}
-                          editingSoalIndex={index}
-                          currentPertanyaan={soal.pertanyaan}
-                          setCurrentPertanyaan={setCurrentPertanyaan}
-                          currentAttachmentUrl={soal.attachmentUrl || ''}
-                          setCurrentAttachmentUrl={setCurrentAttachmentUrl}
-                          currentAttachmentType={soal.attachmentType}
-                          setCurrentAttachmentType={setCurrentAttachmentType}
-                          currentType={soal.type}
-                          setCurrentType={setCurrentType}
-                          currentDifficulty={soal.difficulty}
-                          setCurrentDifficulty={setCurrentDifficulty}
-                          currentExplanation={soal.explanation || ''}
-                          setCurrentExplanation={setCurrentExplanation}
-                          currentOpsis={soal.opsis}
-                          setCurrentOpsis={setCurrentOpsis}
-                          newOpsiText={newOpsiText}
-                          setNewOpsiText={setNewOpsiText}
-                          isUploading={isUploading}
-                          handleAddOpsi={handleAddOpsi}
-                          handleRemoveOpsi={handleRemoveOpsi}
-                          handleToggleCorrect={handleToggleCorrect}
-                          handleAddSoal={handleAddSoal}
-                          handleFileUpload={handleFileUpload}
-                          handleEditSoal={handleEditSoal}
-                          handleEditSoalWithValues={handleEditSoalWithValues}
-                        />
-                        
-                        <Button
-                          type="button"
-                          onClick={() => handleRemoveSoal(index)}
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Expanded Content */}
-                    {isExpanded(index) && (
-                      <div className="border-t border-border bg-muted/30 p-3 space-y-3">
-                        {/* Full Question Text */}
-                        <div>
-                          <h4 className="font-medium text-sm text-muted-foreground mb-1">Pertanyaan:</h4>
-                          <p className="text-sm">{soal.pertanyaan}</p>
-                        </div>
-
-                        {/* Attachment */}
-                        {soal.attachmentUrl && (
-                          <div>
-                            <h4 className="font-medium text-sm text-muted-foreground mb-1">Lampiran:</h4>
-                            {soal.attachmentType === "IMAGE" ? (
-                              <Image
-                                src={soal.attachmentUrl}
-                                alt="Attachment"
-                                width={200}
-                                height={200}
-                                className="rounded-md object-contain"
-                              />
-                            ) : (
-                              <audio
-                                src={soal.attachmentUrl}
-                                controls
-                                className="w-full max-w-[300px]"
-                              />
-                            )}
-                          </div>
-                        )}
-
-                        {/* Options */}
-                        <div>
-                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Opsi:</h4>
-                          <div className="space-y-1">
-                            {soal.opsis.map((opsi, opsiIndex) => (
+                            {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
                               <div
-                                key={opsiIndex}
-                                className={`text-sm p-2 rounded ${
-                                  opsi.isCorrect
-                                    ? "bg-green-50 text-green-800 border border-green-200"
-                                    : "bg-background"
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`bg-card border border-border shadow-lg rounded-lg hover:bg-accent/5 transition-colors group ${
+                                  snapshot.isDragging ? 'shadow-xl rotate-2 bg-accent/10' : ''
                                 }`}
                               >
-                                <span className="font-medium">{String.fromCharCode(65 + opsiIndex)}.</span> {opsi.opsiText || "[Lampiran]"}
-                                {opsi.isCorrect && " ✓"}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                                {/* Header Section - Always Visible */}
+                                <div className="p-3 flex items-center gap-3">
+                                  {/* Drag Handle */}
+                                  <div 
+                                    {...provided.dragHandleProps}
+                                    className="flex-shrink-0 cursor-grab active:cursor-grabbing"
+                                  >
+                                    <div className="relative">
+                                      <div className="flex items-center justify-center w-8 h-8 bg-primary/10 text-primary rounded-lg font-medium text-sm group-hover:opacity-0 transition-opacity">
+                                        {index + 1}
+                                      </div>
+                                      {/* Drag indicator */}
+                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+                                    </div>
+                                  </div>
 
-                        {/* Explanation */}
-                        {soal.explanation && (
-                          <div>
-                            <h4 className="font-medium text-sm text-muted-foreground mb-1">Penjelasan:</h4>
-                            <p className="text-sm text-muted-foreground italic">{soal.explanation}</p>
-                          </div>
-                        )}
+                                  {/* Question Content */}
+                                  <div className="flex-1 min-w-0">
+                                    {/* Badges */}
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Badge
+                                        variant="secondary"
+                                        className={`${typeColors[soal.type as keyof typeof typeColors]} text-xs`}
+                                      >
+                                        {soal.type === 'LISTENING' ? '듣기' : '읽기'}
+                                      </Badge>
+                                      <Badge
+                                        variant="secondary"
+                                        className={`${difficultyColors[soal.difficulty as keyof typeof difficultyColors]} text-xs`}
+                                      >
+                                        {difficultyLabels[soal.difficulty as keyof typeof difficultyLabels]}
+                                      </Badge>
+                                    </div>
+                                    
+                                    {/* Question text */}
+                                    <div className="font-medium text-sm mb-1">
+                                      {soal.pertanyaan.length > 60 ? `${soal.pertanyaan.substring(0, 60)}...` : soal.pertanyaan}
+                                    </div>
+                                    
+                                    {/* Stats */}
+                                    <div className="text-xs text-muted-foreground">
+                                      {soal.opsis.length} opsi • {soal.opsis.filter(o => o.isCorrect).length} benar
+                                      {soal.attachmentUrl && " • Lampiran"}
+                                      {soal.explanation && " • Penjelasan"}
+                                    </div>
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => toggleExpanded(index)}
+                                      className="h-7 w-7 p-0"
+                                    >
+                                      {isExpanded(index) ? (
+                                        <ChevronLeft className="h-3 w-3" />
+                                      ) : (
+                                        <ChevronRight className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                    
+                                    <AddSoalDialog
+                                      isEditing={true}
+                                      editingSoalIndex={index}
+                                      currentPertanyaan={soal.pertanyaan}
+                                      setCurrentPertanyaan={setCurrentPertanyaan}
+                                      currentAttachmentUrl={soal.attachmentUrl || ''}
+                                      setCurrentAttachmentUrl={setCurrentAttachmentUrl}
+                                      currentAttachmentType={soal.attachmentType}
+                                      setCurrentAttachmentType={setCurrentAttachmentType}
+                                      currentType={soal.type}
+                                      setCurrentType={setCurrentType}
+                                      currentDifficulty={soal.difficulty}
+                                      setCurrentDifficulty={setCurrentDifficulty}
+                                      currentExplanation={soal.explanation || ''}
+                                      setCurrentExplanation={setCurrentExplanation}
+                                      currentOpsis={soal.opsis}
+                                      setCurrentOpsis={setCurrentOpsis}
+                                      newOpsiText={newOpsiText}
+                                      setNewOpsiText={setNewOpsiText}
+                                      isUploading={isUploading}
+                                      handleAddOpsi={handleAddOpsi}
+                                      handleRemoveOpsi={handleRemoveOpsi}
+                                      handleToggleCorrect={handleToggleCorrect}
+                                      handleAddSoal={handleAddSoal}
+                                      handleFileUpload={handleFileUpload}
+                                      handleEditSoal={handleEditSoal}
+                                      handleEditSoalWithValues={handleEditSoalWithValues}
+                                    />
+                                    
+                                    <Button
+                                      type="button"
+                                      onClick={() => handleRemoveSoal(index)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                {/* Expanded Content */}
+                                {isExpanded(index) && (
+                                  <div className="border-t border-border bg-muted/30 p-3 space-y-3">
+                                    {/* Full Question Text */}
+                                    <div>
+                                      <h4 className="font-medium text-sm text-muted-foreground mb-1">Pertanyaan:</h4>
+                                      <p className="text-sm">{soal.pertanyaan}</p>
+                                    </div>
+
+                                    {/* Attachment */}
+                                    {soal.attachmentUrl && (
+                                      <div>
+                                        <h4 className="font-medium text-sm text-muted-foreground mb-1">Lampiran:</h4>
+                                        {soal.attachmentType === "IMAGE" ? (
+                                          <Image
+                                            src={soal.attachmentUrl}
+                                            alt="Attachment"
+                                            width={200}
+                                            height={200}
+                                            className="rounded-md object-contain"
+                                          />
+                                        ) : (
+                                          <audio
+                                            src={soal.attachmentUrl}
+                                            controls
+                                            className="w-full max-w-[300px]"
+                                          />
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Options */}
+                                    <div>
+                                      <h4 className="font-medium text-sm text-muted-foreground mb-2">Opsi:</h4>
+                                      <div className="space-y-1">
+                                        {soal.opsis.map((opsi, opsiIndex) => (
+                                          <div
+                                            key={opsiIndex}
+                                            className={`text-sm p-2 rounded ${
+                                              opsi.isCorrect
+                                                ? "bg-green-50 text-green-800 border border-green-200"
+                                                : "bg-background"
+                                            }`}
+                                          >
+                                            <span className="font-medium">{String.fromCharCode(65 + opsiIndex)}.</span> {opsi.opsiText || "[Lampiran]"}
+                                            {opsi.isCorrect && " ✓"}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Explanation */}
+                                    {soal.explanation && (
+                                      <div>
+                                        <h4 className="font-medium text-sm text-muted-foreground mb-1">Penjelasan:</h4>
+                                        <p className="text-sm text-muted-foreground italic">{soal.explanation}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
                     )}
-                  </div>
-                ))}
-                {soals.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">Belum ada soal yang ditambahkan</p>
-                  </div>
-                )}
-              </div>
+                  </Droppable>
+                </DragDropContext>
+              )}
             </ScrollArea>
           </Card>
         </div>

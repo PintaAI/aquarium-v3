@@ -22,6 +22,7 @@ export default function CourseList({ initialCourses, userRole, userId, error }: 
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
   const [sortOrder, setSortOrder] = useState('newest');
 
   const sortCourses = (coursesToSort: Course[], order: string) => {
@@ -36,10 +37,20 @@ export default function CourseList({ initialCourses, userRole, userId, error }: 
       const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesLevel = selectedLevel === 'all' || course.level.toLowerCase() === selectedLevel;
-      return matchesSearch && matchesLevel;
+      
+      let matchesType = true;
+      if (selectedType === 'premium') {
+        matchesType = course.isLocked;
+      } else if (selectedType === 'free') {
+        matchesType = !course.isLocked && course.type !== 'EVENT';
+      } else if (selectedType === 'event') {
+        matchesType = course.type === 'EVENT';
+      }
+      
+      return matchesSearch && matchesLevel && matchesType;
     });
     return sortCourses(filtered, sortOrder);
-  }, [courses, searchTerm, selectedLevel, sortOrder]);
+  }, [courses, searchTerm, selectedLevel, selectedType, sortOrder]);
 
   const handleDeleteCourse = async (courseId: number) => {
     if (window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
@@ -68,6 +79,17 @@ export default function CourseList({ initialCourses, userRole, userId, error }: 
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
           </div>
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-full sm:w-44 bg-background border-input">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="premium">Premium</SelectItem>
+                <SelectItem value="event">Event</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={selectedLevel} onValueChange={setSelectedLevel}>
               <SelectTrigger className="w-full sm:w-44 bg-background border-input">
                 <SelectValue placeholder="Filter by level" />

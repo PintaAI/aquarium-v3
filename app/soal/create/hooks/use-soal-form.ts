@@ -9,6 +9,7 @@ import { getCourses, Course } from "@/app/actions/course-actions"
 import { uploadImage } from "@/app/actions/upload-image"
 import { uploadAudio } from "@/app/actions/upload-audio"
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
+import { DropResult } from "@hello-pangea/dnd"
 
 interface Opsi {
   opsiText: string
@@ -284,6 +285,18 @@ export const useSoalForm = () => {
     setSoals(newSoals)
   }
 
+  // Drag and drop handler
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return
+
+    const items = Array.from(soals)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+
+    setSoals(items)
+    toast.success("Urutan soal berhasil diubah")
+  }
+
   // Form submission handler
   const formAction = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -472,6 +485,7 @@ export const useSoalForm = () => {
     handleAudioFileUpload,
     handleEditSoal,
     handleEditSoalWithValues,
-    handleMoveSoal
+    handleMoveSoal,
+    handleDragEnd
   }
 }

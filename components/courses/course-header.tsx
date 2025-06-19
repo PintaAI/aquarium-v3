@@ -233,17 +233,21 @@ export function CourseHeader({
       />
       
       <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border-0 border-b sm:border sm:border-border sm:rounded-xl">
-      {thumbnail && (
-        <div className="relative aspect-video w-full max-h-[130px] sm:max-h-[150px]">
-          <Image
-            src={thumbnail}
-            alt={title}
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-      )}
+      <div className="relative aspect-video w-full max-h-[130px] sm:max-h-[150px]">
+        <Image
+          src={thumbnail || '/images/course.jpg'}
+          alt={title}
+          fill
+          className="object-cover"
+          priority
+        />
+        {type === 'EVENT' && (
+          <div className="absolute top-2 right-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+            <Timer size={12} />
+            Event
+          </div>
+        )}
+      </div>
       
       <div className="p-2 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1.5 sm:gap-4 mb-2 sm:mb-4">
@@ -292,58 +296,95 @@ export function CourseHeader({
 
         {/* Event Information Section */}
         {type === 'EVENT' && eventStartDate && eventEndDate && (
-          <div className="mb-4 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Calendar className="text-orange-600" size={16} />
-              <span className="font-medium text-orange-800">Event Schedule</span>
+          <div className="mb-3 overflow-hidden rounded-lg border border-orange-200 dark:border-orange-800 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/20">
+            {/* Header with status badges */}
+            <div className="flex items-center justify-between bg-orange-100/50 dark:bg-orange-900/20 px-3 py-2 border-b border-orange-200/30 dark:border-orange-700/30">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500">
+                  <Calendar className="text-white" size={12} />
+                </div>
+                <span className="text-sm font-medium text-orange-900 dark:text-orange-100">Event Schedule</span>
+              </div>
+              
+              {/* Status badges in header */}
+              {(() => {
+                const courseForUtilsLocal: CourseWithEventInfo = {
+                  id,
+                  type: type as CourseType,
+                  eventStartDate,
+                  eventEndDate,
+                  isLocked: false,
+                  members: []
+                };
+                const eventStatus = getEventStatus(courseForUtilsLocal);
+                const timeRemaining = getTimeRemaining(courseForUtilsLocal);
+                
+                return (
+                  <div className="flex items-center gap-2">
+                    {eventStatus && (
+                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                        eventStatus === 'upcoming' 
+                          ? 'bg-blue-500 text-white' 
+                          : eventStatus === 'active' 
+                            ? 'bg-green-500 text-white animate-pulse' 
+                            : 'bg-red-500 text-white'
+                      }`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${
+                          eventStatus === 'upcoming' 
+                            ? 'bg-blue-200' 
+                            : eventStatus === 'active' 
+                              ? 'bg-green-200 animate-ping' 
+                              : 'bg-red-200'
+                        }`} />
+                        {getEventStatusText(eventStatus)}
+                      </div>
+                    )}
+                    
+                    {timeRemaining && (
+                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                        timeRemaining.isActive 
+                          ? 'bg-amber-500 text-white' 
+                          : 'bg-blue-500 text-white'
+                      }`}>
+                        <Timer size={10} className={timeRemaining.isActive ? 'animate-spin' : ''} />
+                        {timeRemaining.timeLeft}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">Start: </span>
-                <span className="font-medium">{formatEventDate(eventStartDate)}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">End: </span>
-                <span className="font-medium">{formatEventDate(eventEndDate)}</span>
+            {/* Compact content */}
+            <div className="p-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Compact start date */}
+                <div className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-gray-800/20">
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                    <Calendar className="text-green-600 dark:text-green-400" size={12} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-green-700 dark:text-green-300 font-medium">Start</p>
+                    <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
+                      {formatEventDate(eventStartDate)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Compact end date */}
+                <div className="flex items-center gap-2 p-2 rounded bg-white/50 dark:bg-gray-800/20">
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30">
+                    <Timer className="text-red-600 dark:text-red-400" size={12} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-red-700 dark:text-red-300 font-medium">End</p>
+                    <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
+                      {formatEventDate(eventEndDate)}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {(() => {
-              const courseForUtilsLocal: CourseWithEventInfo = {
-                id,
-                type: type as CourseType,
-                eventStartDate,
-                eventEndDate,
-                isLocked: false, // This might need to reflect actual lock status if available
-                members: [] // Placeholder
-              };
-              const eventStatus = getEventStatus(courseForUtilsLocal);
-              const timeRemaining = getTimeRemaining(courseForUtilsLocal);
-              
-              return (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {eventStatus && (
-                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      eventStatus === 'upcoming' ? 'bg-blue-100 text-blue-800' :
-                      eventStatus === 'active' ? 'bg-green-100 text-green-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {getEventStatusText(eventStatus)}
-                    </div>
-                  )}
-                  
-                  {timeRemaining && (
-                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      timeRemaining.isActive ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      <Timer size={12} className="mr-1" />
-                      {timeRemaining.timeLeft}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
           </div>
         )}
 

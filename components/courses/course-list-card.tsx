@@ -127,45 +127,45 @@ export function CourseListCard({ course, isAuthor, onDelete }: CourseListCardPro
             <CardDescription className="text-sm text-muted-foreground line-clamp-1 mb-2">
               {truncateText(course.description || 'No description available', 100)}
             </CardDescription>
-
-            {/* Event Status Information */}
-            {course.type === 'EVENT' && eventStatus && (
-              <div className="mb-2">
-                <div className="flex items-center gap-2 mb-1">
+            
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Avatar className="size-6">
+                  <AvatarImage src={course.author.image || undefined} alt={course.author.name || 'Unknown'} />
+                  <AvatarFallback>
+                    <UserIcon className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-muted-foreground">
+                  {course.author.name || 'Unknown Author'}
+                </span>
+              </div>
+              
+              {/* Event Status Information */}
+              {course.type === 'EVENT' && eventStatus && (
+                <div className="flex items-center gap-1">
                   {eventStatus && (
-                    <Badge variant="outline" className={
+                    <Badge variant="outline" className={`text-xs ${
                       eventStatus === 'upcoming' ? 'border-blue-500 text-blue-600 dark:text-blue-400' :
                       eventStatus === 'active' ? 'border-green-500 text-green-600 dark:text-green-400' :
                       'border-red-500 text-red-600 dark:text-red-400'
-                    }>
-                      <Calendar className="h-3 w-3 mr-1" />
+                    }`}>
+                      <Calendar className="h-2 w-2 mr-1" />
                       {getEventStatusText(eventStatus)}
                     </Badge>
                   )}
                   
                   {timeRemaining && (
-                    <Badge variant="outline" className={
+                    <Badge variant="outline" className={`text-xs ${
                       timeRemaining.isActive ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' : 
                       'border-blue-500 text-blue-600 dark:text-blue-400'
-                    }>
-                      <Timer className="h-3 w-3 mr-1" />
+                    }`}>
+                      <Timer className="h-2 w-2 mr-1" />
                       {timeRemaining.timeLeft}
                     </Badge>
                   )}
                 </div>
-              </div>
-            )}
-            
-            <div className="flex items-center gap-2">
-              <Avatar className="size-6">
-                <AvatarImage src={course.author.image || undefined} alt={course.author.name || 'Unknown'} />
-                <AvatarFallback>
-                  <UserIcon className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground">
-                {course.author.name || 'Unknown Author'}
-              </span>
+              )}
             </div>
           </div>
         </CardContent>

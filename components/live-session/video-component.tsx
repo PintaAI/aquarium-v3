@@ -13,12 +13,14 @@ import {
   OwnCapability,
 } from '@stream-io/video-react-sdk';
 import { Button } from "@/components/ui/button"; 
-import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Eye, Check, X, Radio } from "lucide-react"; 
+import { Mic, MicOff, Video, VideoOff, ScreenShare, ScreenShareOff, LogOut, Eye, Check, X, Radio, VideoIcon, StopCircle } from "lucide-react"; 
 import { useRouter } from "next/navigation"; 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { toUTC, getCurrentLocalTime } from '@/lib/date-utils';
-import { sendNotification } from '@/app/actions/push-notifications'; 
+import { sendNotification } from '@/app/actions/push-notifications';
+import { saveRecordingUrl } from '@/app/actions/recording-actions';
+import { endLiveSession } from '@/app/actions/end-session-actions';
 
 interface PermissionRequestEvent {
   type: 'call.permission_request';
@@ -147,7 +149,6 @@ interface VideoComponentProps {
   call: Call;
   isCreator: boolean;
   markLeaveHandled: () => void;
-  deleteSessionAction: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
   sessionId: string;
   userId?: string;
 }
@@ -155,7 +156,6 @@ interface VideoComponentProps {
 interface CustomControlsProps {
   isCreator: boolean;
   markLeaveHandled: () => void;
-  deleteSessionAction: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
   sessionId: string;
   userId?: string;
 }
@@ -163,24 +163,83 @@ interface CustomControlsProps {
 function CustomControls({
   isCreator,
   markLeaveHandled,
-  deleteSessionAction,
   sessionId,
   userId 
 }: CustomControlsProps) {
   const router = useRouter();
-  const { useMicrophoneState, useCameraState, useScreenShareState, useIsCallLive, useParticipants } = useCallStateHooks();
+  const { useMicrophoneState, useCameraState, useScreenShareState, useIsCallLive, useParticipants, useIsCallRecordingInProgress } = useCallStateHooks();
   const { microphone, isMute } = useMicrophoneState();
   const { camera, isEnabled: isCameraOn } = useCameraState();
   const { screenShare, status: screenShareStatus } = useScreenShareState();
   const isScreensharing = screenShareStatus === 'enabled';
+  const isRecording = useIsCallRecordingInProgress();
   const participants = useParticipants();
   const [lastRequestTime, setLastRequestTime] = useState<number>(0);
   const [cooldownMessage, setCooldownMessage] = useState<string | null>(null);
+  const [isAwaitingRecording, setIsAwaitingRecording] = useState(false);
   
   const currentParticipant = participants.find(p => p.userId === userId);
   const canAccessControls = currentParticipant?.roles?.some(role => role === 'host' || role === 'moderator') ?? false;
   const call = useCall();
   const isLive = useIsCallLive();
+
+  // Handle recording events
+  useEffect(() => {
+    if (!call) return;
+
+    const handleRecordingStarted = () => {
+      setIsAwaitingRecording(false);
+      console.log("Recording started successfully");
+    };
+
+    const handleRecordingStopped = () => {
+      setIsAwaitingRecording(false);
+      console.log("Recording stopped successfully");
+    };
+
+    const handleRecordingReady = async (event: any) => {
+      console.log("Recording ready event:", event);
+      if (event.call_recording?.url) {
+        try {
+          const result = await saveRecordingUrl(sessionId, event.call_recording.url);
+          if (result.success) {
+            console.log("Recording URL saved to database");
+          } else {
+            console.error("Failed to save recording URL:", result.error);
+          }
+        } catch (error) {
+          console.error("Error saving recording URL:", error);
+        }
+      }
+    };
+
+    const unsubscribeRecordingStarted = call.on('call.recording_started', handleRecordingStarted);
+    const unsubscribeRecordingStopped = call.on('call.recording_stopped', handleRecordingStopped);
+    const unsubscribeRecordingReady = call.on('call.recording_ready', handleRecordingReady);
+
+    return () => {
+      unsubscribeRecordingStarted();
+      unsubscribeRecordingStopped();
+      unsubscribeRecordingReady();
+    };
+  }, [call, sessionId]);
+
+  const toggleRecording = async () => {
+    if (!call) return;
+
+    try {
+      setIsAwaitingRecording(true);
+      if (isRecording) {
+        await call.stopRecording();
+      } else {
+        // Start recording with default settings (720p single participant should be configured at call type level)
+        await call.startRecording();
+      }
+    } catch (error) {
+      console.error("Failed to toggle recording:", error);
+      setIsAwaitingRecording(false);
+    }
+  };
 
   // ...rest of the existing handleExit function...
   const handleExit = async () => {
@@ -212,12 +271,14 @@ function CustomControls({
           console.log("No other participants to kick.");
         }
 
-        console.log("Deleting session from DB:", sessionId);
-        const deleteResult = await deleteSessionAction(sessionId);
-        if (!deleteResult.success) {
-          console.error("Failed to delete session:", deleteResult.error);
+        // End the session properly (update status to ENDED, set actualEnd time)
+        // This preserves the session for recordings and historical data
+        console.log("Ending session:", sessionId);
+        const endResult = await endLiveSession(sessionId);
+        if (!endResult.success) {
+          console.error("Failed to end session:", endResult.error);
         } else {
-          console.log("Session deleted successfully from DB.");
+          console.log("Session ended successfully");
         }
 
         markLeaveHandled();
@@ -318,6 +379,24 @@ function CustomControls({
             title={isScreensharing ? 'Stop Sharing' : 'Share Screen'}
           >
             {isScreensharing ? <ScreenShareOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <ScreenShare className="h-4 w-4 sm:h-5 sm:w-5" />}
+          </Button>
+        )}
+
+        {isCreator && (
+          <Button
+            variant={isRecording ? "destructive" : "outline"}
+            size="icon"
+            onClick={toggleRecording}
+            disabled={isAwaitingRecording}
+            title={isRecording ? 'Stop Recording' : 'Start Recording'}
+          >
+            {isAwaitingRecording ? (
+              <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : isRecording ? (
+              <StopCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+            ) : (
+              <VideoIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            )}
           </Button>
         )}
 
@@ -507,7 +586,6 @@ export function VideoComponent({
   call,
   isCreator,
   markLeaveHandled,
-  deleteSessionAction,
   sessionId,
   userId
 }: VideoComponentProps) {
@@ -518,7 +596,6 @@ export function VideoComponent({
         <CustomControls
           isCreator={isCreator}
           markLeaveHandled={markLeaveHandled}
-          deleteSessionAction={deleteSessionAction}
           sessionId={sessionId}
           userId={userId}
         />

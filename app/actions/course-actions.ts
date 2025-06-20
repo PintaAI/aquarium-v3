@@ -40,7 +40,21 @@ export interface Course {
     id: string
   }>,
   price?: number | null,
-  paidCourseMessage?: string | null
+  paidCourseMessage?: string | null,
+  liveSessions?: Array<{
+    id: string
+    name: string
+    description: string | null
+    recordingUrl: string | null
+    actualStart: Date | null
+    actualEnd: Date | null
+    createdAt: Date
+    creator: {
+      id: string
+      name: string | null
+      image: string | null
+    }
+  }>
 }
 
 export async function getJoinedCourses() {
@@ -234,7 +248,33 @@ export async function getCourse(courseId: number) {
         },
         members: true,
         price: true,
-        paidCourseMessage: true
+        paidCourseMessage: true,
+        liveSessions: {
+          where: {
+            recordingUrl: {
+              not: null
+            }
+          },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            recordingUrl: true,
+            actualStart: true,
+            actualEnd: true,
+            createdAt: true,
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                image: true
+              }
+            }
+          },
+          orderBy: {
+            actualStart: 'desc'
+          }
+        }
       }
     })
 

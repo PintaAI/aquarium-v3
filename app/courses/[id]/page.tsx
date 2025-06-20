@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ModuleList } from "@/components/courses/module-list";
 import { CourseHeader } from "@/components/courses/course-header";
 import { ContentBody } from "@/components/courses/content-body";
+import { CourseRecordings } from "@/components/courses/course-recordings";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -26,8 +27,10 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
     notFound();
   }
 
-  // Check if user has joined the course
+  // Check if user has joined the course OR is the author
   const isJoined = user ? course.members?.some(member => member.id === user.id) ?? false : false;
+  const isAuthor = user ? course.author.id === user.id : false;
+  const hasAccess = isJoined || isAuthor; // Author always has access
 
   // Transform modules to match the ModuleList component's expected format
   const formattedModules = course.modules.map((module, index) => ({
@@ -72,6 +75,17 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
             <div className="mt-6">
               <ContentBody htmlDescription={course.htmlDescription ?? course.description ?? ""} />
             </div>
+
+            {/* Course Recordings Section */}
+            {course.liveSessions && course.liveSessions.length > 0 && (
+              <div className="mt-8">
+                <CourseRecordings
+                  liveSessions={course.liveSessions}
+                  courseName={course.title}
+                  isJoined={hasAccess}
+                />
+              </div>
+            )}
           </div>
 
           <div className="lg:col-span-1">
@@ -80,7 +94,7 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
                 modules={formattedModules}
                 courseId={courseId}
                 courseAuthorId={course.author.id}
-                isUserJoined={isJoined}
+                isUserJoined={hasAccess}
               />
             </div>
           </div>

@@ -17,7 +17,6 @@ import { VideoComponent } from './video-component'; // Will be simplified
 import { SessionInfo } from './session-info';       // Will receive call prop
 import { ChatComponent } from './chat-component';
 import type { LiveSession } from '@/app/actions/live-session-actions'; // Import type
-import { deleteLiveSession } from '@/app/actions/live-session-actions'; // Import delete action
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -301,8 +300,6 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
                 call={call}
                 isCreator={isCreator}
                 markLeaveHandled={markLeaveHandled}
-                // onParticipantCountChange removed
-                deleteSessionAction={deleteLiveSession} // Pass action
                 sessionId={liveSessionData.id}         // Pass session ID
                 userId={user?.id}                      // Pass user ID (ensure it's defined)
              />

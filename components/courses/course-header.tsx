@@ -15,6 +15,7 @@ import { RequestStatusBadge } from "./request-status-badge";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { ShareCourseButton } from "./share-course-button";
+import { StartLiveSessionButton } from "./start-live-session-button";
 import confetti from 'canvas-confetti';
 
 const triggerConfetti = () => {
@@ -254,11 +255,18 @@ export function CourseHeader({
           <h1 className="text-lg sm:text-3xl font-bold text-primary leading-tight">{title}</h1>
           <div className="flex items-center gap-2">
             {isAuthor && (
-              <Link href={`/courses/${id}/edit-course`} className="mt-1 sm:mt-0">
-                <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">
-                  Edit Course
-                </Button>
-              </Link>
+              <>
+                <StartLiveSessionButton
+                  courseId={id}
+                  courseName={title}
+                  isAuthor={isAuthor}
+                />
+                <Link href={`/courses/${id}/edit-course`} className="mt-1 sm:mt-0">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">
+                    Edit Course
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
         </div>

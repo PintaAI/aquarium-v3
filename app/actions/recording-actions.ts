@@ -73,13 +73,42 @@ export async function getSessionRecordings(sessionId: string) {
 
     return { 
       success: true, 
-      recordingUrl: session.recordingUrl 
+      recordingUrl: session.recordingUrl,
+      isCreator
     }
   } catch (error) {
     console.error('Failed to get session recordings:', error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Failed to get recordings' 
+    }
+  }
+}
+
+export async function deleteRecording(sessionId: string) {
+  try {
+    const user = await currentUser()
+    if (!user || user.role !== 'GURU') {
+      throw new Error('Unauthorized')
+    }
+
+    // Update the live session to remove the recording URL
+    const updatedSession = await db.liveSession.update({
+      where: { 
+        id: sessionId,
+        creatorId: user.id // Ensure only the creator can delete
+      },
+      data: {
+        recordingUrl: null
+      }
+    })
+
+    return { success: true, sessionId: updatedSession.id }
+  } catch (error) {
+    console.error('Failed to delete recording:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to delete recording' 
     }
   }
 }

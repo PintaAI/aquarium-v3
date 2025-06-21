@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Play, Download, Clock } from 'lucide-react'
-import { getSessionRecordings } from '@/app/actions/recording-actions'
+import { Download, Clock, Trash2 } from 'lucide-react'
+import { getSessionRecordings, deleteRecording } from '@/app/actions/recording-actions'
+import { toast } from 'sonner'
 
 interface SessionRecordingsProps {
   sessionId: string
@@ -16,6 +17,29 @@ export function SessionRecordings({ sessionId, sessionName, isCreator }: Session
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDeleteRecording = async () => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus rekaman ini? Tindakan ini tidak dapat dibatalkan.')) {
+      return
+    }
+
+    try {
+      setDeleting(true)
+      const result = await deleteRecording(sessionId)
+      
+      if (result.success) {
+        setRecordingUrl(null)
+        toast.success('Rekaman berhasil dihapus')
+      } else {
+        toast.error(result.error || 'Gagal menghapus rekaman')
+      }
+    } catch (_error) {
+      toast.error('Terjadi kesalahan saat menghapus rekaman')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   useEffect(() => {
     const fetchRecordings = async () => {
@@ -136,24 +160,6 @@ export function SessionRecordings({ sessionId, sessionName, isCreator }: Session
               variant="outline"
               size="sm"
               onClick={() => {
-                const video = document.querySelector('video')
-                if (video) {
-                  if (video.paused) {
-                    video.play()
-                  } else {
-                    video.pause()
-                  }
-                }
-              }}
-            >
-              <Play className="h-4 w-4 mr-1" />
-              Putar
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
                 const link = document.createElement('a')
                 link.href = recordingUrl
                 link.download = `${sessionName}_recording.mp4`
@@ -165,6 +171,18 @@ export function SessionRecordings({ sessionId, sessionName, isCreator }: Session
               <Download className="h-4 w-4 mr-1" />
               Unduh
             </Button>
+            
+            {isCreator && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteRecording}
+                disabled={deleting}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                {deleting ? 'Menghapus...' : 'Hapus'}
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>

@@ -192,11 +192,31 @@ export async function deleteCourse(courseId: number) {
     }
 
     await db.$transaction([
+      // Delete live sessions first (foreign key constraint)
+      db.liveSession.deleteMany({
+        where: {
+          courseId,
+        },
+      }),
+      // Delete modules
       db.module.deleteMany({
         where: {
           courseId,
         },
       }),
+      // Delete course join requests
+      db.courseJoinRequest.deleteMany({
+        where: {
+          courseId,
+        },
+      }),
+      // Delete koleksi soals
+      db.koleksiSoal.deleteMany({
+        where: {
+          courseId,
+        },
+      }),
+      // Finally delete the course
       db.course.delete({
         where: {
           id: courseId,
@@ -208,7 +228,7 @@ export async function deleteCourse(courseId: number) {
     return { success: true }
   } catch (error) {
     console.error('Failed to delete course:', error)
-    return { success: false, error: 'Failed to delete course' }
+    return { success: false, error: `Failed to delete course: ${error instanceof Error ? error.message : 'Unknown error'}` }
   }
 }
 

@@ -30,7 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
-import { Search, Filter, Check, X, UserX, ChevronDown, MessageSquare, Phone, ImageIcon, ZoomIn, User, Eye } from 'lucide-react'
+import { Search, Filter, Check, X, UserX, ChevronDown, MessageSquare, Phone, User, Eye } from 'lucide-react'
 import { getAllJoinRequests, approveJoinRequest, rejectJoinRequest, revokeJoinRequest } from '@/app/actions/join-request-actions'
 import { formatDistanceToNow } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'

@@ -24,6 +24,8 @@ interface ModuleData {
   userCompletions: Array<{
     isCompleted: boolean;
   }>;
+  isUserJoined: boolean;
+  isAuthor: boolean;
   course: {
     author: {
       id: string;

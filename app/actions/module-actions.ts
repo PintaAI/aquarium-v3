@@ -315,26 +315,34 @@ export async function getModule(courseId: number, moduleId: number) {
                 image: true
               }
             },
-        modules: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            order: true,
-            courseId: true,
-            completions: {
+            members: {
               where: {
-                userId: user.id,
-                isCompleted: true
+                id: user.id
               },
               select: {
-                isCompleted: true
+                id: true
               }
-            }
-          },
-          orderBy: {
-            order: 'asc'
-          }
+            },
+            modules: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                order: true,
+                courseId: true,
+                completions: {
+                  where: {
+                    userId: user.id,
+                    isCompleted: true
+                  },
+                  select: {
+                    isCompleted: true
+                  }
+                }
+              },
+              orderBy: {
+                order: 'asc'
+              }
             }
           }
         }
@@ -348,7 +356,9 @@ export async function getModule(courseId: number, moduleId: number) {
 
     return {
       ...moduleItem,
-      userCompletions: moduleItem.completions
+      userCompletions: moduleItem.completions,
+      isUserJoined: moduleItem.course.members.length > 0,
+      isAuthor: moduleItem.course.author.id === user.id
     };
   } catch (error) {
     console.error(`Failed to fetch module with id ${moduleId}:`, error);

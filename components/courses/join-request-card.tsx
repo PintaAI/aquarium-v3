@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -15,10 +15,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { RequestStatusBadge } from './request-status-badge'
 import { approveJoinRequest, rejectJoinRequest, revokeJoinRequest } from '@/app/actions/join-request-actions'
 import { toast } from 'react-hot-toast'
-import { User, Calendar, MessageSquare, X, Check, ImageIcon, UserX } from 'lucide-react'
+import { 
+  User, 
+  Calendar, 
+  MessageSquare, 
+  X, 
+  Check, 
+  ImageIcon, 
+  UserX, 
+  ZoomIn, 
+  ChevronDown,
+  Phone,
+  FileText
+} from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 
@@ -52,6 +69,8 @@ export function JoinRequestCard({ request, onUpdate, showCourseInfo = false }: J
   const [isProcessing, setIsProcessing] = useState(false)
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
   const [isRevokeModalOpen, setIsRevokeModalOpen] = useState(false)
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [revokeReason, setRevokeReason] = useState('')
 
@@ -121,149 +140,176 @@ export function JoinRequestCard({ request, onUpdate, showCourseInfo = false }: J
     locale: localeId
   })
 
+  const hasDetails = request.message || request.contact || request.attachmentUrl || (request.status === 'REJECTED' && request.reason)
+
   return (
     <>
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
+      <Card className="hover:shadow-sm transition-shadow">
+        <CardContent className="p-4">
+          {/* Main row - compact list format */}
+          <div className="flex items-center justify-between gap-3">
+            {/* User info */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               {request.user.image ? (
                 <Image
                   src={request.user.image}
                   alt={request.user.name || 'User'}
-                  width={40}
-                  height={40}
-                  className="rounded-full"
+                  width={32}
+                  height={32}
+                  className="rounded-full flex-shrink-0"
                 />
               ) : (
-                <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                  <User size={20} className="text-muted-foreground" />
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
+                  <User size={16} className="text-muted-foreground" />
                 </div>
               )}
               
-              <div className="flex-1">
-                <h4 className="font-medium text-sm">
-                  {request.user.name || 'User Tanpa Nama'}
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  {request.user.email}
-                </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium text-sm truncate">
+                    {request.user.name || 'User Tanpa Nama'}
+                  </h4>
+                  <RequestStatusBadge status={request.status} />
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="truncate">{request.user.email}</span>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <Calendar size={10} />
+                    {timeAgo}
+                  </div>
+                </div>
                 
                 {showCourseInfo && request.course && (
-                  <div className="mt-1">
-                    <Badge variant="outline" className="text-xs">
-                      {request.course.title}
-                    </Badge>
-                  </div>
+                  <Badge variant="outline" className="text-xs mt-1">
+                    {request.course.title}
+                  </Badge>
                 )}
               </div>
             </div>
-            
-            <div className="flex flex-col items-end gap-2">
-              <RequestStatusBadge status={request.status} />
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar size={12} />
-                {timeAgo}
-              </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Details toggle if there are details */}
+              {hasDetails && (
+                <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
+                      <ChevronDown 
+                        size={16} 
+                        className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} 
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
+                </Collapsible>
+              )}
+
+              {/* Status-specific actions */}
+              {request.status === 'PENDING' && (
+                <>
+                  <Button
+                    onClick={handleApprove}
+                    disabled={isProcessing}
+                    size="sm"
+                    className="h-8 bg-green-600 hover:bg-green-700 text-white px-3"
+                  >
+                    <Check size={14} className="mr-1" />
+                    Setujui
+                  </Button>
+                  <Button
+                    onClick={() => setIsRejectModalOpen(true)}
+                    disabled={isProcessing}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-red-600 border-red-200 hover:bg-red-50 px-3"
+                  >
+                    <X size={14} className="mr-1" />
+                    Tolak
+                  </Button>
+                </>
+              )}
+
+              {request.status === 'APPROVED' && (
+                <Button
+                  onClick={() => setIsRevokeModalOpen(true)}
+                  disabled={isProcessing}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-red-600 border-red-200 hover:bg-red-50 px-3"
+                >
+                  <UserX size={14} className="mr-1" />
+                  Cabut
+                </Button>
+              )}
             </div>
           </div>
-        </CardHeader>
 
-        <CardContent className="pt-0">
-          {request.message && (
-            <div className="mb-4">
-              <div className="flex items-center gap-1 mb-2">
-                <MessageSquare size={14} className="text-muted-foreground" />
-                <span className="text-sm font-medium">Pesan:</span>
-              </div>
-              <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
-                {request.message}
-              </p>
-            </div>
-          )}
+          {/* Collapsible details */}
+          {hasDetails && (
+            <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+              <CollapsibleContent className="mt-4 pt-4 border-t border-border">
+                <div className="grid gap-4">
+                  {request.message && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare size={14} className="text-muted-foreground" />
+                        <span className="text-sm font-medium">Pesan:</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                        {request.message}
+                      </p>
+                    </div>
+                  )}
 
-          {request.contact && (
-            <div className="mb-4">
-              <div className="flex items-center gap-1 mb-2">
-                <User size={14} className="text-muted-foreground" />
-                <span className="text-sm font-medium">Kontak:</span>
-              </div>
-              <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
-                {request.contact}
-              </p>
-            </div>
-          )}
+                  {request.contact && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Phone size={14} className="text-muted-foreground" />
+                        <span className="text-sm font-medium">Kontak:</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                        {request.contact}
+                      </p>
+                    </div>
+                  )}
 
-          {request.attachmentUrl && (
-            <div className="mb-4">
-              <div className="flex items-center gap-1 mb-2">
-                <ImageIcon size={14} className="text-muted-foreground" />
-                <span className="text-sm font-medium">Lampiran:</span>
-              </div>
-              <div className="relative w-full h-32 bg-muted rounded-md overflow-hidden">
-                <Image
-                  src={request.attachmentUrl}
-                  alt="Attachment"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          )}
+                  {request.attachmentUrl && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <ImageIcon size={14} className="text-muted-foreground" />
+                        <span className="text-sm font-medium">Lampiran:</span>
+                      </div>
+                      <div 
+                        className="relative w-32 h-24 bg-muted rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity group"
+                        onClick={() => setIsImageModalOpen(true)}
+                      >
+                        <Image
+                          src={request.attachmentUrl}
+                          alt="Attachment"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn size={20} className="text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-          {request.status === 'REJECTED' && request.reason && (
-            <div className="mb-4">
-              <div className="flex items-center gap-1 mb-2">
-                <X size={14} className="text-red-500" />
-                <span className="text-sm font-medium text-red-700">Alasan Penolakan:</span>
-              </div>
-              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
-                {request.reason}
-              </p>
-            </div>
-          )}
-
-          {request.status === 'PENDING' && (
-            <div className="flex gap-2">
-              <Button
-                onClick={handleApprove}
-                disabled={isProcessing}
-                size="sm"
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Check size={16} className="mr-1" />
-                {isProcessing ? 'Memproses...' : 'Setujui'}
-              </Button>
-              <Button
-                onClick={() => setIsRejectModalOpen(true)}
-                disabled={isProcessing}
-                variant="outline"
-                size="sm"
-                className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-              >
-                <X size={16} className="mr-1" />
-                Tolak
-              </Button>
-            </div>
-          )}
-
-          {request.status === 'APPROVED' && (
-            <div className="flex gap-2">
-              <div className="flex-1 flex items-center justify-center text-sm text-green-600 bg-green-50 py-2 px-3 rounded-md border border-green-200">
-                <Check size={14} className="mr-1" />
-                Sudah disetujui
-              </div>
-              <Button
-                onClick={() => setIsRevokeModalOpen(true)}
-                disabled={isProcessing}
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-200 hover:bg-red-50"
-              >
-                <UserX size={16} className="mr-1" />
-                Cabut Persetujuan
-              </Button>
-            </div>
+                  {request.status === 'REJECTED' && request.reason && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileText size={14} className="text-red-500" />
+                        <span className="text-sm font-medium text-red-700">Alasan Penolakan:</span>
+                      </div>
+                      <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                        {request.reason}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           )}
         </CardContent>
       </Card>
@@ -369,6 +415,29 @@ export function JoinRequestCard({ request, onUpdate, showCourseInfo = false }: J
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Zoom Modal */}
+      {request.attachmentUrl && (
+        <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-2">
+            <DialogHeader className="px-4 py-2">
+              <DialogTitle className="text-lg">Lampiran Detail</DialogTitle>
+              <DialogDescription>
+                Klik di luar gambar atau tekan Escape untuk menutup
+              </DialogDescription>
+            </DialogHeader>
+            <div className="relative w-full h-[70vh] overflow-hidden rounded-md">
+              <Image
+                src={request.attachmentUrl}
+                alt="Attachment Detail"
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }

@@ -12,6 +12,8 @@ interface ModuleClientContentProps {
     courseId: number;
     title: string;
     htmlDescription: string;
+    isUserJoined: boolean;
+    isAuthor: boolean;
     course: {
       author: {
         id: string;
@@ -80,6 +82,7 @@ export function ModuleClientContent({ data, formattedModules, initialIsCompleted
               modules={formattedModules} 
               courseId={data.courseId}
               courseAuthorId={data.course.author.id}
+              isUserJoined={data.isUserJoined || data.isAuthor}
             />
           </div>
         </div>

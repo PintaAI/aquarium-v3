@@ -192,7 +192,15 @@ export async function deleteCourse(courseId: number) {
     }
 
     await db.$transaction([
-      // Delete live sessions first (foreign key constraint)
+      // Delete user module completions first (foreign key constraint)
+      db.userModuleCompletion.deleteMany({
+        where: {
+          module: {
+            courseId,
+          },
+        },
+      }),
+      // Delete live sessions (foreign key constraint)
       db.liveSession.deleteMany({
         where: {
           courseId,
@@ -210,7 +218,23 @@ export async function deleteCourse(courseId: number) {
           courseId,
         },
       }),
-      // Delete koleksi soals
+      // Delete koleksi soals and their related data
+      db.opsi.deleteMany({
+        where: {
+          soal: {
+            koleksiSoal: {
+              courseId,
+            },
+          },
+        },
+      }),
+      db.soal.deleteMany({
+        where: {
+          koleksiSoal: {
+            courseId,
+          },
+        },
+      }),
       db.koleksiSoal.deleteMany({
         where: {
           courseId,

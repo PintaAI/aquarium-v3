@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { saveDrawing, loadDrawing, getUserDrawings } from "@/app/actions/drawing-actions";
-import { convertFilesToStorage } from "../utils/file-handlers";
+import { convertFilesToStorage, convertStorageToFiles } from "../utils/file-handlers";
 import type { DrawingListItem, ExcalidrawAPI } from "../types";
 
 interface UseDrawingStorageProps {
@@ -95,35 +95,30 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
         const elements = JSON.parse(drawing.elements);
         const savedAppState = drawing.appState ? JSON.parse(drawing.appState) : {};
         
+        // Prepare the update object
+        const updateData: any = {
+          elements,
+          appState: {
+            ...excalidrawAPI.getAppState(),
+            ...savedAppState,
+            collaborators: []
+          }
+        };
+
+        // Handle files if they exist
         if (drawing.files) {
           try {
-            // Parse files but don't use them for now
-            // const storedFiles = JSON.parse(drawing.files);
-            // const files = convertStorageToFiles(storedFiles);
-            
-            // Update scene with elements and appState only
-            excalidrawAPI.updateScene({
-              elements,
-              appState: {
-                ...excalidrawAPI.getAppState(),
-                ...savedAppState,
-                collaborators: []
-              }
-            });
+            const storedFiles = JSON.parse(drawing.files);
+            const files = await convertStorageToFiles(storedFiles);
+            updateData.files = files;
           } catch (e) {
-            console.error("Error parsing files:", e);
+            console.error("Error parsing or converting files:", e);
+            // Continue without files if there's an error
           }
-        } else {
-          excalidrawAPI.updateScene({
-            elements,
-            appState: {
-              ...excalidrawAPI.getAppState(),
-              ...savedAppState,
-              collaborators: []
-            }
-          });
         }
         
+        // Update the scene with elements, appState, and files (if available)
+        excalidrawAPI.updateScene(updateData);
         setDrawingName(drawing.name);
       }
     } catch (error) {

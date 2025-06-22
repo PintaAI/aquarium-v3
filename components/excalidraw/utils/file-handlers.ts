@@ -1,4 +1,5 @@
 import type { FilesMap, StorageFilesMap, BinaryFiles } from "../types";
+import { uploadImage } from "@/app/actions/upload-image";
 
 /**
  * Converts a Blob to a base64 dataURL string
@@ -51,7 +52,24 @@ export function dataURLtoBlob(dataURL: string): Blob {
 }
 
 /**
+ * Uploads file to Cloudinary and returns URL
+ */
+export async function uploadFileToCloudinary(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const cloudinaryUrl = await uploadImage(formData);
+    return cloudinaryUrl;
+  } catch (error) {
+    console.error('Failed to upload file to Cloudinary:', error);
+    throw error;
+  }
+}
+
+/**
  * Converts Excalidraw's files to a format suitable for storage
+ * Now uploads images to Cloudinary instead of storing as base64
  */
 export async function convertFilesToStorage(files: FilesMap | BinaryFiles): Promise<StorageFilesMap> {
   const filesForStorage: StorageFilesMap = {};
@@ -60,25 +78,61 @@ export async function convertFilesToStorage(files: FilesMap | BinaryFiles): Prom
     // Type guard to ensure file is a File object
     if (file instanceof File) {
       try {
-        const dataURL = await blobToDataURL(file);
+        // Upload to Cloudinary and get URL
+        const cloudinaryUrl = await uploadFileToCloudinary(file);
         filesForStorage[fileId] = {
-          dataURL,
+          dataURL: cloudinaryUrl, // Store Cloudinary URL instead of base64
           name: file.name,
           mimeType: file.type || "application/octet-stream"
         };
       } catch (error) {
-        console.error(`Failed to convert file ${fileId}:`, error);
+        console.error(`Failed to upload file ${fileId} to Cloudinary:`, error);
+        // Fallback to base64 if Cloudinary upload fails
+        try {
+          const dataURL = await blobToDataURL(file);
+          filesForStorage[fileId] = {
+            dataURL,
+            name: file.name,
+            mimeType: file.type || "application/octet-stream"
+          };
+        } catch (fallbackError) {
+          console.error(`Failed to convert file ${fileId} to base64:`, fallbackError);
+        }
       }
     } 
     // Handle BinaryFileData
     else if ('dataURL' in file && 'mimeType' in file) {
       try {
-        filesForStorage[fileId] = {
-          dataURL: file.dataURL,
-          // Use fileId as name if not available
-          name: 'name' in file ? file.name : fileId,
-          mimeType: file.mimeType
-        };
+        // If it's already a URL (starts with http), keep it as is
+        if (file.dataURL.startsWith('http')) {
+          filesForStorage[fileId] = {
+            dataURL: file.dataURL,
+            name: 'name' in file ? file.name : fileId,
+            mimeType: file.mimeType
+          };
+        } else {
+          // If it's base64, try to upload to Cloudinary
+          try {
+            const blob = dataURLtoBlob(file.dataURL);
+            const uploadFile = new File([blob], 'name' in file ? file.name : fileId, {
+              type: file.mimeType
+            });
+            const cloudinaryUrl = await uploadFileToCloudinary(uploadFile);
+            filesForStorage[fileId] = {
+              dataURL: cloudinaryUrl,
+              name: 'name' in file ? file.name : fileId,
+              mimeType: file.mimeType
+            };
+          } catch (uploadError) {
+            console.error(`Failed to upload binary file ${fileId} to Cloudinary:`, uploadError);
+            // Fallback to original base64
+            filesForStorage[fileId] = {
+              dataURL: file.dataURL,
+              name: 'name' in file ? file.name : fileId,
+              mimeType: file.mimeType
+            };
+          }
+        }
       } catch (error) {
         console.error(`Failed to convert binary file ${fileId}:`, error);
       }
@@ -90,8 +144,9 @@ export async function convertFilesToStorage(files: FilesMap | BinaryFiles): Prom
 
 /**
  * Converts stored file data back to File objects for Excalidraw
+ * Now handles both Cloudinary URLs and base64 data
  */
-export function convertStorageToFiles(storedFiles: StorageFilesMap): FilesMap {
+export async function convertStorageToFiles(storedFiles: StorageFilesMap): Promise<FilesMap> {
   const files: FilesMap = {};
   
   for (const [fileId, fileData] of Object.entries(storedFiles)) {
@@ -111,7 +166,26 @@ export function convertStorageToFiles(storedFiles: StorageFilesMap): FilesMap {
         continue;
       }
 
-      const blob = dataURLtoBlob(fileData.dataURL);
+      let blob: Blob;
+      
+      // Check if it's a Cloudinary URL or base64
+      if (fileData.dataURL.startsWith('http')) {
+        // It's a Cloudinary URL, fetch the image
+        try {
+          const response = await fetch(fileData.dataURL);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.status}`);
+          }
+          blob = await response.blob();
+        } catch (fetchError) {
+          console.error(`Failed to fetch image from URL ${fileData.dataURL}:`, fetchError);
+          continue;
+        }
+      } else {
+        // It's base64 data
+        blob = dataURLtoBlob(fileData.dataURL);
+      }
+      
       files[fileId] = new File([blob], fileData.name, {
         type: fileData.mimeType
       });

@@ -34,21 +34,21 @@ export async function createKoleksiSoal(
 
     const result = await db.$transaction(async (tx) => {
       // If courseId is provided, verify user is a member or author of the course
-      if (courseId) {
-        const course = await tx.course.findFirst({
-          where: {
-            id: courseId,
-            OR: [
-              { authorId: user.id },
-              { members: { some: { id: user.id } } }
-            ]
-          }
-        })
-        
-        if (!course) {
-          throw new Error("Tidak memiliki akses ke course tersebut")
-        }
-      }
+if (courseId) {
+  const course = await tx.course.findFirst({
+    where: { id: courseId },
+    include: { members: true }
+  });
+
+  const isAuthor = course?.authorId === user.id;
+  const isGuruMember = course?.members.some(
+    (member: any) => member.id === user.id && user.role === "GURU"
+  );
+
+  if (!isAuthor && !isGuruMember) {
+    throw new Error("Tidak memiliki akses ke course tersebut");
+  }
+}
 
       // Create koleksi first
       const koleksi = await tx.koleksiSoal.create({
@@ -263,21 +263,21 @@ export async function updateKoleksiSoal(
 
     const updated = await db.$transaction(async (tx) => {
       // If courseId is provided, verify user is a member or author of the course
-      if (courseId) {
-        const course = await tx.course.findFirst({
-          where: {
-            id: courseId,
-            OR: [
-              { authorId: user.id },
-              { members: { some: { id: user.id } } }
-            ]
-          }
-        })
-        
-        if (!course) {
-          throw new Error("Tidak memiliki akses ke course tersebut")
-        }
-      }
+if (courseId) {
+  const course = await tx.course.findFirst({
+    where: { id: courseId },
+    include: { members: true }
+  });
+
+  const isAuthor = course?.authorId === user.id;
+  const isGuruMember = course?.members.some(
+    (member: any) => member.id === user.id && user.role === "GURU"
+  );
+
+  if (!isAuthor && !isGuruMember) {
+    throw new Error("Tidak memiliki akses ke course tersebut");
+  }
+}
 
       // Update koleksi
       const updatedKoleksi = await tx.koleksiSoal.update({

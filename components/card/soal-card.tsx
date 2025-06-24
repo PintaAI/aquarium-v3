@@ -48,7 +48,8 @@ export function SoalCard({
   const currentUser = UseCurrentUser()
   const isAuthor = currentUser?.id === user?.id
   const isGuru = currentUser?.role === "GURU"
-  const canManage = isGuru || isAuthor
+  const isGuruMember = isGuru && course?.members.some(m => m.id === currentUser?.id)
+  const canManage = isAuthor || isGuruMember
   const totalSoals = soals.length
   const difficultyCount = {
     BEGINNER: soals.filter(s => s.difficulty === "BEGINNER").length,

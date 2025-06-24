@@ -27,9 +27,11 @@ export default function EditSoalPage({ params }: EditSoalPageProps) {
         return router.push("/soal")
       }
 
-      // Only author can edit
+      // Author or GURU member of the course can edit
       const authorId = result.data.soals[0]?.authorId
-      if (!authorId || authorId !== currentUser?.id) {
+      const courseMembers = result.data.course?.members || []
+      const isGuruMember = currentUser?.role === "GURU" && courseMembers.some((m: any) => m.id === currentUser.id)
+      if (!authorId || (authorId !== currentUser?.id && !isGuruMember)) {
         return router.push("/soal")
       }
 

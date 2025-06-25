@@ -78,12 +78,21 @@ export function RequestJoinModal({
     try {
       setIsSubmitting(true)
       
+      console.log('Submitting join request with data:', {
+        courseId,
+        message: message.trim() || undefined,
+        contact: contact.trim() || undefined,
+        attachmentUrl: attachmentUrl || undefined
+      })
+      
       const result = await requestJoinCourse({
         courseId,
         message: message.trim() || undefined,
         contact: contact.trim() || undefined,
         attachmentUrl: attachmentUrl || undefined
       })
+
+      console.log('Join request result:', result)
 
       if (result.success) {
         toast.success('Permintaan bergabung berhasil dikirim!')
@@ -93,6 +102,7 @@ export function RequestJoinModal({
         onSuccess()
         onClose()
       } else {
+        console.error('Join request failed:', result.error)
         toast.error(result.error || 'Gagal mengirim permintaan')
       }
     } catch (error) {

@@ -14,6 +14,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { LandingHero } from "@/components/landingpage";
 import { GuruTools } from "@/components/menu/guru-tools";
 import { RandomFlashcardQuiz } from "@/components/vocabulary/RandomFlashcardQuiz"; // Import the new component
+import { CoursePromotionBanner } from "@/components/courses/course-promotion-banner";
 
 export default async function HomePage() {
   const user = await currentUser();
@@ -21,6 +22,9 @@ export default async function HomePage() {
   if (!user) {
     return (
       <main>
+        <div className="w-full p-4">
+          <CoursePromotionBanner />
+        </div>
         <LandingHero />
       </main>
     );
@@ -37,7 +41,9 @@ export default async function HomePage() {
       <AppSidebar />
       <SidebarInset className="flex min-h-screen">
         <main className="flex-1 overflow-y-auto ">
+           <CoursePromotionBanner />
           <div className="container mx-auto py-4 px-4 md:px-6 lg:px-8 space-y-2 pb-24 md:pb-0">
+           
             <div>
               <header className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-3 pb-2">
                 <div className="flex items-center group cursor-pointer">

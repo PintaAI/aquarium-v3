@@ -62,6 +62,7 @@ export function useCourseJoin({ courseId, isAuthor, isJoined }: UseCourseJoinPro
   const fetchJoinRequestStatus = useCallback(async () => {
     try {
       const result = await getUserJoinRequestStatus(courseId);
+      
       if (result.success && result.request) {
         // Only handle PENDING and REJECTED statuses, ignore APPROVED
         if (result.request.status === 'PENDING' || result.request.status === 'REJECTED') {
@@ -90,9 +91,9 @@ export function useCourseJoin({ courseId, isAuthor, isJoined }: UseCourseJoinPro
     }
   }, [courseId]);
 
-  // Initialize join request status
+  // Initialize join request status and refetch when membership status changes
   useEffect(() => {
-    if (session?.user && !isAuthor && !isJoined) {
+    if (session?.user && !isAuthor) {
       fetchJoinRequestStatus();
     }
   }, [session?.user, isAuthor, isJoined, fetchJoinRequestStatus]);

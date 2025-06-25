@@ -309,9 +309,9 @@ export function CourseHeader({
                 </div>
               )}
               
-              {joinRequest && !isEffectivelyLocked && (
+              {joinRequest && (
                 <div className="w-full flex flex-col gap-2">
-                  {joinRequest.status === 'PENDING' && (
+                  {joinRequest.status === 'PENDING' && !isEffectivelyLocked && (
                     <div className="flex gap-2 w-full">
                       <Button 
                         variant="outline"
@@ -330,19 +330,19 @@ export function CourseHeader({
                   
                   {joinRequest.status === 'REJECTED' && (
                     <>
-                      {joinRequest.reason && (
-                        <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
-                          <span className="font-medium">Alasan: </span>
-                          {joinRequest.reason}
-                        </div>
-                      )}
+                      <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800">
+                        <span className="font-medium">
+                          {joinRequest.reason ? 'Alasan: ' : 'Status: '}
+                        </span>
+                        {joinRequest.reason || 'Permintaan Anda untuk bergabung dengan kursus ini ditolak.'}
+                      </div>
                       <div className="flex gap-2 w-full">
                         <Button 
                           className="flex-1 text-xs sm:text-sm h-8 sm:h-9 bg-primary text-primary-foreground hover:bg-primary/90"
                           onClick={handleRequestJoin}
-                          disabled={loading}
+                          disabled={loading || isEffectivelyLocked}
                         >
-                          Kirim Ulang Permintaan
+                          {isEffectivelyLocked ? 'Event Tidak Tersedia' : 'Kirim Ulang Permintaan'}
                         </Button>
                         <ShareCourseButton onShare={triggerConfetti} />
                       </div>

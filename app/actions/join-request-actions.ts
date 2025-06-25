@@ -138,10 +138,7 @@ export async function approveJoinRequest(requestId: number) {
       return { success: false, error: 'Request not found' }
     }
 
-    // Verify user is course author
-    if (request.course.authorId !== user.id) {
-      return { success: false, error: 'Unauthorized - you are not the course author' }
-    }
+    // All GURU users can approve any join request (removed author check)
 
     // Check if request is still pending
     if (request.status !== 'PENDING') {
@@ -229,10 +226,7 @@ export async function rejectJoinRequest(requestId: number, reason?: string) {
       return { success: false, error: 'Request not found' }
     }
 
-    // Verify user is course author
-    if (request.course.authorId !== user.id) {
-      return { success: false, error: 'Unauthorized - you are not the course author' }
-    }
+    // All GURU users can reject any join request (removed author check)
 
     // Check if request is still pending
     if (request.status !== 'PENDING') {
@@ -257,7 +251,7 @@ export async function rejectJoinRequest(requestId: number, reason?: string) {
   }
 }
 
-// Get join requests for a specific course (for course authors)
+// Get join requests for a specific course (accessible by all GURU users)
 export async function getJoinRequests(courseId: number) {
   try {
     const user = await currentUser()
@@ -265,16 +259,13 @@ export async function getJoinRequests(courseId: number) {
       return { success: false, error: 'Unauthorized' }
     }
 
-    // Verify user is course author
+    // All GURU users can access join requests for any course
     const course = await db.course.findUnique({
-      where: { 
-        id: courseId,
-        authorId: user.id
-      }
+      where: { id: courseId }
     })
 
     if (!course) {
-      return { success: false, error: 'Course not found or unauthorized' }
+      return { success: false, error: 'Course not found' }
     }
 
     const requests = await db.courseJoinRequest.findMany({
@@ -299,7 +290,7 @@ export async function getJoinRequests(courseId: number) {
   }
 }
 
-// Get all join requests for courses authored by current user
+// Get all join requests for all courses (accessible by all GURU users)
 export async function getAllJoinRequests() {
   try {
     const user = await currentUser()
@@ -308,17 +299,19 @@ export async function getAllJoinRequests() {
     }
 
     const requests = await db.courseJoinRequest.findMany({
-      where: {
-        course: {
-          authorId: user.id
-        }
-      },
       include: {
         course: {
           select: {
             id: true,
             title: true,
-            thumbnail: true
+            thumbnail: true,
+            author: {
+              select: {
+                id: true,
+                name: true,
+                image: true
+              }
+            }
           }
         },
         user: {
@@ -395,10 +388,7 @@ export async function revokeJoinRequest(requestId: number, reason?: string) {
       return { success: false, error: 'Request not found' }
     }
 
-    // Verify user is course author
-    if (request.course.authorId !== user.id) {
-      return { success: false, error: 'Unauthorized - you are not the course author' }
-    }
+    // All GURU users can revoke any approved join request (removed author check)
 
     // Can only revoke approved requests
     if (request.status !== 'APPROVED') {
@@ -412,7 +402,7 @@ export async function revokeJoinRequest(requestId: number, reason?: string) {
         where: { id: requestId },
         data: { 
           status: 'REJECTED',
-          reason: reason || 'Approval revoked by course author'
+          reason: reason || 'Approval revoked'
         }
       }),
       // Remove user from course members
@@ -426,8 +416,12 @@ export async function revokeJoinRequest(requestId: number, reason?: string) {
       })
     ])
 
+    // Comprehensive cache invalidation
     revalidatePath(`/courses/${request.courseId}`)
+    revalidatePath('/courses')
     revalidatePath('/dashboard/course-requests')
+    revalidatePath('/dashboard')
+    
     return { success: true }
   } catch (error) {
     console.error('Failed to revoke join request:', error)
@@ -475,5 +469,39 @@ export async function cancelJoinRequest(requestId: number) {
   } catch (error) {
     console.error('Failed to cancel join request:', error)
     return { success: false, error: 'Failed to cancel request' }
+  }
+}
+
+// Delete a join request (admin function - for GURU to delete any request)
+export async function deleteJoinRequest(requestId: number) {
+  try {
+    const user = await currentUser()
+    if (!user || user.role !== 'GURU') {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Get the request
+    const request = await db.courseJoinRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        course: { select: { id: true } }
+      }
+    })
+
+    if (!request) {
+      return { success: false, error: 'Request not found' }
+    }
+
+    // Delete the request
+    await db.courseJoinRequest.delete({
+      where: { id: requestId }
+    })
+
+    revalidatePath(`/courses/${request.courseId}`)
+    revalidatePath('/dashboard/course-requests')
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to delete join request:', error)
+    return { success: false, error: 'Failed to delete request' }
   }
 }

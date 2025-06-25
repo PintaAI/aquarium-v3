@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
 import { Search, Filter, Check, X, UserX, ChevronDown, MessageSquare, Phone, User, Eye } from 'lucide-react'
-import { getAllJoinRequests, approveJoinRequest, rejectJoinRequest, revokeJoinRequest } from '@/app/actions/join-request-actions'
+import { getAllJoinRequests, approveJoinRequest, rejectJoinRequest, revokeJoinRequest, deleteJoinRequest } from '@/app/actions/join-request-actions'
 import { formatDistanceToNow } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import Image from 'next/image'
@@ -196,6 +196,25 @@ export function CourseRequestsClient({ initialRequests }: CourseRequestsClientPr
     } catch (error) {
       console.error('Error revoking request:', error)
       toast.error('Terjadi kesalahan saat mencabut persetujuan')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleDelete = async (request: CourseRequest) => {
+    try {
+      setProcessingId(request.id)
+      const result = await deleteJoinRequest(request.id)
+      
+      if (result.success) {
+        toast.success('Permintaan berhasil dihapus')
+        handleRefresh()
+      } else {
+        toast.error(result.error || 'Gagal menghapus permintaan')
+      }
+    } catch (error) {
+      console.error('Error deleting request:', error)
+      toast.error('Terjadi kesalahan saat menghapus permintaan')
     } finally {
       setProcessingId(null)
     }
@@ -487,6 +506,20 @@ export function CourseRequestsClient({ initialRequests }: CourseRequestsClientPr
                               >
                                 <UserX size={14} className="mr-1" />
                                 Cabut
+                              </Button>
+                            )}
+
+                            {request.status === 'REJECTED' && (
+                              <Button
+                                onClick={() => handleDelete(request)}
+                                disabled={processingId === request.id}
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-gray-600 border-gray-200 hover:bg-gray-50"
+                                title="Hapus permintaan yang ditolak agar user dapat mengajukan permintaan baru"
+                              >
+                                <X size={14} className="mr-1" />
+                                Hapus
                               </Button>
                             )}
                           </div>

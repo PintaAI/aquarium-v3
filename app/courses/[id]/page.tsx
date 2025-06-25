@@ -83,6 +83,7 @@ export default async function CourseIdPage(props: CourseIdPageProps) {
                   liveSessions={course.liveSessions}
                   courseName={course.title}
                   isJoined={hasAccess}
+                  currentUser={user}
                 />
               </div>
             )}

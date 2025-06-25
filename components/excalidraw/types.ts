@@ -13,21 +13,18 @@ export interface FileData {
   mimeType: string;
 }
 
-// BinaryFileData from Excalidraw library
-export interface BinaryFileData {
-  dataURL: string;
-  mimeType: string;
-  id?: string;
-  created?: number;
-}
+import type {
+  BinaryFileData as ExcalidrawBinaryFileData,
+  BinaryFiles as ExcalidrawBinaryFiles,
+} from "@excalidraw/excalidraw/types";
+
+// Re-export with local names if needed, or use imported types directly.
+export type BinaryFileData = ExcalidrawBinaryFileData;
+export type BinaryFiles = ExcalidrawBinaryFiles;
+
 
 export interface FilesMap {
   [key: string]: FileData | File;
-}
-
-// BinaryFiles from Excalidraw library
-export interface BinaryFiles {
-  [key: string]: BinaryFileData;
 }
 
 export interface StorageFilesMap {

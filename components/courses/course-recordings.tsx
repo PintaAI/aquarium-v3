@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Play, Download, Clock, Video, Calendar } from 'lucide-react'
+import { Download, Clock, Video, Calendar, Trash2 } from 'lucide-react'
 import { DateDisplay } from '@/components/shared'
 
 interface LiveSession {
@@ -25,9 +25,13 @@ interface CourseRecordingsProps {
   liveSessions: LiveSession[]
   courseName: string
   isJoined: boolean
+  currentUser?: {
+    id: string
+    name?: string | null
+  } | null
 }
 
-export function CourseRecordings({ liveSessions, courseName, isJoined }: CourseRecordingsProps) {
+export function CourseRecordings({ liveSessions, courseName, isJoined, currentUser }: CourseRecordingsProps) {
   if (!isJoined) {
     return (
       <Card>
@@ -162,24 +166,6 @@ export function CourseRecordings({ liveSessions, courseName, isJoined }: CourseR
               </div>
               
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const video = document.querySelector(`video[src="${session.recordingUrl}"]`) as HTMLVideoElement
-                    if (video) {
-                      if (video.paused) {
-                        video.play()
-                      } else {
-                        video.pause()
-                      }
-                    }
-                  }}
-                >
-                  <Play className="h-4 w-4 mr-1" />
-                  Putar
-                </Button>
-                
                 {session.recordingUrl && (
                   <Button
                     variant="outline"
@@ -195,6 +181,24 @@ export function CourseRecordings({ liveSessions, courseName, isJoined }: CourseR
                   >
                     <Download className="h-4 w-4 mr-1" />
                     Unduh
+                  </Button>
+                )}
+                
+                {/* Delete button - only show for the session creator */}
+                {currentUser && currentUser.id === session.creator.id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      if (confirm(`Apakah Anda yakin ingin menghapus rekaman "${session.name}"?`)) {
+                        // TODO: Implement delete recording action
+                        console.log('Delete recording:', session.id)
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Hapus
                   </Button>
                 )}
               </div>

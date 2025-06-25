@@ -110,6 +110,7 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
           try {
             const storedFiles = JSON.parse(drawing.files);
             const files = await convertStorageToFiles(storedFiles);
+            excalidrawAPI.addFiles(Object.values(files));
             updateData.files = files;
           } catch (e) {
             console.error("Error parsing or converting files:", e);
@@ -119,6 +120,7 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
         
         // Update the scene with elements, appState, and files (if available)
         excalidrawAPI.updateScene(updateData);
+        
         setDrawingName(drawing.name);
       }
     } catch (error) {

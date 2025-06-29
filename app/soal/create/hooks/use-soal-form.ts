@@ -131,13 +131,18 @@ export const useSoalForm = () => {
         const formData = new FormData()
         formData.append("file", file)
         
-        const url = currentAttachmentType === "AUDIO"
-          ? await uploadAudio(formData)
-          : await uploadImage(formData)
-          
-        setCurrentAttachmentUrl(url)
-        toast.success("File berhasil diunggah")
-        return url
+        if (currentAttachmentType === "AUDIO") {
+          const result = await uploadAudio(formData)
+          const url = typeof result === 'string' ? result : result.url
+          setCurrentAttachmentUrl(url)
+          toast.success("Audio berhasil diunggah")
+          return url
+        } else {
+          const url = await uploadImage(formData)
+          setCurrentAttachmentUrl(url)
+          toast.success("Gambar berhasil diunggah")
+          return url
+        }
       } catch (error) {
         toast.error("Gagal mengunggah file")
         console.error(error)

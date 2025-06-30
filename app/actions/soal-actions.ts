@@ -211,6 +211,7 @@ export async function getKoleksiSoal(id: number) {
           select: {
             id: true,
             title: true,
+            authorId: true,
             members: {
               select: {
                 id: true
@@ -262,22 +263,72 @@ export async function updateKoleksiSoal(
     if (!user) return { success: false, error: "Unauthorized" }
 
     const updated = await db.$transaction(async (tx) => {
+      // First check if user can edit this collection
+      const existingCollection = await tx.koleksiSoal.findFirst({
+        where: {
+          id,
+          OR: [
+            // Collections without course (public) - anyone can edit
+            { courseId: null },
+            // Collections where user is course member (GURU only)
+            { 
+              course: {
+                members: {
+                  some: {
+                    id: user.id
+                  }
+                }
+              }
+            },
+            // Collections where user is course author
+            {
+              course: {
+                authorId: user.id
+              }
+            }
+          ]
+        },
+        include: {
+          course: {
+            include: {
+              members: true
+            }
+          }
+        }
+      })
+
+      if (!existingCollection) {
+        throw new Error("Koleksi soal tidak ditemukan atau Anda tidak memiliki akses untuk mengedit")
+      }
+
+      // Additional check: if existing collection has a course, ensure user is author or GURU member
+      if (existingCollection.courseId) {
+        const isAuthor = existingCollection.course?.authorId === user.id
+        const isGuruMember = existingCollection.course?.members?.some(
+          (member: any) => member.id === user.id && user.role === "GURU"
+        )
+
+        if (!isAuthor && !isGuruMember) {
+          throw new Error("Tidak memiliki akses untuk mengedit koleksi soal ini")
+        }
+      }
+
       // If courseId is provided, verify user is a member or author of the course
-if (courseId) {
-  const course = await tx.course.findFirst({
-    where: { id: courseId },
-    include: { members: true }
-  });
+      if (courseId) {
+        const course = await tx.course.findFirst({
+          where: { id: courseId },
+          include: { members: true }
+        });
 
-  const isAuthor = course?.authorId === user.id;
-  const isGuruMember = course?.members.some(
-    (member: any) => member.id === user.id && user.role === "GURU"
-  );
+        const isAuthor = course?.authorId === user.id;
+        const isGuruMember = course?.members.some(
+          (member: any) => member.id === user.id && user.role === "GURU"
+        );
 
-  if (!isAuthor && !isGuruMember) {
-    throw new Error("Tidak memiliki akses ke course tersebut");
-  }
-}
+        if (!isAuthor && !isGuruMember) {
+          throw new Error("Tidak memiliki akses ke course tersebut");
+        }
+      }
 
       // Update koleksi
       const updatedKoleksi = await tx.koleksiSoal.update({
@@ -347,16 +398,57 @@ export async function deleteKoleksiSoal(id: number) {
     const user = await currentUser()
     if (!user) return { success: false, error: "Unauthorized" }
 
-    // Check if collection exists first
-    const exists = await db.koleksiSoal.findUnique({
-      where: { id }
-    })
-
-    if (!exists) {
-      return { success: false, error: "Koleksi soal tidak ditemukan" }
-    }
-
     await db.$transaction(async (tx) => {
+      // Check if user can delete this collection
+      const existingCollection = await tx.koleksiSoal.findFirst({
+        where: {
+          id,
+          OR: [
+            // Collections without course (public) - anyone can delete
+            { courseId: null },
+            // Collections where user is course member (GURU only)
+            { 
+              course: {
+                members: {
+                  some: {
+                    id: user.id
+                  }
+                }
+              }
+            },
+            // Collections where user is course author
+            {
+              course: {
+                authorId: user.id
+              }
+            }
+          ]
+        },
+        include: {
+          course: {
+            include: {
+              members: true
+            }
+          }
+        }
+      })
+
+      if (!existingCollection) {
+        throw new Error("Koleksi soal tidak ditemukan atau Anda tidak memiliki akses untuk menghapus")
+      }
+
+      // Additional check: if existing collection has a course, ensure user is author or GURU member
+      if (existingCollection.courseId) {
+        const isAuthor = existingCollection.course?.authorId === user.id
+        const isGuruMember = existingCollection.course?.members?.some(
+          (member: any) => member.id === user.id && user.role === "GURU"
+        )
+
+        if (!isAuthor && !isGuruMember) {
+          throw new Error("Tidak memiliki akses untuk menghapus koleksi soal ini")
+        }
+      }
+
       // Delete options first
       await tx.opsi.deleteMany({
         where: {

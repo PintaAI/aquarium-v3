@@ -301,14 +301,14 @@ export async function updateKoleksiSoal(
         throw new Error("Koleksi soal tidak ditemukan atau Anda tidak memiliki akses untuk mengedit")
       }
 
-      // Additional check: if existing collection has a course, ensure user is author or GURU member
+      // Additional check: if existing collection has a course, ensure user is course author or GURU member
       if (existingCollection.courseId) {
-        const isAuthor = existingCollection.course?.authorId === user.id
+        const isCourseAuthor = existingCollection.course?.authorId === user.id
         const isGuruMember = existingCollection.course?.members?.some(
           (member: any) => member.id === user.id && user.role === "GURU"
         )
 
-        if (!isAuthor && !isGuruMember) {
+        if (!isCourseAuthor && !isGuruMember) {
           throw new Error("Tidak memiliki akses untuk mengedit koleksi soal ini")
         }
       }
@@ -437,14 +437,14 @@ export async function deleteKoleksiSoal(id: number) {
         throw new Error("Koleksi soal tidak ditemukan atau Anda tidak memiliki akses untuk menghapus")
       }
 
-      // Additional check: if existing collection has a course, ensure user is author or GURU member
+      // Additional check: if existing collection has a course, ensure user is course author or GURU member
       if (existingCollection.courseId) {
-        const isAuthor = existingCollection.course?.authorId === user.id
+        const isCourseAuthor = existingCollection.course?.authorId === user.id
         const isGuruMember = existingCollection.course?.members?.some(
           (member: any) => member.id === user.id && user.role === "GURU"
         )
 
-        if (!isAuthor && !isGuruMember) {
+        if (!isCourseAuthor && !isGuruMember) {
           throw new Error("Tidak memiliki akses untuk menghapus koleksi soal ini")
         }
       }

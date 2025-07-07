@@ -16,6 +16,7 @@ import { UseCurrentUser } from '@/hooks/use-current-user';
 import { VideoComponent } from './video-component'; // Will be simplified
 import { SessionInfo } from './session-info';       // Will receive call prop
 import { ChatComponent } from './chat-component';
+import { SessionRecordings } from './session-recordings';
 import type { LiveSession } from '@/app/actions/live-session-actions'; // Import type
 import { Button } from '@/components/ui/button';
 import {
@@ -313,6 +314,13 @@ export function LiveSessionWrapper({ liveSessionData, isCreator, guruUsers }: Li
                  image: liveSessionData.creator.image || undefined
                 }}
               />
+
+             {/* Session Recordings Component */}
+             <SessionRecordings
+               sessionId={liveSessionData.id}
+               sessionName={liveSessionData.name}
+               userRole={user?.role}
+             />
 
              {/* --- OBS/RTMP Streaming Info Modal (Indonesian) --- */}
              {isCreator && rtmpUrlFromGet && streamToken && (

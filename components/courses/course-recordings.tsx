@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Download, Clock, Video, Calendar, Trash2 } from 'lucide-react'
 import { DateDisplay } from '@/components/shared'
+import { deleteRecording } from '@/app/actions/recording-actions'
+import { toast } from 'sonner'
+import { useState } from 'react'
 
 interface LiveSession {
   id: string
@@ -28,10 +31,42 @@ interface CourseRecordingsProps {
   currentUser?: {
     id: string
     name?: string | null
+    role?: string
   } | null
 }
 
 export function CourseRecordings({ liveSessions, courseName, isJoined, currentUser }: CourseRecordingsProps) {
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null)
+  const [sessionsWithRecordings, setSessionsWithRecordings] = useState(liveSessions)
+
+  const handleDeleteRecording = async (sessionId: string, sessionName: string) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus rekaman "${sessionName}"? Tindakan ini tidak dapat dibatalkan.`)) {
+      return
+    }
+
+    try {
+      setDeletingSessionId(sessionId)
+      const result = await deleteRecording(sessionId)
+      
+      if (result.success) {
+        // Update the local state to remove the recording URL
+        setSessionsWithRecordings(prev => 
+          prev.map(session => 
+            session.id === sessionId 
+              ? { ...session, recordingUrl: null }
+              : session
+          )
+        )
+        toast.success('Rekaman berhasil dihapus')
+      } else {
+        toast.error(result.error || 'Gagal menghapus rekaman')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat menghapus rekaman')
+    } finally {
+      setDeletingSessionId(null)
+    }
+  }
   if (!isJoined) {
     return (
       <Card>
@@ -92,7 +127,7 @@ export function CourseRecordings({ liveSessions, courseName, isJoined, currentUs
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {liveSessions.map((session) => (
+        {sessionsWithRecordings.map((session) => (
           <div key={session.id} className="border rounded-lg p-4 space-y-3">
             {/* Session Header */}
             <div className="flex items-start justify-between">
@@ -184,21 +219,21 @@ export function CourseRecordings({ liveSessions, courseName, isJoined, currentUs
                   </Button>
                 )}
                 
-                {/* Delete button - only show for the session creator */}
-                {currentUser && currentUser.id === session.creator.id && (
+                {/* Delete button - only show for GURU role users */}
+                {currentUser && currentUser.role === 'GURU' && session.recordingUrl && (
                   <Button
                     variant="outline"
                     size="sm"
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => {
-                      if (confirm(`Apakah Anda yakin ingin menghapus rekaman "${session.name}"?`)) {
-                        // TODO: Implement delete recording action
-                        console.log('Delete recording:', session.id)
-                      }
-                    }}
+                    onClick={() => handleDeleteRecording(session.id, session.name)}
+                    disabled={deletingSessionId === session.id}
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Hapus
+                    {deletingSessionId === session.id ? (
+                      <div className="h-4 w-4 mr-1 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-1" />
+                    )}
+                    {deletingSessionId === session.id ? 'Menghapus...' : 'Hapus'}
                   </Button>
                 )}
               </div>

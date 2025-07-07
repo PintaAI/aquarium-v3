@@ -10,10 +10,10 @@ import { toast } from 'sonner'
 interface SessionRecordingsProps {
   sessionId: string
   sessionName: string
-  isCreator: boolean
+  userRole?: string
 }
 
-export function SessionRecordings({ sessionId, sessionName, isCreator }: SessionRecordingsProps) {
+export function SessionRecordings({ sessionId, sessionName, userRole }: SessionRecordingsProps) {
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -115,7 +115,7 @@ export function SessionRecordings({ sessionId, sessionName, isCreator }: Session
           <div className="text-center py-8">
             <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
-              {isCreator 
+              {userRole === 'GURU'
                 ? "Belum ada rekaman untuk sesi ini. Mulai rekaman saat sesi live berlangsung."
                 : "Belum ada rekaman tersedia untuk sesi ini."
               }
@@ -172,7 +172,7 @@ export function SessionRecordings({ sessionId, sessionName, isCreator }: Session
               Unduh
             </Button>
             
-            {isCreator && (
+            {userRole === 'GURU' && (
               <Button
                 variant="destructive"
                 size="sm"

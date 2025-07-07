@@ -95,8 +95,7 @@ export async function deleteRecording(sessionId: string) {
     // Update the live session to remove the recording URL
     const updatedSession = await db.liveSession.update({
       where: { 
-        id: sessionId,
-        creatorId: user.id // Ensure only the creator can delete
+        id: sessionId
       },
       data: {
         recordingUrl: null

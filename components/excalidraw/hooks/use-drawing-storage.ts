@@ -15,13 +15,19 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
   const [drawingName, setDrawingName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [drawings, setDrawings] = useState<DrawingListItem[]>([]);
+  const [currentDrawingId, setCurrentDrawingId] = useState<string | undefined>();
 
   useEffect(() => {
     const loadDrawings = async () => {
       if (session?.user) {
         try {
           const userDrawings = await getUserDrawings();
-          setDrawings(userDrawings.map(d => ({ id: d.id, name: d.name })));
+          setDrawings(userDrawings.map(d => ({ 
+            id: d.id, 
+            name: d.name, 
+            createdAt: d.createdAt, 
+            updatedAt: d.updatedAt 
+          })));
         } catch (error) {
           console.error("Error loading drawings:", error);
         }
@@ -73,7 +79,12 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
 
       // Refresh drawings list after save
       const userDrawings = await getUserDrawings();
-      setDrawings(userDrawings.map(d => ({ id: d.id, name: d.name })));
+      setDrawings(userDrawings.map(d => ({ 
+        id: d.id, 
+        name: d.name, 
+        createdAt: d.createdAt, 
+        updatedAt: d.updatedAt 
+      })));
     } catch (error) {
       console.error("Error saving drawing:", error);
       toast({
@@ -87,7 +98,21 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
   };
 
   const loadDrawingById = useCallback(async (id: string) => {
-    if (!excalidrawAPI || !id) return;
+    if (!excalidrawAPI) return;
+
+    if (id === "_new") {
+      // Create new drawing
+      excalidrawAPI.updateScene({
+        elements: [],
+        appState: {
+          ...excalidrawAPI.getAppState(),
+          collaborators: new Map()
+        }
+      });
+      setDrawingName("");
+      setCurrentDrawingId(undefined);
+      return;
+    }
 
     try {
       const drawing = await loadDrawing(id);
@@ -101,7 +126,7 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
           appState: {
             ...excalidrawAPI.getAppState(),
             ...savedAppState,
-            collaborators: []
+            collaborators: new Map()
           }
         };
 
@@ -122,6 +147,7 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
         excalidrawAPI.updateScene(updateData);
         
         setDrawingName(drawing.name);
+        setCurrentDrawingId(id);
       }
     } catch (error) {
       console.error("Error loading drawing:", error);
@@ -133,12 +159,30 @@ export function useDrawingStorage({ excalidrawAPI }: UseDrawingStorageProps) {
     }
   }, [excalidrawAPI, toast]);
 
+  const refreshDrawings = useCallback(async () => {
+    if (session?.user) {
+      try {
+        const userDrawings = await getUserDrawings();
+        setDrawings(userDrawings.map(d => ({ 
+          id: d.id, 
+          name: d.name, 
+          createdAt: d.createdAt, 
+          updatedAt: d.updatedAt 
+        })));
+      } catch (error) {
+        console.error("Error loading drawings:", error);
+      }
+    }
+  }, [session?.user]);
+
   return {
     drawingName,
     setDrawingName,
     isSaving,
     drawings,
+    currentDrawingId,
     handleSave,
-    loadDrawingById
+    loadDrawingById,
+    refreshDrawings
   };
 }

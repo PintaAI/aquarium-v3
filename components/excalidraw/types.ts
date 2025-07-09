@@ -51,4 +51,6 @@ export interface Drawing {
 export interface DrawingListItem {
   id: string;
   name: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

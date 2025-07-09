@@ -21,8 +21,10 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
     setDrawingName,
     isSaving,
     drawings,
+    currentDrawingId,
     handleSave,
-    loadDrawingById
+    loadDrawingById,
+    refreshDrawings
   } = useDrawingStorage({ excalidrawAPI });
 
   // Load drawing if ID is provided
@@ -49,7 +51,8 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
             drawings={drawings}
             onSave={handleSave}
             onDrawingSelect={loadDrawingById}
-            selectedDrawingId={defaultDrawingId}
+            onDrawingsChange={refreshDrawings}
+            selectedDrawingId={currentDrawingId}
           />
         </Footer>
       </Excalidraw>

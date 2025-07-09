@@ -33,7 +33,7 @@ export function DrawingManagerDialog({
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
 
   const filteredDrawings = useMemo(() => {
     if (!searchQuery.trim()) return drawings;

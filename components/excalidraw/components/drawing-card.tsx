@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent,} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -167,7 +167,7 @@ export function DrawingCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus Gambar</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus "{drawing.name}"? Tindakan ini tidak dapat dibatalkan.
+              Apakah Anda yakin ingin menghapus &quot;{drawing.name}&quot;? Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

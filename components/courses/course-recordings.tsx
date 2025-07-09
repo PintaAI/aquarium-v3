@@ -61,7 +61,7 @@ export function CourseRecordings({ liveSessions, courseName, isJoined, currentUs
       } else {
         toast.error(result.error || 'Gagal menghapus rekaman')
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Terjadi kesalahan saat menghapus rekaman')
     } finally {
       setDeletingSessionId(null)

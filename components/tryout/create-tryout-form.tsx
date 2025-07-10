@@ -27,6 +27,9 @@ interface CreateTryoutFormProps {
   koleksiSoals: {
     id: number
     nama: string
+    course?: {
+      title: string
+    } | null
   }[]
   onSubmit: (data: {
     koleksiSoalId: number
@@ -80,7 +83,14 @@ export function CreateTryoutForm({ koleksiSoals, onSubmit }: CreateTryoutFormPro
               <SelectContent>
                 {koleksiSoals.map((koleksi) => (
                   <SelectItem key={koleksi.id} value={koleksi.id.toString()}>
-                    {koleksi.nama}
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium">{koleksi.nama}</span>
+                      {koleksi.course && (
+                        <span className="text-xs text-muted-foreground">
+                          dari kursus: {koleksi.course.title}
+                        </span>
+                      )}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

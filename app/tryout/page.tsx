@@ -17,9 +17,44 @@ export default async function TryoutPage() {
     user.role === "GURU"
       ? db.koleksiSoal.findMany({
           where: {
-            soals: {
-              some: {
-                authorId: user.id
+            OR: [
+              // Collections from courses the user authored
+              {
+                course: {
+                  authorId: user.id
+                }
+              },
+              // Collections from courses the user joined
+              {
+                course: {
+                  members: {
+                    some: {
+                      id: user.id
+                    }
+                  }
+                }
+              },
+              // Collections without a course that the user created soals for
+              {
+                AND: [
+                  {
+                    courseId: null
+                  },
+                  {
+                    soals: {
+                      some: {
+                        authorId: user.id
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          include: {
+            course: {
+              select: {
+                title: true
               }
             }
           }

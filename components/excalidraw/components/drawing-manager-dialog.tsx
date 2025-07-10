@@ -118,8 +118,8 @@ export function DrawingManagerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Kelola Gambar
@@ -131,7 +131,7 @@ export function DrawingManagerDialog({
 
         <div className="flex flex-col gap-4 flex-1 min-h-0">
           {/* Search and Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -165,50 +165,52 @@ export function DrawingManagerDialog({
             </Button>
           </div>
 
-          <Separator />
+          <Separator className="flex-shrink-0" />
 
           {/* Drawings Grid/List with ScrollArea */}
-          <ScrollArea className="flex-1">
-            {filteredDrawings.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">
-                  {searchQuery ? "Gambar tidak ditemukan" : "Belum ada gambar"}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {searchQuery
-                    ? "Coba sesuaikan kata kunci pencarian"
-                    : "Buat gambar pertama Anda untuk memulai"}
-                </p>
-                {!searchQuery && (
-                  <Button onClick={handleCreateNew}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Buat Gambar Baru
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-1"
-                    : "space-y-3 p-1"
-                }
-              >
-                {filteredDrawings.map((drawing) => (
-                  <DrawingCard
-                    key={drawing.id}
-                    drawing={drawing}
-                    onOpen={handleDrawingOpen}
-                    onDelete={handleDrawingDelete}
-                    onRename={handleDrawingRename}
-                    onDuplicate={handleDrawingDuplicate}
-                    isSelected={selectedDrawingId === drawing.id}
-                  />
-                ))}
-              </div>
-            )}
-          </ScrollArea>
+          <div className="flex-1 min-h-0">
+            <ScrollArea className="h-full">
+              {filteredDrawings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">
+                    {searchQuery ? "Gambar tidak ditemukan" : "Belum ada gambar"}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {searchQuery
+                      ? "Coba sesuaikan kata kunci pencarian"
+                      : "Buat gambar pertama Anda untuk memulai"}
+                  </p>
+                  {!searchQuery && (
+                    <Button onClick={handleCreateNew}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Buat Gambar Baru
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-1"
+                      : "space-y-3 p-1"
+                  }
+                >
+                  {filteredDrawings.map((drawing) => (
+                    <DrawingCard
+                      key={drawing.id}
+                      drawing={drawing}
+                      onOpen={handleDrawingOpen}
+                      onDelete={handleDrawingDelete}
+                      onRename={handleDrawingRename}
+                      onDuplicate={handleDrawingDuplicate}
+                      isSelected={selectedDrawingId === drawing.id}
+                    />
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
